@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import folder_link %}
+{% block title %}{{ d.host }} · {{ origin }}{% endblock %}
+{% block content %}
+<h1 class="mono">{{ d.host }}</h1>
+<p class="muted">Folders that declared this host or one of its subdomains, as base URL, mirror or deeplink.</p>
+{% if d.usages %}
+<table>
+  <thead><tr><th>Folder</th><th>Host</th><th>Role</th><th>Declared</th><th>Until</th></tr></thead>
+  <tbody>
+  {% for u in d.usages %}
+    <tr class="{{ 'past' if u.to_sha }}">
+      <td>{{ folder_link(origin, u.path, u.name) }} <span class="muted small mono">{{ u.path }}</span>{% if u.removed %} <span class="tag">removed</span>{% endif %}</td>
+      <td class="mono small">{{ u.host }}</td>
+      <td>{{ u.role }}</td>
+      <td class="small">{{ u.from_date|day }}</td>
+      <td class="small">{{ u.to_date|day if u.to_sha else 'current' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p>No folder has declared this host since the history anchor.</p>{% endif %}
+{% endblock %}

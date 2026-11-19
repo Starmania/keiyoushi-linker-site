@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Extension linker{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="/{{ origin or '' }}">Extension linker</a>
+    {% if origin %}
+    <span class="origin">{{ origin }}</span>
+    <nav>
+      <a href="/{{ origin }}">Gallery</a>
+      <a href="/{{ origin }}/domains">Domains</a>
+      <a href="/api/docs">API</a>
+    </nav>
+    <form class="search" action="/{{ origin }}/search">
+      <input name="q" type="search" placeholder="Name, #issue, #PR, domain, source id" aria-label="Search">
+    </form>
+    {% endif %}
+  </div>
+</header>
+<main class="wrap">
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

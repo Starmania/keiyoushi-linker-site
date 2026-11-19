@@ -1,0 +1,48 @@
+{% macro status_pill(status) -%}
+<span class="pill st-{{ status or 'none' }}">{{ {'pass': 'Working', 'partial': 'Partly working', 'fail': 'Not working', 'maybe': 'Might be broken', 'untestable': 'Can’t test', 'unsupported': 'Not supported'}.get(status, 'No status') }}</span>
+{%- endmacro %}
+
+{% macro state_pill(state) -%}
+<span class="pill gh-{{ state|lower }}">{{ state|capitalize }}</span>
+{%- endmacro %}
+
+{% macro folder_link(origin, path, name=None) -%}
+<a href="/{{ origin }}/{{ path }}">{{ name or path }}</a>
+{%- endmacro %}
+
+{% macro issue_rows(origin, issues, show_how=True) -%}
+{% if issues %}
+<ul class="rows">
+  {% for i in issues %}
+  <li>
+    {{ state_pill(i.state) }}
+    <a href="/{{ origin }}/issues/{{ i.number }}">#{{ i.number }}</a>
+    <span class="grow">{{ i.title }}</span>
+    {% if show_how %}<span class="muted small" title="How this link was found">{{ i.methods }}{% if not i.manual %} · {{ '%.0f'|format(i.confidence * 100) }}%{% endif %}</span>{% endif %}
+    <span class="muted small">{{ i.created_at|day }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}<p class="muted">None linked.</p>{% endif %}
+{%- endmacro %}
+
+{% macro history_rows(origin, commits) -%}
+{% if commits %}
+<ol class="history">
+  {% for c in commits %}
+  <li>
+    <div class="h-head">
+      {% if c.pr_number %}<a href="/{{ origin }}/pull/{{ c.pr_number }}">#{{ c.pr_number }}</a>{% endif %}
+      <span class="grow">{{ c.pr_title or c.subject }}</span>
+    </div>
+    <div class="muted small">
+      {% if c.pr_merged_at %}PR merged {{ c.pr_merged_at|day }} · {% endif %}committed {{ c.commit_date|day }} ·
+      <a href="https://github.com/{{ origin }}/commit/{{ c.sha }}"><code>{{ c.sha[:10] }}</code></a>
+      {% if c.author %}· {{ c.author }}{% endif %}
+    </div>
+    {% if c.body %}<details><summary>Commit body</summary><pre>{{ c.body }}</pre></details>{% endif %}
+  </li>
+  {% endfor %}
+</ol>
+{% else %}<p class="muted">No commits since the history anchor.</p>{% endif %}
+{%- endmacro %}

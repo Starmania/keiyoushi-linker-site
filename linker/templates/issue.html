@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import state_pill, folder_link %}
+{% block title %}#{{ i.number }} · {{ origin }}{% endblock %}
+{% block content %}
+<section class="head">
+  <div>
+    <h1>{{ i.title }} <a class="muted" href="https://github.com/{{ origin }}/issues/{{ i.number }}">#{{ i.number }}</a></h1>
+    <div class="tags">
+      {{ state_pill(i.state) }}
+      {% for l in i.labels %}<span class="tag">{{ l }}</span>{% endfor %}
+      <span class="muted small">opened {{ i.created_at|day }}{% if i.author %} by {{ i.author }}{% endif %}{% if i.closed_at %} · closed {{ i.closed_at|day }}{% endif %}</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Linked folders</h2>
+  {% if i.links %}
+  <table>
+    <thead><tr><th>Folder</th><th>Theme</th><th>Found by</th><th>Confidence</th></tr></thead>
+    <tbody>
+    {% for l in i.links %}
+      <tr>
+        <td>{{ folder_link(origin, l.path, l.name) }} <span class="muted small mono">{{ l.path }}</span></td>
+        <td>{% if l.theme_path %}{{ folder_link(origin, l.theme_path, l.theme) }}{% endif %}</td>
+        <td>{{ l.methods }}</td>
+        <td>{{ 'manual' if l.manual else '%.0f%%'|format(l.confidence * 100) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No folder found for this issue.</p>{% endif %}
+  {% if i.removed_links %}<p class="muted small">Manually unlinked: {% for r in i.removed_links %}<span class="mono">{{ r.path }}</span>{{ ', ' if not loop.last }}{% endfor %}</p>{% endif %}
+</section>
+
+<section>
+  <h2>Pull requests closing it</h2>
+  <ul class="rows">
+    {% for p in i.prs %}
+    <li>{{ state_pill(p.state) }} <a href="/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a> <span class="grow">{{ p.title }}</span> <span class="muted small">{{ p.merged_at|day }}</span></li>
+    {% else %}<li class="muted">None.</li>{% endfor %}
+  </ul>
+</section>
+
+{% if i.body %}
+<section>
+  <details><summary>Issue body</summary><pre>{{ i.body }}</pre></details>
+</section>
+{% endif %}
+{% endblock %}

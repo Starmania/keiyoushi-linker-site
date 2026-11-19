@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import state_pill, folder_link %}
+{% block title %}PR #{{ p.number }} · {{ origin }}{% endblock %}
+{% block content %}
+<section class="head">
+  <div>
+    <h1>{{ p.title }} <a class="muted" href="https://github.com/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a></h1>
+    <div class="tags">
+      {{ state_pill(p.state) }}
+      {% if p.single_target %}<span class="tag">single target</span>{% endif %}
+      <span class="muted small">opened {{ p.created_at|day }}{% if p.author %} by {{ p.author }}{% endif %}{% if p.merged_at %} · merged {{ p.merged_at|day }}{% elif p.closed_at %} · closed {{ p.closed_at|day }}{% endif %}</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Folders touched ({{ p.folders|length }})</h2>
+  <ul class="rows">
+    {% for f in p.folders %}
+    <li>{{ folder_link(origin, f.path, f.name) }} <span class="muted small mono">{{ f.path }}</span>{% if f.theme %} <a class="tag" href="/{{ origin }}/lib-multisrc/{{ f.theme }}">{{ f.theme }}</a>{% endif %}</li>
+    {% else %}<li class="muted">No src/ or lib-multisrc/ folder.</li>{% endfor %}
+  </ul>
+</section>
+
+<section>
+  <h2>Issues it closes</h2>
+  <ul class="rows">
+    {% for i in p.issues %}
+    <li>{{ state_pill(i.state) }} <a href="/{{ origin }}/issues/{{ i.number }}">#{{ i.number }}</a> <span class="grow">{{ i.title }}</span></li>
+    {% else %}<li class="muted">None.</li>{% endfor %}
+  </ul>
+</section>
+
+{% if p.commits %}
+<section>
+  <h2>Commits on main</h2>
+  <ol class="history">
+    {% for c in p.commits %}
+    <li>
+      <div class="h-head"><span class="grow">{{ c.subject }}</span></div>
+      <div class="muted small">committed {{ c.date|day }} · <a href="https://github.com/{{ origin }}/commit/{{ c.sha }}"><code>{{ c.sha[:10] }}</code></a></div>
+      {% if c.body %}<details><summary>Commit body</summary><pre>{{ c.body }}</pre></details>{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endif %}
+
+{% if p.body %}
+<section><details><summary>PR description</summary><pre>{{ p.body }}</pre></details></section>
+{% endif %}
+{% endblock %}

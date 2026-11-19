@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Repositories</h1>
+<ul class="rows">
+  {% for o in origins %}<li><a href="/{{ o.id }}">{{ o.id }}</a> <span class="muted small">{{ o.extensions }} extensions · {{ o.kind }}</span></li>{% endfor %}
+</ul>
+{% endblock %}

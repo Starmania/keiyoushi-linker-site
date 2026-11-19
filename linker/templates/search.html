@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import state_pill, status_pill %}
+{% block title %}Search · {{ origin }}{% endblock %}
+{% block content %}
+<h1>Results for “{{ r.query }}”</h1>
+{% if r.issue %}<p>Issue {{ state_pill(r.issue.state) }} <a href="/{{ origin }}/issues/{{ r.issue.number }}">#{{ r.issue.number }} {{ r.issue.title }}</a></p>{% endif %}
+{% if r.pr %}<p>Pull request {{ state_pill(r.pr.state) }} <a href="/{{ origin }}/pull/{{ r.pr.number }}">#{{ r.pr.number }} {{ r.pr.title }}</a></p>{% endif %}
+{% if r.domains %}
+<h2>Domains</h2>
+<ul class="rows">{% for d in r.domains %}<li><a class="mono" href="/{{ origin }}/domains/{{ d.host }}">{{ d.host }}</a> <span class="muted small">{{ d.current_extensions }} extension(s) now</span></li>{% endfor %}</ul>
+{% endif %}
+{% if r.extensions %}
+<h2>Extensions</h2>
+<ul class="rows">{% for e in r.extensions %}<li>{{ status_pill(e.status) }} <a href="/{{ origin }}/{{ e.path }}">{{ e.name }}</a> <span class="muted small mono">{{ e.path }}</span>{% if e.removed %} <span class="tag">removed</span>{% endif %}</li>{% endfor %}</ul>
+{% endif %}
+{% if not (r.issue or r.pr or r.domains or r.extensions) %}<p class="muted">Nothing found.</p>{% endif %}
+{% endblock %}

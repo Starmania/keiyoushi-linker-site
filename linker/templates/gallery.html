@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_pill %}
+{% block title %}Extensions · {{ origin }}{% endblock %}
+{% block content %}
+<form class="filters" method="get">
+  <input name="q" type="search" value="{{ filters.q }}" placeholder="Filter by name, domain or source id" aria-label="Filter">
+  <select name="lang" aria-label="Language">
+    <option value="">All languages</option>
+    {% for f in facets.lang %}<option value="{{ f.value }}" {{ 'selected' if f.value == filters.lang }}>{{ f.value }} ({{ f.n }})</option>{% endfor %}
+  </select>
+  <select name="status" aria-label="Status">
+    <option value="">Any status</option>
+    {% for f in facets.status %}<option value="{{ f.value }}" {{ 'selected' if f.value == filters.status }}>{{ f.value }} ({{ f.n }})</option>{% endfor %}
+  </select>
+  <select name="theme" aria-label="Theme">
+    <option value="">Any theme</option>
+    {% for f in facets.theme %}<option value="{{ f.value }}" {{ 'selected' if f.value == filters.theme }}>{{ f.value }} ({{ f.n }})</option>{% endfor %}
+  </select>
+  <select name="content" aria-label="Content">
+    <option value="">All content</option>
+    {% for c in ['SAFE', 'MIXED', 'NSFW'] %}<option value="{{ c }}" {{ 'selected' if c == filters.content }}>{{ c|capitalize }}</option>{% endfor %}
+  </select>
+  <select name="sort" aria-label="Sort">
+    {% for k, label in [('downloads', 'Most downloaded (7 d)'), ('name', 'Name'), ('status', 'Broken first'), ('issues', 'Most open issues'), ('updated', 'Recently changed')] %}
+    <option value="{{ k }}" {{ 'selected' if k == filters.sort }}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <label class="check"><input type="checkbox" name="removed" value="true" {{ 'checked' if filters.removed }}> Include removed</label>
+  <button type="submit">Apply</button>
+</form>
+
+<p class="muted">{{ data.total|num }} extensions</p>
+
+<div class="grid">
+  {% for e in data['items'] %}
+  <a class="card{{ ' removed' if e.removed }}" href="/{{ origin }}/{{ e.path }}">
+    <img class="icon" src="{{ e.icon_url }}" alt="" loading="lazy" width="48" height="48" onerror="this.style.visibility='hidden'">
+    <div class="card-body">
+      <div class="card-title">{{ e.name }}</div>
+      <div class="muted small mono">{{ e.path }}</div>
+      <div class="tags">
+        {{ status_pill(e.status) }}
+        {% if e.theme %}<span class="tag">{{ e.theme }}</span>{% endif %}
+        {% if e.content_warning and e.content_warning != 'SAFE' %}<span class="tag warn">{{ e.content_warning }}</span>{% endif %}
+        {% if e.removed %}<span class="tag">removed</span>{% endif %}
+      </div>
+      <div class="card-stats small">
+        <span title="Downloads, last 7 days">↓ {{ e.downloads_7d|num }}</span>
+        <span title="Open linked issues">● {{ e.open_issues }}</span>
+        {% if e.hosts %}<span class="muted ellipsis">{{ e.hosts[0] }}{% if e.hosts|length > 1 %} +{{ e.hosts|length - 1 }}{% endif %}</span>{% endif %}
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+{% if pages > 1 %}
+<nav class="pager">
+  {% set qs = filters|urlencode %}
+  {% if page_no > 1 %}<a href="?{{ qs }}&page={{ page_no - 1 }}">← Previous</a>{% endif %}
+  <span class="muted">Page {{ page_no }} of {{ pages }}</span>
+  {% if page_no < pages %}<a href="?{{ qs }}&page={{ page_no + 1 }}">Next →</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

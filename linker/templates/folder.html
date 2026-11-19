@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_pill, state_pill, folder_link, issue_rows, history_rows %}
+{% block title %}{{ f.name }} · {{ origin }}{% endblock %}
+{% block content %}
+<section class="head">
+  {% if f.icon_url %}<img class="icon big" src="{{ f.icon_url }}" alt="" width="64" height="64" onerror="this.style.visibility='hidden'">{% endif %}
+  <div>
+    <h1>{{ f.name }}{% if f.kind == 'theme' %} <span class="tag">theme</span>{% endif %}</h1>
+    <div class="mono muted">
+      <a href="https://github.com/{{ origin }}/tree/main/{{ f.path }}">{{ f.path }}</a>
+      {% if f.package_name %}· {{ f.package_name }}{% endif %}
+    </div>
+    <div class="tags">
+      {% if f.kind == 'src' %}{{ status_pill(f.status.status if f.status else None) }}{% endif %}
+      {% if f.theme %}<a class="tag" href="/{{ origin }}/lib-multisrc/{{ f.theme }}">theme: {{ f.theme }}</a>{% endif %}
+      {% if f.lib_version %}<span class="tag">lib {{ f.lib_version }}</span>{% endif %}
+      {% if f.version_code is not none %}<span class="tag">{{ 'base ' if f.kind == 'theme' }}versionCode {{ f.version_code }}</span>{% endif %}
+      {% if f.content_warning %}<span class="tag{{ ' warn' if f.content_warning != 'SAFE' }}">{{ f.content_warning }}</span>{% endif %}
+      {% if f.removed_sha %}<span class="tag warn">removed {{ f.last_date|day }}</span>{% endif %}
+    </div>
+  </div>
+</section>
+
+{% if f.kind == 'src' %}
+<section class="stats">
+  <div class="stat"><div class="stat-v">{{ f.downloads.d7|num if f.downloads else '–' }}</div><div class="stat-l">downloads, 7 d</div></div>
+  <div class="stat"><div class="stat-v">{{ f.downloads.d30|num if f.downloads else '–' }}</div><div class="stat-l">downloads, 30 d</div></div>
+  <div class="stat"><div class="stat-v">{{ f.downloads.all_time|num if f.downloads else '–' }}</div><div class="stat-l">downloads, all time</div></div>
+  <div class="stat"><div class="stat-v">{{ f.issues|selectattr('state', 'equalto', 'OPEN')|list|length }}</div><div class="stat-l">open issues</div></div>
+</section>
+
+{% if f.status_history %}
+<section>
+  <h2>Monitor status</h2>
+  <div class="strip" aria-label="Daily status, oldest first">
+    {% for s in f.status_history %}<span class="cell st-{{ s.status }}" title="{{ s.date }}: {{ s.status }}"></span>{% endfor %}
+  </div>
+  {% if f.status and f.status.ops %}
+  <ul class="ops">
+    {% for op in f.status.ops %}<li class="st-{{ op.status }}" title="{{ op.error or op.reason or '' }}">{{ op.op }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  <p class="muted small">Last check {{ f.status.date if f.status }}{% if f.status and f.status.since %}, in this state since {{ f.status.since }}{% endif %}. Source: <a href="https://hazptr.github.io/keiyoushi-monitor/">keiyoushi-monitor</a>.</p>
+</section>
+{% endif %}
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Lang</th><th>Base URL</th><th>Id</th></tr></thead>
+    <tbody>
+    {% for s in f.sources %}
+      <tr>
+        <td>{{ s.name }}</td><td>{{ s.lang }}</td>
+        <td class="mono">{{ s.base_url }}{% if s.url_type != 'static' %} <span class="tag">{{ s.url_type }}{% if s.mirror_urls %} · {{ s.mirror_urls|length }}{% endif %}</span>{% endif %}</td>
+        <td class="mono small">{{ s.source_id }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+<section>
+  <h2>Domains</h2>
+  {% if f.domains %}
+  <table>
+    <thead><tr><th>Host</th><th>Role</th><th>Declared</th><th>Until</th></tr></thead>
+    <tbody>
+    {% for d in f.domains %}
+      <tr class="{{ 'past' if d.to_sha }}">
+        <td class="mono"><a href="/{{ origin }}/domains/{{ d.host }}">{{ d.host }}</a></td>
+        <td>{{ d.role }}</td>
+        <td class="small">{{ d.from_date|day }}</td>
+        <td class="small">{{ d.to_date|day if d.to_sha else 'current' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No domains declared.</p>{% endif %}
+</section>
+
+{% if f.kind == 'theme' %}
+<section>
+  <h2>Extensions using this theme</h2>
+  <ul class="rows">
+    {% for e in f.extensions %}
+    <li>{{ status_pill(e.status) }} {{ folder_link(origin, e.path, e.name) }} <span class="muted small mono">{{ e.path }}</span>{% if e.removed %} <span class="tag">removed</span>{% endif %}</li>
+    {% else %}<li class="muted">None.</li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section>
+  <h2>Issues</h2>
+  {{ issue_rows(origin, f.issues) }}
+</section>
+
+{% if f.theme_folder %}
+<section class="theme-box">
+  <h2>Theme <a href="/{{ origin }}/{{ f.theme_folder.path }}">{{ f.theme_folder.path }}</a></h2>
+  <h3>Issues on the theme</h3>
+  {{ issue_rows(origin, f.theme_folder.issues) }}
+  <details>
+    <summary>Theme history ({{ f.theme_folder.history|length }})</summary>
+    {{ history_rows(origin, f.theme_folder.history) }}
+  </details>
+</section>
+{% endif %}
+
+<section>
+  <h2>Pull requests</h2>
+  {% if f.prs %}
+  <ul class="rows">
+    {% for p in f.prs %}
+    <li>
+      {{ state_pill(p.state) }}
+      <a href="/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a>
+      <span class="grow">{{ p.title }}</span>
+      {% if p.single_target %}<span class="tag">single target</span>{% else %}<span class="muted small">{{ p.folder_count }} folders</span>{% endif %}
+      <span class="muted small">{{ (p.merged_at or p.created_at)|day }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">None.</p>{% endif %}
+</section>
+
+<section>
+  <h2>History</h2>
+  {{ history_rows(origin, f.history) }}
+</section>
+{% endblock %}
