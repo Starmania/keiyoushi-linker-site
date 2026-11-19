@@ -12,6 +12,12 @@
     <option value="">Any status</option>
     {% for f in facets.status %}<option value="{{ f.value }}" {{ 'selected' if f.value == filters.status }}>{{ f.value }} ({{ f.n }})</option>{% endfor %}
   </select>
+  <select name="broken" aria-label="Not working since">
+    <option value="">Not working since…</option>
+    {% for days, label in [('1', '1 day or more'), ('3', '3 days or more'), ('7', 'a week or more'), ('14', '2 weeks or more'), ('30', 'a month or more')] %}
+    <option value="{{ days }}" {{ 'selected' if days == filters.broken }}>{{ label }}</option>
+    {% endfor %}
+  </select>
   <select name="theme" aria-label="Theme">
     <option value="">Any theme</option>
     {% for f in facets.theme %}<option value="{{ f.value }}" {{ 'selected' if f.value == filters.theme }}>{{ f.value }} ({{ f.n }})</option>{% endfor %}
@@ -21,7 +27,7 @@
     {% for c in ['SAFE', 'MIXED', 'NSFW'] %}<option value="{{ c }}" {{ 'selected' if c == filters.content }}>{{ c|capitalize }}</option>{% endfor %}
   </select>
   <select name="sort" aria-label="Sort">
-    {% for k, label in [('downloads', 'Most downloaded (7 d)'), ('name', 'Name'), ('status', 'Broken first'), ('issues', 'Most open issues'), ('updated', 'Recently changed')] %}
+    {% for k, label in [('downloads', 'Most downloaded (7 d)'), ('name', 'Name'), ('status', 'Broken first'), ('issues', 'Most open issues'), ('updated', 'Recently changed'), ('broken', 'Broken longest')] %}
     <option value="{{ k }}" {{ 'selected' if k == filters.sort }}>{{ label }}</option>
     {% endfor %}
   </select>
@@ -34,21 +40,37 @@
 <div class="grid">
   {% for e in data['items'] %}
   <a class="card{{ ' removed' if e.removed }}" href="/{{ origin }}/{{ e.path }}">
+    {% if e.ops %}
+    <div class="ops-band" aria-label="Monitor checks: {% for o in e.ops %}{{ o.label }} {{ o.status_label|lower }}{{ ', ' if not loop.last }}{% endfor %}">
+      {% for o in e.ops %}<span class="op-seg op-{{ o.status }}" title="{{ o.label }}: {{ o.status_label }}"></span>{% endfor %}
+    </div>
+    {% elif e.status and e.status != 'unsupported' %}
+    <div class="ops-band" aria-label="Monitor status: {{ e.status }}"><span class="op-seg op-{{ e.status }}"></span></div>
+    {% endif %}
     <img class="icon" src="{{ e.icon_url }}" alt="" loading="lazy" width="48" height="48" onerror="this.style.visibility='hidden'">
-    <div class="card-body">
-      <div class="card-title">{{ e.name }}</div>
-      <div class="muted small mono">{{ e.path }}</div>
-      <div class="tags">
-        {{ status_pill(e.status) }}
-        {% if e.theme %}<span class="tag">{{ e.theme }}</span>{% endif %}
-        {% if e.content_warning and e.content_warning != 'SAFE' %}<span class="tag warn">{{ e.content_warning }}</span>{% endif %}
-        {% if e.removed %}<span class="tag">removed</span>{% endif %}
-      </div>
-      <div class="card-stats small">
-        <span title="Downloads, last 7 days">↓ {{ e.downloads_7d|num }}</span>
-        <span title="Open linked issues">● {{ e.open_issues }}</span>
-        {% if e.hosts %}<span class="muted ellipsis">{{ e.hosts[0] }}{% if e.hosts|length > 1 %} +{{ e.hosts|length - 1 }}{% endif %}</span>{% endif %}
-      </div>
+    <div class="card-title" title="{{ e.name }}">{{ e.name }}</div>
+    <div class="card-path muted small mono">{{ e.path }}</div>
+    <div class="tags card-tags">
+      {{ status_pill(e.status, e.status_since, e.status_since_open) }}
+      {% if e.theme %}<span class="tag">{{ e.theme }}</span>{% endif %}
+      {% if e.content_warning and e.content_warning != 'SAFE' %}<span class="tag warn">{{ e.content_warning }}</span>{% endif %}
+      {% if e.removed %}<span class="tag">removed</span>{% endif %}
+    </div>
+    <div class="card-foot small">
+      <span class="card-host muted ellipsis" title="{{ e.hosts|join(', ') }}">{% if e.hosts %}{{ e.hosts[0] }}{% if e.hosts|length > 1 %} <span class="more">+{{ e.hosts|length - 1 }}</span>{% endif %}{% endif %}</span>
+      <span class="stat-item" title="Downloads, last 7 days">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v9m0 0L4.5 7.5M8 11l3.5-3.5M3 14h10"/></svg>{{ e.downloads_7d|num }}
+      </span>
+      {% if e.open_issues %}
+      <span class="stat-item" title="Open linked issues">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3.5M8 11h.01"/></svg>{{ e.open_issues }}
+      </span>
+      {% endif %}
+      {% if e.open_prs %}
+      <span class="stat-item" title="{{ e.open_prs }} open pull request{{ 's' if e.open_prs > 1 }} ({{ e.pr_count }} since the history anchor)">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="4.5" cy="3.5" r="1.5"/><circle cx="4.5" cy="12.5" r="1.5"/><circle cx="11.5" cy="12.5" r="1.5"/><path d="M4.5 5v6M11.5 11V7.5a2 2 0 0 0-2-2H7m1.5-1.5L7 5.5 8.5 7"/></svg>{{ e.open_prs }}
+      </span>
+      {% endif %}
     </div>
   </a>
   {% endfor %}

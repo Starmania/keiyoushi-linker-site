@@ -3,10 +3,40 @@
 import json
 import sqlite3
 
+# keiyoushi-monitor's checks, in the order it runs them, with its labels.
+OPS = {
+    "browse": "Browse", "latest": "Latest updates", "search": "Search", "details": "Open a title",
+    "chapters": "Chapter list", "read": "Open a chapter", "pages": "Load pages",
+}
+OP_STATUS = {"pass": "Works", "fail": "Fails", "maybe": "Turned away", "skip": "Not checked",
+             "untestable": "Couldn’t check", "na": "Not applicable"}
+
+
+def op_results(ops_json: str | None) -> list[dict]:
+    """The monitor's per-check results in run order; empty when the run recorded none."""
+    by_op = {o["op"]: o for o in json.loads(ops_json or "[]")}
+    if not by_op:
+        return []
+    return [
+        {"op": op, "label": label, "status": (o := by_op.get(op, {})).get("status", "na"),
+         "status_label": OP_STATUS.get(o.get("status", "na"), o.get("status")), "error": o.get("error") or o.get("reason")}
+        for op, label in OPS.items()
+    ]
+
+
+# `since` is the monitor's own when it gave one, else the first day of the current run of that status in the history.
 LATEST_STATUS = """
-    SELECT origin, path, status, date, since, ops FROM (
+    SELECT l.origin, l.path, l.status, l.date, l.ops,
+           coalesce(l.since, (
+               SELECT min(s.date) FROM status_snapshot s
+               WHERE s.origin = l.origin AND s.path = l.path AND s.date > coalesce((
+                   SELECT max(o.date) FROM status_snapshot o
+                   WHERE o.origin = l.origin AND o.path = l.path AND o.status != l.status
+               ), '')
+           )) AS since
+    FROM (
         SELECT *, row_number() OVER (PARTITION BY origin, path ORDER BY date DESC) AS rn FROM status_snapshot
-    ) WHERE rn = 1
+    ) l WHERE l.rn = 1
 """
 LATEST_DOWNLOADS = """
     SELECT origin, path, h1, h24, d7, d30, all_time, date FROM (
@@ -20,6 +50,7 @@ SORTS = {
               "WHEN 'pass' THEN 4 ELSE 5 END, e.name COLLATE NOCASE",
     "issues": "open_issues DESC, e.name COLLATE NOCASE",
     "updated": "lc.date DESC",
+    "broken": "st.status = 'fail' DESC, st.since, e.name COLLATE NOCASE",
 }
 
 
@@ -48,7 +79,7 @@ def facets(conn: sqlite3.Connection, origin: str) -> dict:
     }
 
 
-def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, content=None,
+def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, content=None, broken_days=None,
                removed=False, sort="downloads", limit=60, offset=0) -> dict:
     where = ["e.origin = ?", "e.kind = 'src'"]
     args: list = [origin]
@@ -66,6 +97,9 @@ def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, cont
     if content:
         where.append("e.content_warning = ?")
         args.append(content)
+    if broken_days:
+        where.append("st.status = 'fail' AND st.since <= date('now', ?)")
+        args.append(f"-{int(broken_days)} days")
     if q:
         like = f"%{q}%"
         where.append(
@@ -85,10 +119,15 @@ def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, cont
         f"""
         SELECT e.path, e.lang, e.module, e.name, e.package_name, e.theme, e.content_warning, e.lib_version,
                e.version_code, e.icon_url, e.removed_sha IS NOT NULL AS removed,
-               st.status, st.date AS status_date, d.d7 AS downloads_7d, d.all_time AS downloads_all,
+               st.status, st.date AS status_date, st.since AS status_since, st.ops,
+               CAST(julianday('now') - julianday(st.since) AS INTEGER) AS status_days,
+               st.since <= (SELECT min(date) FROM status_snapshot WHERE origin = e.origin) AS status_since_open, d.d7 AS downloads_7d, d.all_time AS downloads_all,
                lc.date AS last_changed,
                (SELECT count(*) FROM issue_link_effective l JOIN issue i ON i.origin = l.origin AND i.number = l.issue
                  WHERE l.origin = e.origin AND l.path = e.path AND i.state = 'OPEN') AS open_issues,
+               (SELECT count(*) FROM pr_folder f WHERE f.origin = e.origin AND f.path = e.path) AS pr_count,
+               (SELECT count(*) FROM pr_folder f JOIN pull_request p ON p.origin = f.origin AND p.number = f.number
+                 WHERE f.origin = e.origin AND f.path = e.path AND p.state = 'OPEN') AS open_prs,
                (SELECT group_concat(DISTINCT host) FROM domain_usage du
                  WHERE du.origin = e.origin AND du.path = e.path AND du.to_sha IS NULL AND du.role = 'base') AS hosts
         {base}
@@ -98,6 +137,7 @@ def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, cont
         [*args, limit, offset],
     ))
     for it in items:
+        it["ops"] = op_results(it["ops"])
         it["hosts"] = sorted((it["hosts"] or "").split(",")) if it["hosts"] else []
         it["removed"] = bool(it["removed"])
     return {"total": total, "limit": limit, "offset": offset, "items": items}
@@ -182,7 +222,11 @@ def folder(conn, origin, path, history_limit=200) -> dict | None:
             s["mirror_urls"] = json.loads(s["mirror_urls"])
         out["sources"] = sources
         status = conn.execute(f"SELECT * FROM ({LATEST_STATUS}) WHERE origin = ? AND path = ?", (origin, path)).fetchone()
-        out["status"] = dict(status) | {"ops": json.loads(status["ops"])} if status else None
+        first_run = conn.execute("SELECT min(date) FROM status_snapshot WHERE origin = ?", (origin,)).fetchone()[0]
+        out["status"] = dict(status) | {
+            "ops": op_results(status["ops"]),
+            "since_open": bool(status["since"] and status["since"] <= first_run),
+        } if status else None
         out["status_history"] = rows(conn.execute(
             "SELECT date, status FROM status_snapshot WHERE origin = ? AND path = ? ORDER BY date DESC LIMIT 60", (origin, path)
         ))[::-1]

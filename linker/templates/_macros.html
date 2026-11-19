@@ -1,5 +1,6 @@
-{% macro status_pill(status) -%}
-<span class="pill st-{{ status or 'none' }}">{{ {'pass': 'Working', 'partial': 'Partly working', 'fail': 'Not working', 'maybe': 'Might be broken', 'untestable': 'Can’t test', 'unsupported': 'Not supported'}.get(status, 'No status') }}</span>
+{# open: the status already held on the monitor's first recorded run, so it started earlier than `since`. #}
+{% macro status_pill(status, since=None, open=False) -%}
+<span class="pill st-{{ status or 'none' }}"{% if since %} title="{{ 'Since at least' if open else 'Since' }} {{ since }}"{% endif %}>{{ {'pass': 'Working', 'partial': 'Partly working', 'fail': 'Not working', 'maybe': 'Might be broken', 'untestable': 'Can’t test', 'unsupported': 'Not supported'}.get(status, 'No status') }}{% if status == 'fail' and since %} · {{ since|ago }}{{ '+' if open }}{% endif %}</span>
 {%- endmacro %}
 
 {% macro state_pill(state) -%}

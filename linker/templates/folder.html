@@ -11,7 +11,7 @@
       {% if f.package_name %}· {{ f.package_name }}{% endif %}
     </div>
     <div class="tags">
-      {% if f.kind == 'src' %}{{ status_pill(f.status.status if f.status else None) }}{% endif %}
+      {% if f.kind == 'src' %}{{ status_pill(f.status.status, f.status.since, f.status.since_open) if f.status else status_pill(None) }}{% endif %}
       {% if f.theme %}<a class="tag" href="/{{ origin }}/lib-multisrc/{{ f.theme }}">theme: {{ f.theme }}</a>{% endif %}
       {% if f.lib_version %}<span class="tag">lib {{ f.lib_version }}</span>{% endif %}
       {% if f.version_code is not none %}<span class="tag">{{ 'base ' if f.kind == 'theme' }}versionCode {{ f.version_code }}</span>{% endif %}
@@ -37,7 +37,7 @@
   </div>
   {% if f.status and f.status.ops %}
   <ul class="ops">
-    {% for op in f.status.ops %}<li class="st-{{ op.status }}" title="{{ op.error or op.reason or '' }}">{{ op.op }}</li>{% endfor %}
+    {% for op in f.status.ops %}<li class="op-{{ op.status }}" title="{{ op.status_label }}{% if op.error %}: {{ op.error }}{% endif %}">{{ op.label }}</li>{% endfor %}
   </ul>
   {% endif %}
   <p class="muted small">Last check {{ f.status.date if f.status }}{% if f.status and f.status.since %}, in this state since {{ f.status.since }}{% endif %}. Source: <a href="https://hazptr.github.io/keiyoushi-monitor/">keiyoushi-monitor</a>.</p>
