@@ -1,11 +1,13 @@
 # keiyoushi-linker-site
 
 A gallery of extensions with a JSON API, serving the database built by
-[keiyoushi-extractor](../keiyoushi-extractor). Every link can be followed from either side:
+[keiyoushi-extractor](../keiyoushi-extractor), one gallery per repository (`keiyoushi/extensions-source`,
+`manga-download/haruneko`). Folder paths follow each repository's layout, such as `src/en/foo`, `lib-multisrc/madara`
+or `web/src/engine/websites/Foo`. Every link can be followed from either side:
 
 | from | to |
 | --- | --- |
-| issue | extension folder (`src/…`), and its theme (`lib-multisrc/…`) |
+| issue | extension folder, and its theme folder |
 | extension or theme folder | its issues, PRs, domains and commit history |
 | PR | the folders it touches (flagged when it touches exactly one), the issues it closes |
 | domain | every extension that declared it, now or in the past |
@@ -35,7 +37,7 @@ OpenAPI docs are served at `/api/docs`. Every route is scoped by origin (`/api/v
 
 - `GET extensions?q=&lang=&theme=&status=&content=&removed=&sort=downloads|name|status|issues|updated&limit=&offset=`
 - `GET facets`
-- `GET extensions/{lang}/{module}`, `GET themes/{name}`, `GET folders/{path}`: sources, domains with their date
+- `GET folders/{path}` (any layout), `GET themes/{name}`, `GET extensions/{lang}/{module}` (keiyoushi layout): sources, domains with their date
   ranges, status, downloads, issues, PRs and history (PR merge date and title, commit date and body). For an extension
   on a theme, the theme's own issues and history are included. For a theme, the extensions that use it are included.
 - `GET issues/{n}`: linked folders with how each link was found, their themes, and closing PRs

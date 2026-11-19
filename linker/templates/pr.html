@@ -17,8 +17,8 @@
   <h2>Folders touched ({{ p.folders|length }})</h2>
   <ul class="rows">
     {% for f in p.folders %}
-    <li>{{ folder_link(origin, f.path, f.name) }} <span class="muted small mono">{{ f.path }}</span>{% if f.theme %} <a class="tag" href="/{{ origin }}/lib-multisrc/{{ f.theme }}">{{ f.theme }}</a>{% endif %}</li>
-    {% else %}<li class="muted">No src/ or lib-multisrc/ folder.</li>{% endfor %}
+    <li>{{ folder_link(origin, f.path, f.name) }} <span class="muted small mono">{{ f.path }}</span>{% if f.theme_path %} <a class="tag" href="/{{ origin }}/{{ f.theme_path }}">{{ f.theme }}</a>{% endif %}</li>
+    {% else %}<li class="muted">No extension or theme folder.</li>{% endfor %}
   </ul>
 </section>
 

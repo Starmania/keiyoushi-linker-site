@@ -232,8 +232,7 @@ def folder(conn, origin, path, history_limit=200) -> dict | None:
         ))[::-1]
         dl = conn.execute(f"SELECT * FROM ({LATEST_DOWNLOADS}) WHERE origin = ? AND path = ?", (origin, path)).fetchone()
         out["downloads"] = dict(dl) if dl else None
-        if ext["theme"]:
-            theme_path = f"lib-multisrc/{ext['theme']}"
+        if theme_path := ext["theme_path"]:
             out["theme_folder"] = {
                 "path": theme_path,
                 "history": _commits(conn, origin, theme_path, 50),
@@ -244,8 +243,8 @@ def folder(conn, origin, path, history_limit=200) -> dict | None:
         out["extensions"] = rows(conn.execute(
             f"""SELECT e.path, e.name, e.lang, e.removed_sha IS NOT NULL AS removed, st.status
                 FROM extension e LEFT JOIN ({LATEST_STATUS}) st ON st.origin = e.origin AND st.path = e.path
-                WHERE e.origin = ? AND e.theme = ? ORDER BY removed, e.name COLLATE NOCASE""",
-            (origin, ext["module"]),
+                WHERE e.origin = ? AND e.theme_path = ? ORDER BY removed, e.name COLLATE NOCASE""",
+            (origin, path),
         ))
     return out
 
@@ -253,8 +252,8 @@ def folder(conn, origin, path, history_limit=200) -> dict | None:
 def _folder_names(conn, origin, paths) -> list[dict]:
     out = []
     for p in paths:
-        e = conn.execute("SELECT path, kind, name, lang, theme FROM extension WHERE origin = ? AND path = ?", (origin, p)).fetchone()
-        out.append(dict(e) if e else {"path": p, "kind": "src" if p.startswith("src/") else "theme", "name": p.split("/")[-1], "lang": None, "theme": None})
+        e = conn.execute("SELECT path, kind, name, lang, theme, theme_path FROM extension WHERE origin = ? AND path = ?", (origin, p)).fetchone()
+        out.append(dict(e) if e else {"path": p, "kind": None, "name": p.split("/")[-1], "lang": None, "theme": None, "theme_path": None})
     return out
 
 
@@ -269,8 +268,7 @@ def issue(conn, origin, number) -> dict | None:
     ))
     names = {f["path"]: f for f in _folder_names(conn, origin, [l["path"] for l in links])}
     for l in links:
-        l |= {k: names[l["path"]][k] for k in ("kind", "name", "lang", "theme")}
-        l["theme_path"] = f"lib-multisrc/{l['theme']}" if l["theme"] else None
+        l |= {k: names[l["path"]][k] for k in ("kind", "name", "lang", "theme", "theme_path")}
     out["links"] = links
     out["removed_links"] = rows(conn.execute(
         "SELECT path, at FROM issue_link_override WHERE origin = ? AND issue = ? AND action = 'remove'", (origin, number)
@@ -335,6 +333,12 @@ def domains(conn, origin, q=None, limit=200, offset=0) -> dict:
         [*args, limit, offset],
     ))
     return {"total": total, "items": items}
+
+
+def theme_path(conn, origin, name) -> str | None:
+    """A theme's folder from its name, whatever the origin's layout."""
+    row = conn.execute("SELECT path FROM extension WHERE origin = ? AND kind = 'theme' AND module = ?", (origin, name)).fetchone()
+    return row[0] if row else None
 
 
 def search(conn, origin, q: str) -> dict:

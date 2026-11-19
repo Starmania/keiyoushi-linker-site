@@ -7,12 +7,12 @@
   <div>
     <h1>{{ f.name }}{% if f.kind == 'theme' %} <span class="tag">theme</span>{% endif %}</h1>
     <div class="mono muted">
-      <a href="https://github.com/{{ origin }}/tree/main/{{ f.path }}">{{ f.path }}</a>
+      {% if f.source_url %}<a href="{{ f.source_url }}">{{ f.path }}</a>{% else %}{{ f.path }}{% endif %}
       {% if f.package_name %}· {{ f.package_name }}{% endif %}
     </div>
     <div class="tags">
       {% if f.kind == 'src' %}{{ status_pill(f.status.status, f.status.since, f.status.since_open) if f.status else status_pill(None) }}{% endif %}
-      {% if f.theme %}<a class="tag" href="/{{ origin }}/lib-multisrc/{{ f.theme }}">theme: {{ f.theme }}</a>{% endif %}
+      {% if f.theme_path %}<a class="tag" href="/{{ origin }}/{{ f.theme_path }}">theme: {{ f.theme }}</a>{% endif %}
       {% if f.lib_version %}<span class="tag">lib {{ f.lib_version }}</span>{% endif %}
       {% if f.version_code is not none %}<span class="tag">{{ 'base ' if f.kind == 'theme' }}versionCode {{ f.version_code }}</span>{% endif %}
       {% if f.content_warning %}<span class="tag{{ ' warn' if f.content_warning != 'SAFE' }}">{{ f.content_warning }}</span>{% endif %}

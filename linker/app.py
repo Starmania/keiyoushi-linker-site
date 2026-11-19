@@ -67,12 +67,13 @@ def api_extension(lang: str, module: str, origin: str = Depends(origin_of)):
 
 @api.get("/{owner}/{repo}/themes/{name}")
 def api_theme(name: str, origin: str = Depends(origin_of)):
-    return found(queries.folder(db(), origin, f"lib-multisrc/{name}"), "theme")
+    path = found(queries.theme_path(db(), origin, name), "theme")
+    return queries.folder(db(), origin, path)
 
 
 @api.get("/{owner}/{repo}/folders/{path:path}")
 def api_folder(path: str, origin: str = Depends(origin_of)):
-    """Any src/<lang>/<module> or lib-multisrc/<theme> folder: its PRs, issues, domains and history."""
+    """Any extension or theme folder (e.g. src/<lang>/<module>, lib-multisrc/<theme>): its PRs, issues, domains and history."""
     return found(queries.folder(db(), origin, path.strip("/")), "folder")
 
 
@@ -175,16 +176,6 @@ def gallery(
                 filters=filters, page_no=page_no, pages=max(1, -(-data["total"] // per_page)))
 
 
-@app.get("/{owner}/{repo}/src/{lang}/{module}", response_class=HTMLResponse)
-def extension_page(request: Request, lang: str, module: str, origin: str = Depends(origin_of)):
-    return page(request, "folder.html", origin=origin, f=found(queries.folder(db(), origin, f"src/{lang}/{module}"), "extension"))
-
-
-@app.get("/{owner}/{repo}/lib-multisrc/{name}", response_class=HTMLResponse)
-def theme_page(request: Request, name: str, origin: str = Depends(origin_of)):
-    return page(request, "folder.html", origin=origin, f=found(queries.folder(db(), origin, f"lib-multisrc/{name}"), "theme"))
-
-
 @app.get("/{owner}/{repo}/issues/{number}", response_class=HTMLResponse)
 def issue_page(request: Request, number: int, origin: str = Depends(origin_of)):
     return page(request, "issue.html", origin=origin, i=found(queries.issue(db(), origin, number), "issue"))
@@ -219,3 +210,9 @@ def search_page(request: Request, q: str = "", origin: str = Depends(origin_of))
             return RedirectResponse(f"/{origin}/domains/{res['domains'][0]['host']}")
         return RedirectResponse(f"/{origin}/{res['extensions'][0]['path']}")
     return page(request, "search.html", origin=origin, r=res)
+
+
+# Last: folder paths depend on the origin's layout (src/<lang>/<module>, web/src/engine/websites/<Name>...).
+@app.get("/{owner}/{repo}/{path:path}", response_class=HTMLResponse)
+def folder_page(request: Request, path: str, origin: str = Depends(origin_of)):
+    return page(request, "folder.html", origin=origin, f=found(queries.folder(db(), origin, path.strip("/")), "page"))
