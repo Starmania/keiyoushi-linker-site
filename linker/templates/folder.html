@@ -11,7 +11,7 @@
       {% if f.package_name %}· {{ f.package_name }}{% endif %}
     </div>
     <div class="tags">
-      {% if f.kind == 'src' %}{{ status_pill(f.status.status, f.status.since, f.status.since_open) if f.status else status_pill(None) }}{% endif %}
+      {% if f.kind == 'src' and tracked.status %}{{ status_pill(f.status.status, f.status.since, f.status.since_open) if f.status else status_pill(None) }}{% endif %}
       {% if f.theme_path %}<a class="tag" href="/{{ origin }}/{{ f.theme_path }}">theme: {{ f.theme }}</a>{% endif %}
       {% if f.lib_version %}<span class="tag">lib {{ f.lib_version }}</span>{% endif %}
       {% if f.version_code is not none %}<span class="tag">{{ 'base ' if f.kind == 'theme' }}versionCode {{ f.version_code }}</span>{% endif %}
@@ -23,9 +23,11 @@
 
 {% if f.kind == 'src' %}
 <section class="stats">
+  {% if tracked.downloads %}
   <div class="stat"><div class="stat-v">{{ f.downloads.d7|num if f.downloads else '–' }}</div><div class="stat-l">downloads, 7 d</div></div>
   <div class="stat"><div class="stat-v">{{ f.downloads.d30|num if f.downloads else '–' }}</div><div class="stat-l">downloads, 30 d</div></div>
   <div class="stat"><div class="stat-v">{{ f.downloads.all_time|num if f.downloads else '–' }}</div><div class="stat-l">downloads, all time</div></div>
+  {% endif %}
   <div class="stat"><div class="stat-v">{{ f.issues|selectattr('state', 'equalto', 'OPEN')|list|length }}</div><div class="stat-l">open issues</div></div>
 </section>
 
@@ -85,7 +87,7 @@
   <h2>Extensions using this theme</h2>
   <ul class="rows">
     {% for e in f.extensions %}
-    <li>{{ status_pill(e.status) }} {{ folder_link(origin, e.path, e.name) }} <span class="muted small mono">{{ e.path }}</span>{% if e.removed %} <span class="tag">removed</span>{% endif %}</li>
+    <li>{% if tracked.status %}{{ status_pill(e.status) }} {% endif %}{{ folder_link(origin, e.path, e.name) }} <span class="muted small mono">{{ e.path }}</span>{% if e.removed %} <span class="tag">removed</span>{% endif %}</li>
     {% else %}<li class="muted">None.</li>{% endfor %}
   </ul>
 </section>

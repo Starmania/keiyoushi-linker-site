@@ -11,7 +11,7 @@
 {% endif %}
 {% if r.extensions %}
 <h2>Extensions</h2>
-<ul class="rows">{% for e in r.extensions %}<li>{{ status_pill(e.status) }} <a href="/{{ origin }}/{{ e.path }}">{{ e.name }}</a> <span class="muted small mono">{{ e.path }}</span>{% if e.removed %} <span class="tag">removed</span>{% endif %}</li>{% endfor %}</ul>
+<ul class="rows">{% for e in r.extensions %}<li>{% if tracked.status %}{{ status_pill(e.status) }} {% endif %}<a href="/{{ origin }}/{{ e.path }}">{{ e.name }}</a> <span class="muted small mono">{{ e.path }}</span>{% if e.removed %} <span class="tag">removed</span>{% endif %}</li>{% endfor %}</ul>
 {% endif %}
 {% if not (r.issue or r.pr or r.domains or r.extensions) %}<p class="muted">Nothing found.</p>{% endif %}
 {% endblock %}

@@ -147,6 +147,8 @@ app.include_router(api)
 
 
 def page(request: Request, template: str, **ctx):
+    if "origin" in ctx:
+        ctx["tracked"] = queries.tracked(db(), ctx["origin"])
     return templates.TemplateResponse(request, template, ctx)
 
 
@@ -162,10 +164,11 @@ def home(request: Request):
 def gallery(
     request: Request, origin: str = Depends(origin_of),
     q: str | None = None, lang: str | None = None, theme: str | None = None, status: str | None = None,
-    content: str | None = None, broken: str | None = None, removed: bool = False, sort: str = "downloads",
+    content: str | None = None, broken: str | None = None, removed: bool = False, sort: str | None = None,
     page_no: int = Query(1, alias="page", ge=1),
 ):
     per_page = 60
+    sort = sort or ("downloads" if queries.tracked(db(), origin)["downloads"] else "name")
     broken_days = int(broken) if broken and broken.isdigit() else None
     data = queries.extensions(db(), origin, q=q or None, lang=lang or None, theme=theme or None, status=status or None,
                               content=content or None, broken_days=broken_days, removed=removed, sort=sort,

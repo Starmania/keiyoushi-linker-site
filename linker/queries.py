@@ -24,24 +24,16 @@ def op_results(ops_json: str | None) -> list[dict]:
     ]
 
 
-# `since` is the monitor's own when it gave one, else the first day of the current run of that status in the history.
+# `since` is filled in by the extractor when the monitor gave none.
 LATEST_STATUS = """
-    SELECT l.origin, l.path, l.status, l.date, l.ops,
-           coalesce(l.since, (
-               SELECT min(s.date) FROM status_snapshot s
-               WHERE s.origin = l.origin AND s.path = l.path AND s.date > coalesce((
-                   SELECT max(o.date) FROM status_snapshot o
-                   WHERE o.origin = l.origin AND o.path = l.path AND o.status != l.status
-               ), '')
-           )) AS since
-    FROM (
-        SELECT *, row_number() OVER (PARTITION BY origin, path ORDER BY date DESC) AS rn FROM status_snapshot
-    ) l WHERE l.rn = 1
+    SELECT s.origin, s.path, s.status, s.date, s.ops, s.since
+    FROM status_snapshot s
+    JOIN (SELECT origin, path, max(date) AS date FROM status_snapshot GROUP BY origin, path) m USING (origin, path, date)
 """
 LATEST_DOWNLOADS = """
-    SELECT origin, path, h1, h24, d7, d30, all_time, date FROM (
-        SELECT *, row_number() OVER (PARTITION BY origin, path ORDER BY date DESC) AS rn FROM download_snapshot
-    ) WHERE rn = 1
+    SELECT d.origin, d.path, d.h1, d.h24, d.d7, d.d30, d.all_time, d.date
+    FROM download_snapshot d
+    JOIN (SELECT origin, path, max(date) AS date FROM download_snapshot GROUP BY origin, path) m USING (origin, path, date)
 """
 SORTS = {
     "downloads": "coalesce(d.d7, -1) DESC, e.name COLLATE NOCASE",
@@ -64,6 +56,14 @@ def origins(conn: sqlite3.Connection) -> list[dict]:
         "(SELECT count(*) FROM extension e WHERE e.origin = o.id AND kind = 'src' AND removed_sha IS NULL) AS extensions "
         "FROM origin o ORDER BY o.id"
     ))
+
+
+def tracked(conn: sqlite3.Connection, origin: str) -> dict:
+    """Which per-extension stats exist for the origin; pages hide the rest (haruneko has neither)."""
+    return {
+        "status": conn.execute("SELECT 1 FROM status_snapshot WHERE origin = ? LIMIT 1", (origin,)).fetchone() is not None,
+        "downloads": conn.execute("SELECT 1 FROM download_snapshot WHERE origin = ? LIMIT 1", (origin,)).fetchone() is not None,
+    }
 
 
 def facets(conn: sqlite3.Connection, origin: str) -> dict:
@@ -112,29 +112,34 @@ def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, cont
         LEFT JOIN ({LATEST_STATUS}) st ON st.origin = e.origin AND st.path = e.path
         LEFT JOIN ({LATEST_DOWNLOADS}) d ON d.origin = e.origin AND d.path = e.path
         LEFT JOIN git_commit lc ON lc.origin = e.origin AND lc.sha = e.last_sha
+        LEFT JOIN (
+            SELECT f.path, count(*) AS n, sum(p.state = 'OPEN') AS open
+            FROM pr_folder f JOIN pull_request p ON p.origin = f.origin AND p.number = f.number
+            WHERE f.origin = ? GROUP BY f.path
+        ) pr ON pr.path = e.path
         WHERE {' AND '.join(where)}
     """
+    args = [origin, *args]
     total = conn.execute(f"SELECT count(*) {base}", args).fetchone()[0]
+    first_run = conn.execute("SELECT min(date) FROM status_snapshot WHERE origin = ?", (origin,)).fetchone()[0]
     items = rows(conn.execute(
         f"""
         SELECT e.path, e.lang, e.module, e.name, e.package_name, e.theme, e.content_warning, e.lib_version,
                e.version_code, e.icon_url, e.removed_sha IS NOT NULL AS removed,
                st.status, st.date AS status_date, st.since AS status_since, st.ops,
                CAST(julianday('now') - julianday(st.since) AS INTEGER) AS status_days,
-               st.since <= (SELECT min(date) FROM status_snapshot WHERE origin = e.origin) AS status_since_open, d.d7 AS downloads_7d, d.all_time AS downloads_all,
+               st.since <= ? AS status_since_open, d.d7 AS downloads_7d, d.all_time AS downloads_all,
                lc.date AS last_changed,
                (SELECT count(*) FROM issue_link_effective l JOIN issue i ON i.origin = l.origin AND i.number = l.issue
                  WHERE l.origin = e.origin AND l.path = e.path AND i.state = 'OPEN') AS open_issues,
-               (SELECT count(*) FROM pr_folder f WHERE f.origin = e.origin AND f.path = e.path) AS pr_count,
-               (SELECT count(*) FROM pr_folder f JOIN pull_request p ON p.origin = f.origin AND p.number = f.number
-                 WHERE f.origin = e.origin AND f.path = e.path AND p.state = 'OPEN') AS open_prs,
+               coalesce(pr.n, 0) AS pr_count, coalesce(pr.open, 0) AS open_prs,
                (SELECT group_concat(DISTINCT host) FROM domain_usage du
                  WHERE du.origin = e.origin AND du.path = e.path AND du.to_sha IS NULL AND du.role = 'base') AS hosts
         {base}
         ORDER BY {SORTS.get(sort, SORTS['downloads'])}
         LIMIT ? OFFSET ?
         """,
-        [*args, limit, offset],
+        [first_run, *args, limit, offset],
     ))
     for it in items:
         it["ops"] = op_results(it["ops"])
