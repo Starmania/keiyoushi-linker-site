@@ -83,11 +83,11 @@
 
 <section>
   <h2>Sources</h2>
-  <table>
+  <table class="foldable">
     <thead><tr><th>Name</th><th>Lang</th><th>Base URL</th><th>Id</th></tr></thead>
     <tbody>
     {% for s in f.sources %}
-      <tr>
+      <tr{% if loop.index > 3 %} class="folded"{% endif %}>
         <td>{{ s.name }}</td><td>{{ s.lang }}</td>
         <td class="mono">{{ s.base_url }}{% if s.url_type != 'static' %} <span class="tag">{{ s.url_type }}{% if s.mirror_urls %} · {{ s.mirror_urls|length }}{% endif %}</span>{% endif %}</td>
         <td class="mono small">{{ s.source_id }}{% if s.stable_id and s.stable_id != s.source_id %}<div class="muted" title="Id with versionId reset to 1: what cross-repo links use">stable {{ s.stable_id }}</div>{% endif %}</td>
@@ -95,6 +95,10 @@
     {% endfor %}
     </tbody>
   </table>
+  {% if f.sources|length > 3 %}
+  <button type="button" class="unfold" aria-expanded="false" data-more="Show all {{ f.sources|length }} sources" data-less="Show fewer"
+          onclick="const open = this.previousElementSibling.classList.toggle('open'); this.setAttribute('aria-expanded', open); this.textContent = this.dataset[open ? 'less' : 'more']">Show all {{ f.sources|length }} sources</button>
+  {% endif %}
 </section>
 {% endif %}
 
