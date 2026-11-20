@@ -9,8 +9,8 @@
 <body>
 <header class="top">
   <div class="wrap top-row">
-    <a class="brand" href="/{{ origin or '' }}">Extension linker</a>
-    {% if origin %}<span class="origin">{{ origin }}</span>{% endif %}
+    <a class="brand" href="/">Extension linker</a>
+    {% if origin %}<a class="origin" href="/{{ origin }}">{{ origin }}</a>{% endif %}
     <nav>
       {% if origin %}<a href="/{{ origin }}">Gallery</a>
       <a href="/{{ origin }}/domains">Domains</a>{% endif %}
