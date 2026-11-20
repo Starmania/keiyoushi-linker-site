@@ -47,3 +47,18 @@
 </ol>
 {% else %}<p class="muted">No commits since the history anchor.</p>{% endif %}
 {%- endmacro %}
+
+{# A cross-repo link's state: same current domain, domains drifted apart (and who is behind), or one side gone. #}
+{% macro behind_note(behind, basis, me=None) -%}
+{{ 'this repo' if behind == me else behind.split('/')[0] }} {{ 'probably ' if basis == 'older' }}behind
+{%- endmacro %}
+
+{% macro basis_title(basis) -%}
+{{ 'Still on a domain the other repository has left' if basis == 'left' else 'Its current domain is older than the other one’s; both may still work' }}
+{%- endmacro %}
+
+{% macro link_state(state, behind, me=None, basis=None) -%}
+{% if state == 'same' %}<span class="tag ok">same domain</span>
+{% elif state == 'drift' %}<span class="tag warn"{% if behind %} title="{{ basis_title(basis) }}"{% endif %}>domains differ{% if behind %} · {{ behind_note(behind, basis, me) }}{% endif %}</span>
+{% else %}<span class="tag">no current domain</span>{% endif %}
+{%- endmacro %}

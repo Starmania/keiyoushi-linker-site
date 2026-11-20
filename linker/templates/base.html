@@ -10,13 +10,14 @@
 <header class="top">
   <div class="wrap top-row">
     <a class="brand" href="/{{ origin or '' }}">Extension linker</a>
-    {% if origin %}
-    <span class="origin">{{ origin }}</span>
+    {% if origin %}<span class="origin">{{ origin }}</span>{% endif %}
     <nav>
-      <a href="/{{ origin }}">Gallery</a>
-      <a href="/{{ origin }}/domains">Domains</a>
+      {% if origin %}<a href="/{{ origin }}">Gallery</a>
+      <a href="/{{ origin }}/domains">Domains</a>{% endif %}
+      <a href="/drift">Drift</a>
       <a href="/api/docs">API</a>
     </nav>
+    {% if origin %}
     <form class="search" action="/{{ origin }}/search">
       <input name="q" type="search" placeholder="Name, #issue, #PR, domain, source id" aria-label="Search">
     </form>

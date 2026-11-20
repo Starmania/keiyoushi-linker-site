@@ -2,6 +2,7 @@
 
 import json
 import sqlite3
+from datetime import datetime
 
 # keiyoushi-monitor's checks, in the order it runs them, with its labels.
 OPS = {
@@ -220,7 +221,7 @@ def folder(conn, origin, path, history_limit=200) -> dict | None:
 
     if ext["kind"] == "src":
         sources = rows(conn.execute(
-            "SELECT source_id, name, lang, base_url, url_type, mirror_urls FROM source WHERE origin = ? AND path = ? ORDER BY lang, name",
+            "SELECT source_id, stable_id, name, lang, base_url, url_type, mirror_urls FROM source WHERE origin = ? AND path = ? ORDER BY lang, name",
             (origin, path),
         ))
         for s in sources:
@@ -237,6 +238,7 @@ def folder(conn, origin, path, history_limit=200) -> dict | None:
         ))[::-1]
         dl = conn.execute(f"SELECT * FROM ({LATEST_DOWNLOADS}) WHERE origin = ? AND path = ?", (origin, path)).fetchone()
         out["downloads"] = dict(dl) if dl else None
+        out["elsewhere"] = elsewhere(conn, origin, path)
         if theme_path := ext["theme_path"]:
             out["theme_folder"] = {
                 "path": theme_path,
@@ -359,4 +361,156 @@ def search(conn, origin, q: str) -> dict:
         out["pr"] = dict(out["pr"]) if out["pr"] else None
     out["domains"] = domains(conn, origin, q=q, limit=20)["items"]
     out["extensions"] = extensions(conn, origin, q=q, removed=True, limit=30)["items"]
+    return out
+
+
+# ---------------------------------------------------------------- cross-repo links
+
+class Side:
+    """One source of one origin: where it lives now, and every host it declared."""
+
+    def __init__(self, origin: str, stable_id: str):
+        self.origin, self.stable_id = origin, stable_id
+        self.path = self.name = self.lang = None
+        self.hosts: set[str] = set()  # current
+        self.past_hosts: set[str] = set()
+        self.adopted: datetime | None = None  # when its newest current host appeared
+        self._latest = ""
+
+    def add(self, r) -> None:
+        (self.hosts if r["current"] else self.past_hosts).add(r["host"])
+        if r["current"]:
+            self.adopted = max(filter(None, (self.adopted, datetime.fromisoformat(r["from_date"]))))
+        rank = f"{r['current']}{r['from_date']}"
+        if rank >= self._latest:
+            self._latest, self.path, self.name, self.lang = rank, r["path"], r["name"], r["lang"]
+
+    def as_dict(self) -> dict:
+        return {"origin": self.origin, "stable_id": self.stable_id, "path": self.path, "name": self.name,
+                "lang": self.lang, "hosts": sorted(self.hosts)}
+
+
+def _sides(conn) -> dict[tuple[str, str], Side]:
+    sides: dict[tuple[str, str], Side] = {}
+    for r in conn.execute(
+        """SELECT sh.origin, sh.stable_id, sh.path, sh.name, sh.lang, sh.host, sh.to_sha IS NULL AS current, fc.date AS from_date
+           FROM source_host sh JOIN git_commit fc ON fc.origin = sh.origin AND fc.sha = sh.from_sha"""
+    ):
+        key = (r["origin"], r["stable_id"])
+        sides.setdefault(key, Side(*key)).add(r)
+    return sides
+
+
+def compare(a: Side, b: Side) -> dict:
+    """same: a current host in common. drift: none in common. `behind` is the side still on a host the other left
+    (basis "left"), else the side whose current host is older (basis "older": a guess, both may be live)."""
+    if not a.hosts or not b.hosts:
+        return {"state": "gone", "behind": None, "basis": None}
+    if a.hosts & b.hosts:
+        return {"state": "same", "behind": None, "basis": None}
+    if b.hosts & a.past_hosts or a.hosts & b.past_hosts:
+        return {"state": "drift", "behind": b.origin if b.hosts & a.past_hosts else a.origin, "basis": "left"}
+    if a.adopted != b.adopted:
+        return {"state": "drift", "behind": a.origin if a.adopted < b.adopted else b.origin, "basis": "older"}
+    return {"state": "drift", "behind": None, "basis": None}
+
+
+def _links(conn, hidden: bool = False) -> list[dict]:
+    if hidden:
+        return rows(conn.execute(
+            "SELECT origin_a, stable_a, origin_b, stable_b, NULL AS host, at AS since, 1 AS manual FROM main.source_link_override WHERE action = 'remove'"
+        ))
+    return rows(conn.execute("SELECT * FROM source_link_effective"))
+
+
+def _pair(link: dict, sides: dict, me: str | None = None) -> dict | None:
+    a, b = sides.get((link["origin_a"], link["stable_a"])), sides.get((link["origin_b"], link["stable_b"]))
+    if not a or not b:
+        return None
+    if me == link["origin_b"]:
+        a, b = b, a
+    return {"me": a.as_dict(), "other": b.as_dict(), "host": link["host"], "since": link["since"],
+            "manual": bool(link["manual"])} | compare(a, b)
+
+
+def elsewhere(conn, origin: str, path: str) -> dict:
+    """The folder's sources linked to sources of other origins, grouped by other origin and folder."""
+    mine = {r[0] for r in conn.execute("SELECT DISTINCT stable_id FROM source_host WHERE origin = ? AND path = ?", (origin, path))}
+    sides = _sides(conn)
+    out: dict = {"links": {}, "hidden": []}
+    for hidden in (False, True):
+        for link in _links(conn, hidden):
+            if not ((link["origin_a"] == origin and link["stable_a"] in mine) or (link["origin_b"] == origin and link["stable_b"] in mine)):
+                continue
+            if not (p := _pair(link, sides, me=origin)):
+                continue
+            if hidden:
+                out["hidden"].append(p)
+                continue
+            o = p["other"]
+            group = out["links"].setdefault(o["origin"], {}).setdefault(o["path"], {"path": o["path"], "name": o["name"], "pairs": []})
+            group["pairs"].append(p)
+    # One row per other folder; its state is the worst of its pairs.
+    order = {"drift": 0, "gone": 1, "same": 2}
+    for other_origin, folders in out["links"].items():
+        tracked_other = tracked(conn, other_origin)
+        for f in folders.values():
+            f["pairs"].sort(key=lambda p: (p["me"]["lang"] or "", p["other"]["lang"] or ""))
+            worst = min(f["pairs"], key=lambda p: order[p["state"]])
+            f |= {"state": worst["state"], "behind": worst["behind"], "basis": worst["basis"], "manual": any(p["manual"] for p in f["pairs"]),
+                  "hosts": sorted({h for p in f["pairs"] for h in p["other"]["hosts"]})}
+            e = conn.execute(
+                "SELECT icon_url, removed_sha IS NOT NULL AS removed, "
+                "(SELECT count(*) FROM issue_link_effective l JOIN issue i ON i.origin = l.origin AND i.number = l.issue "
+                " WHERE l.origin = e.origin AND l.path = e.path AND i.state = 'OPEN') AS open_issues "
+                "FROM extension e WHERE origin = ? AND path = ?", (other_origin, f["path"])).fetchone()
+            f |= dict(e) if e else {"icon_url": None, "removed": True, "open_issues": 0}
+            st = conn.execute(f"SELECT status, since FROM ({LATEST_STATUS}) WHERE origin = ? AND path = ?", (other_origin, f["path"])).fetchone() \
+                if tracked_other["status"] else None
+            f["status"] = dict(st) if st else None
+        out["links"][other_origin] = sorted(folders.values(), key=lambda f: (order[f["state"]], f["name"] or ""))
+    return out
+
+
+def drift(conn, behind: str | None = None) -> dict:
+    """Linked sources that no longer share a current host, one row per pair of folders."""
+    sides = _sides(conn)
+    folders: dict[tuple, dict] = {}
+    for link in _links(conn):
+        p = _pair(link, sides)
+        if not p or p["state"] != "drift":
+            continue
+        key = (p["me"]["origin"], p["me"]["path"], p["other"]["origin"], p["other"]["path"])
+        row = folders.setdefault(key, {"a": p["me"], "b": p["other"], "behind": p["behind"], "basis": p["basis"],
+                                       "host": p["host"], "since": p["since"], "langs": set()})
+        row["langs"].add(p["me"]["lang"])
+        if p["basis"] == "left" and row["basis"] != "left" or row["behind"] is None:
+            row["behind"], row["basis"] = p["behind"], p["basis"]
+    items = sorted(folders.values(), key=lambda r: (r["behind"] is None, r["behind"] or "", r["basis"] != "left", (r["a"]["name"] or "").lower()))
+    counts: dict = {}
+    for r in items:
+        r["langs"] = sorted(l for l in r["langs"] if l)
+        counts[r["behind"]] = counts.get(r["behind"], 0) + 1
+    if behind:
+        items = [r for r in items if (r["behind"] or "unknown") == behind]
+    return {"total": len(folders), "counts": counts, "items": items}
+
+
+def domain_elsewhere(conn, origin: str, host: str) -> dict[str, list[dict]]:
+    """Folders of the other origins that declared `host` (or a subdomain), grouped by origin."""
+    out: dict[str, list[dict]] = {}
+    for u in rows(conn.execute(
+        """
+        SELECT du.origin, du.host, du.path, du.role, fc.date AS from_date, du.to_sha, tc.date AS to_date,
+               e.name, e.removed_sha IS NOT NULL AS removed
+        FROM domain_usage du
+        JOIN extension e ON e.origin = du.origin AND e.path = du.path
+        JOIN git_commit fc ON fc.origin = du.origin AND fc.sha = du.from_sha
+        LEFT JOIN git_commit tc ON tc.origin = du.origin AND tc.sha = du.to_sha
+        WHERE du.origin != ? AND (du.host = ? OR du.host LIKE '%.' || ?)
+        ORDER BY du.origin, du.to_sha IS NOT NULL, e.name COLLATE NOCASE
+        """,
+        (origin, host, host),
+    )):
+        out.setdefault(u["origin"], []).append(u)
     return out

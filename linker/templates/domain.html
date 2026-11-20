@@ -20,4 +20,22 @@
   </tbody>
 </table>
 {% else %}<p>No folder has declared this host since the history anchor.</p>{% endif %}
+
+{% for other, usages in elsewhere.items() %}
+<h2>In {{ other }}</h2>
+<table>
+  <thead><tr><th>Folder</th><th>Host</th><th>Role</th><th>Declared</th><th>Until</th></tr></thead>
+  <tbody>
+  {% for u in usages %}
+    <tr class="{{ 'past' if u.to_sha }}">
+      <td><a href="/{{ other }}/{{ u.path }}">{{ u.name }}</a> <span class="muted small mono">{{ u.path }}</span>{% if u.removed %} <span class="tag">removed</span>{% endif %}</td>
+      <td class="mono small"><a href="/{{ other }}/domains/{{ u.host }}">{{ u.host }}</a></td>
+      <td>{{ u.role }}</td>
+      <td class="small">{{ u.from_date|day }}</td>
+      <td class="small">{{ u.to_date|day if u.to_sha else 'current' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endfor %}
 {% endblock %}

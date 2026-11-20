@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_macros.html" import basis_title %}
+{% block title %}Domain drift{% endblock %}
+{% block content %}
+<h1>Domain drift</h1>
+<p class="muted">The same source in two repositories (they once declared a domain at the same time) whose current domains no longer overlap.
+"Behind" is the repository still on a domain the other one has left. When neither is, it's the one whose current domain is
+older, marked "probably": both domains may still work.</p>
+
+<form class="filters" method="get">
+  <select name="behind" aria-label="Behind" onchange="this.form.submit()">
+    <option value="">Any ({{ d.total }})</option>
+    {% for o in origins %}<option value="{{ o }}" {{ 'selected' if behind == o }}>{{ o }} behind ({{ d.counts.get(o, 0) }})</option>{% endfor %}
+    <option value="unknown" {{ 'selected' if behind == 'unknown' }}>Unknown ({{ d.counts.get(None, 0) }})</option>
+  </select>
+  <noscript><button type="submit">Apply</button></noscript>
+</form>
+
+{% if d['items'] %}
+<table class="drift">
+  <thead><tr><th>Behind</th>{% set first = d['items'][0] %}<th>{{ first.a.origin }}</th><th>{{ first.b.origin }}</th><th>Linked</th></tr></thead>
+  <tbody>
+  {% for r in d['items'] %}
+    <tr>
+      <td>{% if r.behind %}<span class="tag warn" title="{{ basis_title(r.basis) }}">{{ r.behind.split('/')[0] }}{% if r.basis == 'older' %}?{% endif %}</span>{% if r.basis == 'older' %}<div class="muted small">probably</div>{% endif %}{% else %}<span class="tag">unknown</span>{% endif %}</td>
+      {% for s in (r.a, r.b) %}
+      <td class="{{ 'behind' if r.behind == s.origin }}" data-label="{{ s.origin }}">
+        <a href="/{{ s.origin }}/{{ s.path }}">{{ s.name }}</a> <span class="muted small mono">{{ s.path.split('/')[-1] if s.path.count('/') > 2 else s.path }}</span>
+        <div class="mono small">{% for h in s.hosts %}<a href="/{{ s.origin }}/domains/{{ h }}">{{ h }}</a>{{ ', ' if not loop.last }}{% endfor %}</div>
+      </td>
+      {% endfor %}
+      <td class="small muted" data-label="Linked">{% if r.host %}<span class="mono">{{ r.host }}</span><br>{{ r.since|day }}{% else %}by hand{% endif %}{% if r.langs|length > 1 %}<br>{{ r.langs|join(', ') }}{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="muted">No drift.</p>{% endif %}
+{% endblock %}

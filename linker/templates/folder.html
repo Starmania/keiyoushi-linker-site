@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_pill, state_pill, folder_link, issue_rows, history_rows %}
+{% from "_macros.html" import status_pill, state_pill, folder_link, issue_rows, history_rows, link_state %}
 {% block title %}{{ f.name }} · {{ origin }}{% endblock %}
 {% block content %}
 <section class="head">
@@ -46,6 +46,41 @@
 </section>
 {% endif %}
 
+{% set xr = f.elsewhere %}
+<section>
+  <h2>Same site in other repositories</h2>
+  {% if xr.links %}
+  {% for other, folders in xr.links.items() %}
+  <h3 class="muted">{{ other }}</h3>
+  <ul class="rows xr">
+    {% for o in folders %}
+    <li>
+      {% if o.icon_url %}<img class="icon tiny" src="{{ o.icon_url }}" alt="" width="24" height="24" loading="lazy" onerror="this.style.visibility='hidden'">{% endif %}
+      <div class="grow">
+        <div class="xr-head">
+          <a href="/{{ other }}/{{ o.path }}">{{ o.name }}</a>
+          {% if o.status %}{{ status_pill(o.status.status, o.status.since) }}{% endif %}
+          {{ link_state(o.state, o.behind, origin, o.basis) }}
+          {% if o.removed %}<span class="tag">removed</span>{% endif %}
+          {% if o.manual %}<span class="tag">manual</span>{% endif %}
+          {% if o.open_issues %}<span class="muted small">{{ o.open_issues }} open issue{{ 's' if o.open_issues > 1 }}</span>{% endif %}
+        </div>
+        <div class="muted small"><span class="mono">{{ o.path }}</span> · {{ o.hosts|join(', ') or 'no current domain' }}</div>
+        {% set p0 = o.pairs[0] %}
+        <div class="muted small">{% if p0.host %}Linked: both declared <span class="mono">{{ p0.host }}</span> on {{ p0.since|day }}{% else %}Linked by hand on {{ p0.since|day }}{% endif %}{% if o.pairs|length > 1 %} · {{ o.pairs|length }} sources: {% for p in o.pairs %}{{ p.me.lang }} ↔ {{ p.other.lang }}{{ ', ' if not loop.last }}{% endfor %}{% endif %}</div>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endfor %}
+  {% else %}<p class="muted">No source here has shared a domain with another repository at the same time.</p>{% endif %}
+  {% if xr.hidden %}
+  <details class="small"><summary>Hidden links ({{ xr.hidden|length }})</summary>
+    <ul class="rows">{% for p in xr.hidden %}<li><a href="/{{ p.other.origin }}/{{ p.other.path }}">{{ p.other.name }}</a> <span class="muted mono">{{ p.other.origin }}</span> <span class="muted">hidden {{ p.since|day }}</span></li>{% endfor %}</ul>
+  </details>
+  {% endif %}
+</section>
+
 <section>
   <h2>Sources</h2>
   <table>
@@ -55,7 +90,7 @@
       <tr>
         <td>{{ s.name }}</td><td>{{ s.lang }}</td>
         <td class="mono">{{ s.base_url }}{% if s.url_type != 'static' %} <span class="tag">{{ s.url_type }}{% if s.mirror_urls %} · {{ s.mirror_urls|length }}{% endif %}</span>{% endif %}</td>
-        <td class="mono small">{{ s.source_id }}</td>
+        <td class="mono small">{{ s.source_id }}{% if s.stable_id and s.stable_id != s.source_id %}<div class="muted" title="Id with versionId reset to 1: what cross-repo links use">stable {{ s.stable_id }}</div>{% endif %}</td>
       </tr>
     {% endfor %}
     </tbody>

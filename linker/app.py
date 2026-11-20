@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, Query, R
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 
 from linker import queries
 from linker.db import conn as db
@@ -41,6 +42,12 @@ api = APIRouter(prefix="/api/v1")
 @api.get("/origins")
 def api_origins():
     return queries.origins(db())
+
+
+@api.get("/drift")
+def api_drift(behind: str | None = Query(None, description="An origin (owner/repo), or 'unknown'")):
+    """Sources linked across repos that no longer share a current domain, with the repo that is probably behind."""
+    return queries.drift(db(), behind)
 
 
 @api.get("/{owner}/{repo}/extensions")
@@ -140,6 +147,51 @@ def api_override_reset(number: int, path: str, origin: str = Depends(origin_of))
     return set_override(origin, number, path, None)
 
 
+class SourceRef(BaseModel):
+    origin: str
+    stable_id: str
+
+
+class SourcePair(BaseModel):
+    a: SourceRef
+    b: SourceRef
+
+
+def set_source_override(pair: SourcePair, action: str | None):
+    a, b = sorted([(pair.a.origin, pair.a.stable_id), (pair.b.origin, pair.b.stable_id)])
+    if a[0] == b[0]:
+        raise HTTPException(422, "a source link joins two different origins")
+    c = db()
+    if action == "add":
+        for o, sid in (a, b):
+            found(c.execute("SELECT 1 FROM source_host WHERE origin = ? AND stable_id = ?", (o, sid)).fetchone(), f"source {o} {sid}")
+    with c:
+        if action is None:
+            c.execute("DELETE FROM main.source_link_override WHERE origin_a = ? AND stable_a = ? AND origin_b = ? AND stable_b = ?", (*a, *b))
+        else:
+            c.execute("INSERT OR REPLACE INTO main.source_link_override VALUES (?,?,?,?,?,?)",
+                      (*a, *b, action, datetime.now(UTC).isoformat(timespec="seconds")))
+    return {"a": {"origin": a[0], "stable_id": a[1]}, "b": {"origin": b[0], "stable_id": b[1]}, "override": action}
+
+
+@api.put("/source-links", dependencies=[Depends(require_token)])
+def api_source_link_add(pair: SourcePair):
+    """Link two sources of different repos by hand (stable ids as on extension pages)."""
+    return set_source_override(pair, "add")
+
+
+@api.delete("/source-links", dependencies=[Depends(require_token)])
+def api_source_link_remove(pair: SourcePair):
+    """Hide a wrong automatic link (or drop a manual one)."""
+    return set_source_override(pair, "remove")
+
+
+@api.delete("/source-links/override", dependencies=[Depends(require_token)])
+def api_source_link_reset(pair: SourcePair):
+    """Undo a manual add or hide, going back to the automatic links."""
+    return set_source_override(pair, None)
+
+
 app.include_router(api)
 
 
@@ -158,6 +210,12 @@ def home(request: Request):
     if len(all_origins) == 1:
         return RedirectResponse(f"/{all_origins[0]['id']}")
     return page(request, "origins.html", origins=all_origins)
+
+
+@app.get("/drift", response_class=HTMLResponse)
+def drift_page(request: Request, behind: str | None = None):
+    return page(request, "drift.html", origin=None, d=queries.drift(db(), behind or None), behind=behind or "",
+                origins=[o["id"] for o in queries.origins(db())])
 
 
 @app.get("/{owner}/{repo}", response_class=HTMLResponse)
@@ -196,7 +254,9 @@ def domains_page(request: Request, origin: str = Depends(origin_of), q: str | No
 
 @app.get("/{owner}/{repo}/domains/{host}", response_class=HTMLResponse)
 def domain_page(request: Request, host: str, origin: str = Depends(origin_of)):
-    return page(request, "domain.html", origin=origin, d=queries.domain(db(), origin, host.lower()))
+    host = host.lower()
+    return page(request, "domain.html", origin=origin, d=queries.domain(db(), origin, host),
+                elsewhere=queries.domain_elsewhere(db(), origin, host))
 
 
 @app.get("/{owner}/{repo}/search", response_class=HTMLResponse)

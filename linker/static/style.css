@@ -164,3 +164,16 @@ details summary { cursor: pointer; color: var(--muted); font-size: .85rem; }
   .search { max-width: none; }
   .head { flex-direction: column; }
 }
+
+.tag.ok { color: var(--pass); border-color: color-mix(in srgb, var(--pass) 45%, transparent); }
+.icon.tiny { width: 24px; height: 24px; border-radius: 6px; }
+.xr li { align-items: flex-start; flex-wrap: nowrap; }
+.xr-head { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.drift td.behind { background: color-mix(in srgb, var(--warn-bg) 70%, transparent); }
+@media (max-width: 640px) {
+  table.drift thead { display: none; }
+  table.drift, table.drift tbody, table.drift tr, table.drift td { display: block; width: auto; }
+  table.drift tr { border-bottom: 1px solid var(--border); padding: .35rem 0; }
+  table.drift td { border: none; padding: .2rem .75rem; }
+  table.drift td[data-label]::before { content: attr(data-label); display: block; font-size: .72rem; color: var(--muted); }
+}

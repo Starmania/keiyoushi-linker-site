@@ -18,6 +18,16 @@ CREATE TABLE IF NOT EXISTS issue_link_override (
     at     TEXT NOT NULL,
     PRIMARY KEY (origin, issue, path)
 );
+-- Cross-repo source links: same shape as the extractor's source_link, origin_a < origin_b.
+CREATE TABLE IF NOT EXISTS source_link_override (
+    origin_a TEXT NOT NULL,
+    stable_a TEXT NOT NULL,
+    origin_b TEXT NOT NULL,
+    stable_b TEXT NOT NULL,
+    action   TEXT NOT NULL,    -- "add" | "remove"
+    at       TEXT NOT NULL,
+    PRIMARY KEY (origin_a, stable_a, origin_b, stable_b)
+);
 """
 
 # Issue links as served: automatic links minus manual removals, plus manual additions.
@@ -33,6 +43,18 @@ CREATE TEMP VIEW issue_link_effective AS
     SELECT origin, issue, path, 'manual', 1.0, 1 FROM main.issue_link_override WHERE action = 'add'
 """
 
+SOURCE_LINK_VIEW = """
+CREATE TEMP VIEW source_link_effective AS
+    SELECT l.origin_a, l.stable_a, l.origin_b, l.stable_b, l.host, l.since, 0 AS manual
+    FROM kx.source_link l
+    WHERE NOT EXISTS (
+        SELECT 1 FROM main.source_link_override o
+        WHERE o.origin_a = l.origin_a AND o.stable_a = l.stable_a AND o.origin_b = l.origin_b AND o.stable_b = l.stable_b
+    )
+    UNION ALL
+    SELECT origin_a, stable_a, origin_b, stable_b, NULL, at, 1 FROM main.source_link_override WHERE action = 'add'
+"""
+
 _lock = threading.Lock()
 _conn: sqlite3.Connection | None = None
 _identity: tuple[int, int] | None = None
@@ -45,6 +67,7 @@ def _open() -> sqlite3.Connection:
     conn.executescript(OVERRIDES_SCHEMA)
     conn.execute("ATTACH DATABASE ? AS kx", (f"file:{DB_PATH}?mode=ro",))
     conn.execute(EFFECTIVE_VIEW)
+    conn.execute(SOURCE_LINK_VIEW)
     return conn
 
 
