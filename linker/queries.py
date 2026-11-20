@@ -514,3 +514,57 @@ def domain_elsewhere(conn, origin: str, host: str) -> dict[str, list[dict]]:
     )):
         out.setdefault(u["origin"], []).append(u)
     return out
+
+
+def _name_key(name: str | None) -> str:
+    return "".join(ch for ch in (name or "").lower() if ch.isalnum())
+
+
+def missing(conn, target: str, q: str | None = None, lang: str | None = None) -> dict:
+    """Current extensions of the other origins with no link to a current extension of `target`: sites it lacks.
+
+    Each item says whether `target` had the site and removed it, and names a same-name `target` extension
+    that isn't linked (a possible match to confirm or link by hand)."""
+    sides = _sides(conn)
+    partners: dict[tuple, set] = {}
+    for l in _links(conn):
+        a, b = (l["origin_a"], l["stable_a"]), (l["origin_b"], l["stable_b"])
+        partners.setdefault(a, set()).add(b)
+        partners.setdefault(b, set()).add(a)
+    removed = {(r[0], r[1]) for r in conn.execute("SELECT origin, path FROM extension WHERE removed_sha IS NOT NULL")}
+    by_name: dict[str, dict] = {}
+    for r in conn.execute("SELECT path, name FROM extension WHERE origin = ? AND kind = 'src' AND removed_sha IS NULL", (target,)):
+        by_name.setdefault(_name_key(r["name"]), {"path": r["path"], "name": r["name"]})
+    stable_ids: dict[tuple, set] = {}
+    for r in conn.execute("SELECT origin, path, stable_id FROM source WHERE stable_id IS NOT NULL"):
+        stable_ids.setdefault((r["origin"], r["path"]), set()).add(r["stable_id"])
+
+    out: dict = {"target": target, "origins": {}, "total": 0}
+    for origin in [o["id"] for o in origins(conn) if o["id"] != target]:
+        have = tracked(conn, origin)
+        items = []
+        for e in conn.execute(
+            f"""SELECT e.path, e.name, e.lang, e.icon_url, e.content_warning, st.status, st.since AS status_since, d.d7 AS downloads_7d,
+                       (SELECT group_concat(DISTINCT host) FROM domain_usage du
+                         WHERE du.origin = e.origin AND du.path = e.path AND du.to_sha IS NULL AND du.role = 'base') AS hosts
+                FROM extension e
+                LEFT JOIN ({LATEST_STATUS}) st ON st.origin = e.origin AND st.path = e.path
+                LEFT JOIN ({LATEST_DOWNLOADS}) d ON d.origin = e.origin AND d.path = e.path
+                WHERE e.origin = ? AND e.kind = 'src' AND e.removed_sha IS NULL""",
+            (origin,),
+        ):
+            linked = [sides[p] for sid in stable_ids.get((origin, e["path"]), ()) for p in partners.get((origin, sid), ()) if p[0] == target and p in sides]
+            if any((target, s.path) not in removed for s in linked):
+                continue
+            hosts = sorted((e["hosts"] or "").split(",")) if e["hosts"] else []
+            if lang and e["lang"] != lang:
+                continue
+            if q and not any(q.lower() in (x or "").lower() for x in (e["name"], e["path"], *hosts)):
+                continue
+            gone = {s.path: {"path": s.path, "name": s.name} for s in linked}
+            items.append(dict(e) | {"hosts": hosts, "removed_in_target": list(gone.values()),
+                                    "same_name": None if gone else by_name.get(_name_key(e["name"]))})
+        items.sort(key=lambda i: (-(i["downloads_7d"] or -1), (i["name"] or "").lower()) if have["downloads"] else (i["name"] or "").lower())
+        out["origins"][origin] = {"tracked": have, "items": items}
+        out["total"] += len(items)
+    return out

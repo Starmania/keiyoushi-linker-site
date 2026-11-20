@@ -180,3 +180,4 @@ details summary { cursor: pointer; color: var(--muted); font-size: .85rem; }
 .foldable:not(.open) .folded { display: none; }
 .unfold { margin-top: .5rem; background: none; color: var(--accent); border: 1px solid var(--border); }
 .unfold:hover { border-color: var(--accent); }
+.filters select { max-width: 100%; min-width: 0; }

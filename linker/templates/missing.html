@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_pill %}
+{% block title %}Missing sites{% endblock %}
+{% block content %}
+<h1>Missing sites</h1>
+<p class="muted">Current extensions of another repository with no link to a current extension of this one: no source of theirs
+ever declared a domain at the same time as one of its sources. A same-name extension is shown when there is one: it may be the
+same site on a domain the two never shared, to confirm and link by hand.</p>
+
+<form class="filters" method="get">
+  <select name="in" aria-label="Missing from" onchange="this.form.submit()">
+    {% for t, n in counts.items() %}<option value="{{ t }}" {{ 'selected' if t == m.target }}>Missing from {{ t }} ({{ n }})</option>{% endfor %}
+  </select>
+  <input name="q" type="search" value="{{ q }}" placeholder="Filter by name, folder or domain" aria-label="Filter">
+  <select name="lang" aria-label="Language">
+    <option value="">All languages</option>
+    {% for l in langs %}<option value="{{ l }}" {{ 'selected' if l == lang }}>{{ l }}</option>{% endfor %}
+  </select>
+  <button type="submit">Apply</button>
+</form>
+
+{% for origin, o in m.origins.items() %}
+<h2>In {{ origin }}, not in {{ m.target }} <span class="muted">({{ o['items']|length }})</span></h2>
+{% if o['items'] %}
+<ul class="rows xr foldable">
+  {% for i in o['items'] %}
+  <li{% if loop.index > 50 %} class="folded"{% endif %}>
+    <img class="icon tiny" src="{{ i.icon_url or '' }}" alt="" width="24" height="24" loading="lazy" onerror="this.style.visibility='hidden'">
+    <div class="grow">
+      <div class="xr-head">
+        <a href="/{{ origin }}/{{ i.path }}">{{ i.name }}</a>
+        {% if i.lang %}<span class="tag">{{ i.lang }}</span>{% endif %}
+        {% if o.tracked.status and i.status %}{{ status_pill(i.status, i.status_since) }}{% endif %}
+        {% if i.content_warning and i.content_warning != 'SAFE' %}<span class="tag warn">{{ i.content_warning }}</span>{% endif %}
+        {% if o.tracked.downloads and i.downloads_7d %}<span class="muted small" title="Downloads, last 7 days">{{ i.downloads_7d|num }} / 7 d</span>{% endif %}
+      </div>
+      <div class="muted small"><span class="mono">{{ i.path }}</span>{% if i.hosts %} · {{ i.hosts|join(', ') }}{% endif %}</div>
+      {% if i.removed_in_target %}<div class="small">Removed from {{ m.target }}: {% for r in i.removed_in_target %}<a href="/{{ m.target }}/{{ r.path }}">{{ r.name }}</a>{{ ', ' if not loop.last }}{% endfor %}</div>{% endif %}
+      {% if i.same_name %}<div class="small">Same name in {{ m.target }}: <a href="/{{ m.target }}/{{ i.same_name.path }}">{{ i.same_name.name }}</a> <span class="muted mono">{{ i.same_name.path }}</span></div>{% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% if o['items']|length > 50 %}
+<button type="button" class="unfold" aria-expanded="false" data-more="Show all {{ o['items']|length }}" data-less="Show fewer"
+        onclick="const open = this.previousElementSibling.classList.toggle('open'); this.setAttribute('aria-expanded', open); this.textContent = this.dataset[open ? 'less' : 'more']">Show all {{ o['items']|length }}</button>
+{% endif %}
+{% else %}<p class="muted">Nothing missing.</p>{% endif %}
+{% endfor %}
+{% endblock %}

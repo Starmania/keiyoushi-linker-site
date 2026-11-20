@@ -50,6 +50,14 @@ def api_drift(behind: str | None = Query(None, description="An origin (owner/rep
     return queries.drift(db(), behind)
 
 
+@api.get("/missing")
+def api_missing(target: str = Query(..., alias="in", description="The repo (owner/repo) the sites are missing from"),
+                q: str | None = None, lang: str | None = None):
+    """Current extensions of the other repos with no link to a current extension of `in`."""
+    found(db().execute("SELECT 1 FROM origin WHERE id = ?", (target,)).fetchone(), f"origin {target}")
+    return queries.missing(db(), target, q, lang)
+
+
 @api.get("/{owner}/{repo}/extensions")
 def api_extensions(
     origin: str = Depends(origin_of),
@@ -216,6 +224,17 @@ def home(request: Request):
 def drift_page(request: Request, behind: str | None = None):
     return page(request, "drift.html", origin=None, d=queries.drift(db(), behind or None), behind=behind or "",
                 origins=[o["id"] for o in queries.origins(db())])
+
+
+@app.get("/missing", response_class=HTMLResponse)
+def missing_page(request: Request, target: str | None = Query(None, alias="in"), q: str | None = None, lang: str | None = None):
+    all_origins = [o["id"] for o in queries.origins(db())]
+    target = target if target in all_origins else all_origins[0]
+    full = {t: queries.missing(db(), t) for t in all_origins}
+    counts = {t: m["total"] for t, m in full.items()}
+    data = queries.missing(db(), target, q or None, lang or None) if q or lang else full[target]
+    langs = sorted({i["lang"] for o in full[target]["origins"].values() for i in o["items"] if i["lang"]})
+    return page(request, "missing.html", origin=None, m=data, counts=counts, langs=langs, q=q or "", lang=lang or "")
 
 
 @app.get("/{owner}/{repo}", response_class=HTMLResponse)
