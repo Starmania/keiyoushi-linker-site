@@ -181,3 +181,19 @@ details summary { cursor: pointer; color: var(--muted); font-size: .85rem; }
 .unfold { margin-top: .5rem; background: none; color: var(--accent); border: 1px solid var(--border); }
 .unfold:hover { border-color: var(--accent); }
 .filters select { max-width: 100%; min-width: 0; }
+.who { display: flex; gap: .75rem; align-items: center; font-size: .9rem; }
+.who .me { display: inline-flex; gap: .4rem; align-items: center; color: var(--text); }
+.who img { width: 24px; height: 24px; border-radius: 50%; }
+.notice { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: .6rem .9rem; }
+.notice pre { margin: .5rem 0 0; user-select: all; }
+.inline-edit { display: inline-flex; margin: 0; }
+button.mini { padding: .1rem .55rem; font-size: .78rem; background: none; color: var(--accent); border: 1px solid var(--border); border-radius: 6px; }
+button.mini:hover { border-color: var(--accent); }
+button.mini.danger { color: var(--fail); }
+button.mini.danger:hover { border-color: var(--fail); }
+.edit-slot { margin-left: auto; }
+.connect { margin-top: .75rem; }
+.connect input[name="other_path"], .connect input[name="path"] { flex: 1 1 260px; }
+.removed-links { margin-top: .5rem; }
+.who { margin-left: auto; }
+.search + .who { margin-left: 0; }

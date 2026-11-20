@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_macros.html" import edit_button, form_fields with context %}
+{% block title %}Account{% endblock %}
+{% block content %}
+<section class="head">
+  {% if user.avatar_url %}<img class="icon big" src="{{ user.avatar_url }}&s=128" alt="" width="64" height="64">{% endif %}
+  <div>
+    <h1>{{ user.name or user.login }}</h1>
+    <div class="muted"><a href="https://github.com/{{ user.login }}">@{{ user.login }}</a> on GitHub</div>
+    <div class="tags"><span class="tag{{ ' ok' if user.can_edit }}">{{ user.role }}</span></div>
+  </div>
+</section>
+
+{% if not user.can_edit %}
+<p class="notice">You can browse everything, but correcting links needs an admin to make you an editor.</p>
+{% endif %}
+
+<section>
+  <h2>API tokens</h2>
+  <p class="muted small">For scripts that correct links through the API: send <code>Authorization: Bearer &lt;token&gt;</code>.
+  A token acts as you, with your role{% if not user.can_edit %} (so it can't edit yet){% endif %}. Edits made with it are recorded under your name.</p>
+  {% if new_token %}
+  <div class="notice">New token, shown only now: copy it somewhere safe.<pre class="mono">{{ new_token }}</pre></div>
+  {% endif %}
+  {% if tokens %}
+  <ul class="rows">
+    {% for t in tokens %}
+    <li><span class="grow"><strong>{{ t.name }}</strong> <span class="mono muted">{{ t.prefix }}…</span></span>
+      <span class="muted small">created {{ t.created_at|day }} · {{ 'last used ' ~ (t.last_used_at|day) if t.last_used_at else 'never used' }}</span>
+      {{ edit_button('/account/tokens/revoke', 'Revoke', {'id': t.id}, 'danger') }}</li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">No token.</p>{% endif %}
+  <form class="filters connect" method="post" action="/account/tokens">{{ form_fields() }}
+    <input name="name" required maxlength="60" placeholder="Name, e.g. laptop script" aria-label="Token name">
+    <button type="submit">Create token</button>
+  </form>
+</section>
+
+<section>
+  <h2>Sessions</h2>
+  <div class="filters">
+    <form class="inline-edit" method="post" action="/auth/logout">{{ form_fields() }}<button type="submit" class="mini">Sign out</button></form>
+    <form class="inline-edit" method="post" action="/auth/logout">{{ form_fields() }}<input type="hidden" name="everywhere" value="1"><button type="submit" class="mini danger">Sign out everywhere</button></form>
+  </div>
+</section>
+{% endblock %}

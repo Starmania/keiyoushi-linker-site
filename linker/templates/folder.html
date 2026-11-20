@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_pill, state_pill, folder_link, issue_rows, history_rows, link_state %}
+{% from "_macros.html" import status_pill, state_pill, folder_link, issue_rows, history_rows, link_state, edit_button, form_fields with context %}
 {% block title %}{{ f.name }} · {{ origin }}{% endblock %}
 {% block content %}
 <section class="head">
@@ -62,8 +62,9 @@
           {% if o.status %}{{ status_pill(o.status.status, o.status.since) }}{% endif %}
           {{ link_state(o.state, o.behind, origin, o.basis) }}
           {% if o.removed %}<span class="tag">removed</span>{% endif %}
-          {% if o.manual %}<span class="tag">manual</span>{% endif %}
+          {% if o.manual %}<span class="tag" title="Linked by hand{% if o.by_login %} by @{{ o.by_login }}{% endif %}">manual{% if o.by_login %} · @{{ o.by_login }}{% endif %}</span>{% endif %}
           {% if o.open_issues %}<span class="muted small">{{ o.open_issues }} open issue{{ 's' if o.open_issues > 1 }}</span>{% endif %}
+          {% if can_edit %}<span class="edit-slot">{{ edit_button('/edit/source-links', 'Hide', {'action': 'hide', 'pairs': o['keys']}) }}</span>{% endif %}
         </div>
         <div class="muted small"><span class="mono">{{ o.path }}</span> · {{ o.hosts|join(', ') or 'no current domain' }}</div>
         {% set p0 = o.pairs[0] %}
@@ -76,8 +77,17 @@
   {% else %}<p class="muted">No source here has shared a domain with another repository at the same time.</p>{% endif %}
   {% if xr.hidden %}
   <details class="small"><summary>Hidden links ({{ xr.hidden|length }})</summary>
-    <ul class="rows">{% for p in xr.hidden %}<li><a href="/{{ p.other.origin }}/{{ p.other.path }}">{{ p.other.name }}</a> <span class="muted mono">{{ p.other.origin }}</span> <span class="muted">hidden {{ p.since|day }}</span></li>{% endfor %}</ul>
+    <ul class="rows">{% for p in xr.hidden %}<li><a href="/{{ p.other.origin }}/{{ p.other.path }}">{{ p.other.name }}</a> <span class="muted mono">{{ p.other.origin }}</span> <span class="muted grow">hidden {{ p.since|day }}{% if p.by_login %} by @{{ p.by_login }}{% endif %}</span>{% if can_edit %}{{ edit_button('/edit/source-links', 'Restore', {'action': 'restore', 'pairs': [p.key]}) }}{% endif %}</li>{% endfor %}</ul>
   </details>
+  {% endif %}
+  {% if can_edit and other_origins %}
+  <form class="filters connect" method="post" action="/edit/source-links/connect">{{ form_fields() }}
+    <input type="hidden" name="origin" value="{{ origin }}"><input type="hidden" name="path" value="{{ f.path }}">
+    <span class="small muted">Link to</span>
+    <select name="other_origin" aria-label="Repository">{% for o in other_origins %}<option>{{ o }}</option>{% endfor %}</select>
+    <input name="other_path" required placeholder="Folder path, e.g. web/src/engine/websites/Foo" aria-label="Folder path">
+    <button type="submit">Link</button>
+  </form>
   {% endif %}
 </section>
 

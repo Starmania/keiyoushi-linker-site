@@ -20,6 +20,7 @@ The extractor's CI publishes the database as the `db` release asset of its repo.
 uv sync
 export LINKER_DB=data/linker.db
 uv run python -m linker.fetch Starmania/keiyoushi-extractor   # rerun (e.g. from cron) to pick up refreshes
+set -a; . ./.env; set +a                                      # the variables below
 uv run uvicorn linker.app:app --port 8790
 ```
 
@@ -28,8 +29,17 @@ The fetch swaps the file in atomically, and the running site reopens it on the n
 | env | meaning |
 | --- | --- |
 | `LINKER_DB` | extractor database, read-only (default `../keiyoushi-extractor/data/linker.db`) |
-| `LINKER_OVERRIDES_DB` | the site's own database for manual link corrections (default `data/overrides.db`). Kept apart because the extractor database is replaced on every refresh |
-| `LINKER_TOKEN` | Bearer token for the link-editing endpoints; without it they always answer 401 |
+| `LINKER_OVERRIDES_DB` | the site's own database: manual link corrections, accounts, sessions, API tokens and the edit history (default `data/overrides.db`). Kept apart because the extractor database is replaced on every refresh |
+| `LINKER_GITHUB_CLIENT_ID`, `LINKER_GITHUB_CLIENT_SECRET` | a GitHub OAuth App for "Log in with GitHub", callback `<site>/auth/callback`. Without them the site is read-only |
+| `LINKER_ADMINS` | comma-separated GitHub logins made admin when they log in |
+
+## Accounts
+
+Logging in asks GitHub for no scope: the site reads the public profile once and keeps its own session, never a GitHub
+token. Everyone starts as a viewer; an admin makes people editors (or admins) on `/admin`, which also shows the history
+of every edit. Editors get buttons on the pages to hide a wrong link, restore it, or link by hand, and can create API
+tokens on `/account` for scripts. Behind a reverse proxy, run uvicorn with `--proxy-headers` so the callback URL is
+built with the public scheme and host.
 
 ## API
 
@@ -45,8 +55,13 @@ OpenAPI docs are served at `/api/docs`. Every route is scoped by origin (`/api/v
 - `GET domains?q=`, `GET domains/{host}` (subdomains included)
 - `GET search?q=`: `#123`, a host, a name or a source id
 
-Link corrections need `Authorization: Bearer $LINKER_TOKEN`. Each one can be undone:
+Cross-repo pages: `GET /api/v1/drift?behind=`, `GET /api/v1/missing?in=<owner/repo>`.
+
+Link corrections need an editor's API token (`/account`): `Authorization: Bearer lk_…`. Each one is recorded under that
+account and can be undone:
 
 - `PUT issues/{n}/links/{path}`: link an issue to a folder by hand
 - `DELETE issues/{n}/links/{path}`: hide a wrong automatic link
 - `DELETE issues/{n}/overrides/{path}`: drop the manual decision and go back to the automatic links
+- `PUT /api/v1/source-links`, `DELETE /api/v1/source-links`, `DELETE /api/v1/source-links/override`, with a JSON body
+  `{"a": {"origin", "stable_id"}, "b": {"origin", "stable_id"}}`: link two repos' sources by hand, hide a link, undo

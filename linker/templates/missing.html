@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_pill %}
+{% from "_macros.html" import status_pill, edit_button with context %}
 {% block title %}Missing sites{% endblock %}
 {% block content %}
 <h1>Missing sites</h1>
@@ -36,7 +36,8 @@ same site on a domain the two never shared, to confirm and link by hand.</p>
       </div>
       <div class="muted small"><span class="mono">{{ i.path }}</span>{% if i.hosts %} · {{ i.hosts|join(', ') }}{% endif %}</div>
       {% if i.removed_in_target %}<div class="small">Removed from {{ m.target }}: {% for r in i.removed_in_target %}<a href="/{{ m.target }}/{{ r.path }}">{{ r.name }}</a>{{ ', ' if not loop.last }}{% endfor %}</div>{% endif %}
-      {% if i.same_name %}<div class="small">Same name in {{ m.target }}: <a href="/{{ m.target }}/{{ i.same_name.path }}">{{ i.same_name.name }}</a> <span class="muted mono">{{ i.same_name.path }}</span></div>{% endif %}
+      {% if i.same_name %}<div class="small same-name">Same name in {{ m.target }}: <a href="/{{ m.target }}/{{ i.same_name.path }}">{{ i.same_name.name }}</a> <span class="muted mono">{{ i.same_name.path }}</span>
+        {%- if can_edit %} {{ edit_button('/edit/source-links/connect', 'Link', {'origin': origin, 'path': i.path, 'other_origin': m.target, 'other_path': i.same_name.path}) }}{% endif %}</div>{% endif %}
     </div>
   </li>
   {% endfor %}

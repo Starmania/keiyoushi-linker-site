@@ -270,7 +270,7 @@ def issue(conn, origin, number) -> dict | None:
         return None
     out = dict(i) | {"labels": json.loads(i["labels"])}
     links = rows(conn.execute(
-        "SELECT path, methods, confidence, manual FROM issue_link_effective WHERE origin = ? AND issue = ? ORDER BY confidence DESC",
+        "SELECT path, methods, confidence, manual, by_login FROM issue_link_effective WHERE origin = ? AND issue = ? ORDER BY confidence DESC",
         (origin, number),
     ))
     names = {f["path"]: f for f in _folder_names(conn, origin, [l["path"] for l in links])}
@@ -278,7 +278,8 @@ def issue(conn, origin, number) -> dict | None:
         l |= {k: names[l["path"]][k] for k in ("kind", "name", "lang", "theme", "theme_path")}
     out["links"] = links
     out["removed_links"] = rows(conn.execute(
-        "SELECT path, at FROM issue_link_override WHERE origin = ? AND issue = ? AND action = 'remove'", (origin, number)
+        "SELECT o.path, o.at, a.login AS by_login FROM main.issue_link_override o LEFT JOIN main.account a ON a.id = o.by_account "
+        "WHERE o.origin = ? AND o.issue = ? AND o.action = 'remove'", (origin, number)
     ))
     out["prs"] = rows(conn.execute(
         "SELECT p.number, p.title, p.state, p.merged_at FROM issue_pr x JOIN pull_request p ON p.origin = x.origin AND p.number = x.pr "
@@ -418,7 +419,8 @@ def compare(a: Side, b: Side) -> dict:
 def _links(conn, hidden: bool = False) -> list[dict]:
     if hidden:
         return rows(conn.execute(
-            "SELECT origin_a, stable_a, origin_b, stable_b, NULL AS host, at AS since, 1 AS manual FROM main.source_link_override WHERE action = 'remove'"
+            "SELECT o.origin_a, o.stable_a, o.origin_b, o.stable_b, NULL AS host, o.at AS since, 1 AS manual, a.login AS by_login "
+            "FROM main.source_link_override o LEFT JOIN main.account a ON a.id = o.by_account WHERE o.action = 'remove'"
         ))
     return rows(conn.execute("SELECT * FROM source_link_effective"))
 
@@ -430,7 +432,8 @@ def _pair(link: dict, sides: dict, me: str | None = None) -> dict | None:
     if me == link["origin_b"]:
         a, b = b, a
     return {"me": a.as_dict(), "other": b.as_dict(), "host": link["host"], "since": link["since"],
-            "manual": bool(link["manual"])} | compare(a, b)
+            "manual": bool(link["manual"]), "by_login": link["by_login"],
+            "key": [link["origin_a"], link["stable_a"], link["origin_b"], link["stable_b"]]} | compare(a, b)
 
 
 def elsewhere(conn, origin: str, path: str) -> dict:
@@ -458,6 +461,7 @@ def elsewhere(conn, origin: str, path: str) -> dict:
             f["pairs"].sort(key=lambda p: (p["me"]["lang"] or "", p["other"]["lang"] or ""))
             worst = min(f["pairs"], key=lambda p: order[p["state"]])
             f |= {"state": worst["state"], "behind": worst["behind"], "basis": worst["basis"], "manual": any(p["manual"] for p in f["pairs"]),
+                  "by_login": next((p["by_login"] for p in f["pairs"] if p["by_login"]), None), "keys": [p["key"] for p in f["pairs"]],
                   "hosts": sorted({h for p in f["pairs"] for h in p["other"]["hosts"]})}
             e = conn.execute(
                 "SELECT icon_url, removed_sha IS NOT NULL AS removed, "
@@ -482,8 +486,9 @@ def drift(conn, behind: str | None = None) -> dict:
             continue
         key = (p["me"]["origin"], p["me"]["path"], p["other"]["origin"], p["other"]["path"])
         row = folders.setdefault(key, {"a": p["me"], "b": p["other"], "behind": p["behind"], "basis": p["basis"],
-                                       "host": p["host"], "since": p["since"], "langs": set()})
+                                       "host": p["host"], "since": p["since"], "langs": set(), "keys": []})
         row["langs"].add(p["me"]["lang"])
+        row["keys"].append(p["key"])
         if p["basis"] == "left" and row["basis"] != "left" or row["behind"] is None:
             row["behind"], row["basis"] = p["behind"], p["basis"]
     items = sorted(folders.values(), key=lambda r: (r["behind"] is None, r["behind"] or "", r["basis"] != "left", (r["a"]["name"] or "").lower()))
@@ -567,4 +572,61 @@ def missing(conn, target: str, q: str | None = None, lang: str | None = None) ->
         items.sort(key=lambda i: (-(i["downloads_7d"] or -1), (i["name"] or "").lower()) if have["downloads"] else (i["name"] or "").lower())
         out["origins"][origin] = {"tracked": have, "items": items}
         out["total"] += len(items)
+    return out
+
+
+def connect_pairs(conn, origin: str, path: str, other_origin: str, other_path: str) -> list[tuple[tuple, tuple]]:
+    """Pairs that link a folder's current sources to another repo's folder: each source with the other side's source
+    of the same language, or every source with the other side's single one. ValueError when that's ambiguous."""
+    if other_origin == origin:
+        raise ValueError("Pick a folder of another repository")
+    def current(o, p):
+        return [(r["stable_id"], (r["lang"] or "").split("-")[0].lower())
+                for r in conn.execute("SELECT stable_id, lang FROM source WHERE origin = ? AND path = ? AND stable_id IS NOT NULL", (o, p))]
+    mine, theirs = current(origin, path), current(other_origin, other_path)
+    if not mine:
+        raise ValueError("This folder has no source to link")
+    if not theirs:
+        raise ValueError(f"No extension with sources at {other_origin}/{other_path}")
+    if len(theirs) == 1 or len(mine) == 1:
+        return [((origin, a), (other_origin, b)) for a, _ in mine for b, _ in theirs]
+    by_lang = {}
+    for sid, lang in theirs:
+        by_lang.setdefault(lang, []).append(sid)
+    pairs, unmatched = [], []
+    for sid, lang in mine:
+        if len(by_lang.get(lang, [])) == 1:
+            pairs.append(((origin, sid), (other_origin, by_lang[lang][0])))
+        else:
+            unmatched.append(lang or "?")
+    if unmatched:
+        raise ValueError(f"Can't pair by language ({', '.join(sorted(set(unmatched)))}): link those sources through the API")
+    return pairs
+
+
+def accounts(conn) -> list[dict]:
+    return rows(conn.execute(
+        "SELECT a.*, (SELECT count(*) FROM main.audit x WHERE x.account_id = a.id AND x.action != 'role') AS edits "
+        "FROM main.account a ORDER BY a.role = 'admin' DESC, a.role = 'editor' DESC, a.login COLLATE NOCASE"
+    ))
+
+
+def audit_log(conn, limit: int = 200) -> list[dict]:
+    """Recent edits with a readable description and the page they concern."""
+    sides = None
+    out = []
+    for r in rows(conn.execute(
+        "SELECT x.*, a.login FROM main.audit x LEFT JOIN main.account a ON a.id = x.account_id ORDER BY x.id DESC LIMIT ?", (limit,)
+    )):
+        t = json.loads(r["target"])
+        if t["kind"] == "issue_link":
+            r |= {"what": f"issue #{t['issue']} ↔ {t['path']}", "href": f"/{t['origin']}/issues/{t['issue']}"}
+        elif t["kind"] == "source_link":
+            sides = sides or _sides(conn)
+            a, b = sides.get(tuple(t["a"])), sides.get(tuple(t["b"]))
+            name = lambda s, ref: f"{s.name} ({ref[0].split('/')[0]})" if s else f"{ref[1]} ({ref[0].split('/')[0]})"
+            r |= {"what": f"{name(a, t['a'])} ↔ {name(b, t['b'])}", "href": f"/{a.origin}/{a.path}" if a else None}
+        else:
+            r |= {"what": f"@{t['account']}: {t['from']} → {t['to']}", "href": None}
+        out.append(r)
     return out

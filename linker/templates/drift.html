@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import basis_title %}
+{% from "_macros.html" import basis_title, edit_button with context %}
 {% block title %}Domain drift{% endblock %}
 {% block content %}
 <h1>Domain drift</h1>
@@ -18,7 +18,7 @@ older, marked "probably": both domains may still work.</p>
 
 {% if d['items'] %}
 <table class="drift">
-  <thead><tr><th>Behind</th>{% set first = d['items'][0] %}<th>{{ first.a.origin }}</th><th>{{ first.b.origin }}</th><th>Linked</th></tr></thead>
+  <thead><tr><th>Behind</th>{% set first = d['items'][0] %}<th>{{ first.a.origin }}</th><th>{{ first.b.origin }}</th><th>Linked</th>{% if can_edit %}<th></th>{% endif %}</tr></thead>
   <tbody>
   {% for r in d['items'] %}
     <tr>
@@ -30,6 +30,7 @@ older, marked "probably": both domains may still work.</p>
       </td>
       {% endfor %}
       <td class="small muted" data-label="Linked">{% if r.host %}<span class="mono">{{ r.host }}</span><br>{{ r.since|day }}{% else %}by hand{% endif %}{% if r.langs|length > 1 %}<br>{{ r.langs|join(', ') }}{% endif %}</td>
+      {% if can_edit %}<td>{{ edit_button('/edit/source-links', 'Hide', {'action': 'hide', 'pairs': r['keys']}) }}</td>{% endif %}
     </tr>
   {% endfor %}
   </tbody>

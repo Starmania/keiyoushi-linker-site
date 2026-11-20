@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import form_fields with context %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<h1>Admin</h1>
+
+<section>
+  <h2>Accounts <span class="muted">({{ accounts|length }})</span></h2>
+  <p class="muted small">Everyone who logs in starts as a viewer. Editors can correct links; admins also manage roles.
+  Logins listed in <code>LINKER_ADMINS</code> become admins when they log in.</p>
+  <table>
+    <thead><tr><th>Account</th><th>Role</th><th>Edits</th><th>Last login</th></tr></thead>
+    <tbody>
+    {% for a in accounts %}
+      <tr>
+        <td><a href="https://github.com/{{ a.login }}">@{{ a.login }}</a>{% if a.name %} <span class="muted small">{{ a.name }}</span>{% endif %}</td>
+        <td>
+          {% if a.id == user.id %}<span class="tag ok">{{ a.role }}</span> <span class="muted small">you</span>
+          {% else %}
+          <form class="inline-edit" method="post" action="/admin/role">{{ form_fields() }}<input type="hidden" name="account" value="{{ a.id }}">
+            <select name="role" aria-label="Role of {{ a.login }}" onchange="this.form.submit()">
+              {% for r in roles %}<option {{ 'selected' if r == a.role }}>{{ r }}</option>{% endfor %}
+            </select>
+            <noscript><button type="submit" class="mini">Save</button></noscript>
+          </form>
+          {% endif %}
+        </td>
+        <td>{{ a.edits }}</td>
+        <td class="small">{{ a.last_login_at|day }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>History</h2>
+  {% if log %}
+  <ul class="rows">
+    {% for e in log %}
+    <li>
+      <span class="tag{{ ' warn' if e.action == 'remove' }}">{{ {'add': 'linked', 'remove': 'hid', 'reset': 'undid', 'role': 'role'}.get(e.action, e.action) }}</span>
+      <span class="grow">{% if e.href %}<a href="{{ e.href }}">{{ e.what }}</a>{% else %}{{ e.what }}{% endif %}</span>
+      <span class="muted small">@{{ e.login }}{{ ' · API' if e.via == 'token' }} · {{ e.at|replace('T', ' ')|truncate(16, True, '') }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">No edit yet.</p>{% endif %}
+</section>
+{% endblock %}

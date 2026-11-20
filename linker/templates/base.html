@@ -23,9 +23,18 @@
       <input name="q" type="search" placeholder="Name, #issue, #PR, domain, source id" aria-label="Search">
     </form>
     {% endif %}
+    <div class="who">
+      {% if user %}
+      {% if user.is_admin %}<a href="/admin">Admin</a>{% endif %}
+      <a class="me" href="/account" title="Your account">{% if user.avatar_url %}<img src="{{ user.avatar_url }}&s=48" alt="" width="24" height="24">{% endif %}{{ user.login }}</a>
+      {% else %}
+      <a href="/auth/login?next={{ back|urlencode }}">Log in with GitHub</a>
+      {% endif %}
+    </div>
   </div>
 </header>
 <main class="wrap">
+{% if request.query_params.get('notice') %}<p class="notice" role="status">{{ request.query_params.get('notice') }}</p>{% endif %}
 {% block content %}{% endblock %}
 </main>
 </body>

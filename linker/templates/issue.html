@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import state_pill, folder_link %}
+{% from "_macros.html" import state_pill, folder_link, edit_button, form_fields with context %}
 {% block title %}#{{ i.number }} · {{ origin }}{% endblock %}
 {% block content %}
 <section class="head">
@@ -17,20 +17,33 @@
   <h2>Linked folders</h2>
   {% if i.links %}
   <table>
-    <thead><tr><th>Folder</th><th>Theme</th><th>Found by</th><th>Confidence</th></tr></thead>
+    <thead><tr><th>Folder</th><th>Theme</th><th>Found by</th><th>Confidence</th>{% if can_edit %}<th></th>{% endif %}</tr></thead>
     <tbody>
     {% for l in i.links %}
       <tr>
         <td>{{ folder_link(origin, l.path, l.name) }} <span class="muted small mono">{{ l.path }}</span></td>
         <td>{% if l.theme_path %}{{ folder_link(origin, l.theme_path, l.theme) }}{% endif %}</td>
         <td>{{ l.methods }}</td>
-        <td>{{ 'manual' if l.manual else '%.0f%%'|format(l.confidence * 100) }}</td>
+        <td>{{ ('manual' ~ (' · @' ~ l.by_login if l.by_login else '')) if l.manual else '%.0f%%'|format(l.confidence * 100) }}</td>
+        {% if can_edit %}<td>{{ edit_button('/edit/issue-link', 'Remove' if l.manual else 'Unlink', {'action': 'reset' if l.manual else 'unlink', 'origin': origin, 'issue': i.number, 'path': l.path}) }}</td>{% endif %}
       </tr>
     {% endfor %}
     </tbody>
   </table>
   {% else %}<p class="muted">No folder found for this issue.</p>{% endif %}
-  {% if i.removed_links %}<p class="muted small">Manually unlinked: {% for r in i.removed_links %}<span class="mono">{{ r.path }}</span>{{ ', ' if not loop.last }}{% endfor %}</p>{% endif %}
+  {% if i.removed_links %}
+  <ul class="rows small removed-links">
+    {% for r in i.removed_links %}<li><span class="muted grow">Unlinked by hand: <span class="mono">{{ r.path }}</span> · {{ r.at|day }}{% if r.by_login %} by @{{ r.by_login }}{% endif %}</span>{% if can_edit %}{{ edit_button('/edit/issue-link', 'Restore', {'action': 'restore', 'origin': origin, 'issue': i.number, 'path': r.path}) }}{% endif %}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  {% if can_edit %}
+  <form class="filters connect" method="post" action="/edit/issue-link">{{ form_fields() }}
+    <input type="hidden" name="action" value="add"><input type="hidden" name="origin" value="{{ origin }}"><input type="hidden" name="issue" value="{{ i.number }}">
+    <span class="small muted">Link a folder</span>
+    <input name="path" required placeholder="e.g. src/en/foo or lib-multisrc/madara" aria-label="Folder path">
+    <button type="submit">Link</button>
+  </form>
+  {% endif %}
 </section>
 
 <section>

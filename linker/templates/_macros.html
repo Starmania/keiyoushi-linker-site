@@ -62,3 +62,15 @@
 {% elif state == 'drift' %}<span class="tag warn"{% if behind %} title="{{ basis_title(basis) }}"{% endif %}>domains differ{% if behind %} · {{ behind_note(behind, basis, me) }}{% endif %}</span>
 {% else %}<span class="tag">no current domain</span>{% endif %}
 {%- endmacro %}
+
+{# Hidden fields every edit form needs; import with context (uses `user` and `back`). #}
+{% macro form_fields() -%}
+<input type="hidden" name="csrf" value="{{ user.csrf }}"><input type="hidden" name="back" value="{{ back }}">
+{%- endmacro %}
+
+{# A one-button POST form. Non-string values (lists of pairs) are sent as JSON. #}
+{% macro edit_button(url, label, fields, cls='') -%}
+<form class="inline-edit" method="post" action="{{ url }}">{{ form_fields() }}
+{%- for k, v in fields.items() %}<input type="hidden" name="{{ k }}" value="{% if v is string or v is number %}{{ v }}{% else %}{{ v|tojson|forceescape }}{% endif %}">{% endfor -%}
+<button type="submit" class="mini{{ ' ' ~ cls if cls }}">{{ label }}</button></form>
+{%- endmacro %}

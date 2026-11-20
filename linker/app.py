@@ -1,14 +1,16 @@
-import os
+import json
 from datetime import UTC, date, datetime
 from pathlib import Path
+from urllib.parse import urlencode
 
-from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from linker import queries
+from linker import auth, queries
+from linker.auth import api_editor, audit, current_user, form_of, safe_next
 from linker.db import conn as db
 
 HERE = Path(__file__).parent
@@ -117,42 +119,39 @@ def api_search(q: str, origin: str = Depends(origin_of)):
     return queries.search(db(), origin, q)
 
 
-def require_token(authorization: str | None = Header(None)):
-    expected = os.environ.get("LINKER_TOKEN")
-    if not expected or authorization != f"Bearer {expected}":
-        raise HTTPException(401, "a valid Bearer token is required")
-
-
-def set_override(origin: str, number: int, path: str, action: str | None):
+def set_override(origin: str, number: int, path: str, action: str | None, user: dict):
+    """action: "add" | "remove" | None (back to the automatic links)."""
     c = db()
+    if action == "add":
+        found(c.execute("SELECT 1 FROM extension WHERE origin = ? AND path = ?", (origin, path)).fetchone(), f"folder {path}")
     with c:
         if action is None:
-            c.execute("DELETE FROM issue_link_override WHERE origin = ? AND issue = ? AND path = ?", (origin, number, path))
+            c.execute("DELETE FROM main.issue_link_override WHERE origin = ? AND issue = ? AND path = ?", (origin, number, path))
         else:
             c.execute(
-                "INSERT OR REPLACE INTO main.issue_link_override VALUES (?,?,?,?,?)",
-                (origin, number, path, action, datetime.now(UTC).isoformat(timespec="seconds")),
+                "INSERT OR REPLACE INTO main.issue_link_override (origin, issue, path, action, at, by_account) VALUES (?,?,?,?,?,?)",
+                (origin, number, path, action, datetime.now(UTC).isoformat(timespec="seconds"), user["id"]),
             )
+    audit(user, action or "reset", {"kind": "issue_link", "origin": origin, "issue": number, "path": path})
     return queries.issue(db(), origin, number)
 
 
-@api.put("/{owner}/{repo}/issues/{number}/links/{path:path}", dependencies=[Depends(require_token)])
-def api_link_add(number: int, path: str, origin: str = Depends(origin_of)):
+@api.put("/{owner}/{repo}/issues/{number}/links/{path:path}")
+def api_link_add(number: int, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
     """Manually link an issue to a folder."""
-    found(db().execute("SELECT 1 FROM extension WHERE origin = ? AND path = ?", (origin, path)).fetchone(), "folder")
-    return set_override(origin, number, path, "add")
+    return set_override(origin, number, path, "add", user)
 
 
-@api.delete("/{owner}/{repo}/issues/{number}/links/{path:path}", dependencies=[Depends(require_token)])
-def api_link_remove(number: int, path: str, origin: str = Depends(origin_of)):
+@api.delete("/{owner}/{repo}/issues/{number}/links/{path:path}")
+def api_link_remove(number: int, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
     """Hide a wrong automatic link (or drop a manual one)."""
-    return set_override(origin, number, path, "remove")
+    return set_override(origin, number, path, "remove", user)
 
 
-@api.delete("/{owner}/{repo}/issues/{number}/overrides/{path:path}", dependencies=[Depends(require_token)])
-def api_override_reset(number: int, path: str, origin: str = Depends(origin_of)):
+@api.delete("/{owner}/{repo}/issues/{number}/overrides/{path:path}")
+def api_override_reset(number: int, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
     """Undo a manual add or remove, going back to the automatic links."""
-    return set_override(origin, number, path, None)
+    return set_override(origin, number, path, None, user)
 
 
 class SourceRef(BaseModel):
@@ -165,7 +164,7 @@ class SourcePair(BaseModel):
     b: SourceRef
 
 
-def set_source_override(pair: SourcePair, action: str | None):
+def set_source_override(pair: SourcePair, action: str | None, user: dict):
     a, b = sorted([(pair.a.origin, pair.a.stable_id), (pair.b.origin, pair.b.stable_id)])
     if a[0] == b[0]:
         raise HTTPException(422, "a source link joins two different origins")
@@ -177,39 +176,133 @@ def set_source_override(pair: SourcePair, action: str | None):
         if action is None:
             c.execute("DELETE FROM main.source_link_override WHERE origin_a = ? AND stable_a = ? AND origin_b = ? AND stable_b = ?", (*a, *b))
         else:
-            c.execute("INSERT OR REPLACE INTO main.source_link_override VALUES (?,?,?,?,?,?)",
-                      (*a, *b, action, datetime.now(UTC).isoformat(timespec="seconds")))
+            c.execute("INSERT OR REPLACE INTO main.source_link_override (origin_a, stable_a, origin_b, stable_b, action, at, by_account) "
+                      "VALUES (?,?,?,?,?,?,?)", (*a, *b, action, datetime.now(UTC).isoformat(timespec="seconds"), user["id"]))
+    audit(user, action or "reset", {"kind": "source_link", "a": list(a), "b": list(b)})
     return {"a": {"origin": a[0], "stable_id": a[1]}, "b": {"origin": b[0], "stable_id": b[1]}, "override": action}
 
 
-@api.put("/source-links", dependencies=[Depends(require_token)])
-def api_source_link_add(pair: SourcePair):
+@api.put("/source-links")
+def api_source_link_add(pair: SourcePair, user: dict = Depends(api_editor)):
     """Link two sources of different repos by hand (stable ids as on extension pages)."""
-    return set_source_override(pair, "add")
+    return set_source_override(pair, "add", user)
 
 
-@api.delete("/source-links", dependencies=[Depends(require_token)])
-def api_source_link_remove(pair: SourcePair):
+@api.delete("/source-links")
+def api_source_link_remove(pair: SourcePair, user: dict = Depends(api_editor)):
     """Hide a wrong automatic link (or drop a manual one)."""
-    return set_source_override(pair, "remove")
+    return set_source_override(pair, "remove", user)
 
 
-@api.delete("/source-links/override", dependencies=[Depends(require_token)])
-def api_source_link_reset(pair: SourcePair):
+@api.delete("/source-links/override")
+def api_source_link_reset(pair: SourcePair, user: dict = Depends(api_editor)):
     """Undo a manual add or hide, going back to the automatic links."""
-    return set_source_override(pair, None)
+    return set_source_override(pair, None, user)
 
 
 app.include_router(api)
+app.include_router(auth.router)
 
 
 # ---------------------------------------------------------------- pages
 
 
 def page(request: Request, template: str, **ctx):
-    if "origin" in ctx:
+    if ctx.get("origin"):
         ctx["tracked"] = queries.tracked(db(), ctx["origin"])
+    ctx["user"] = user = current_user(request)
+    ctx["can_edit"] = bool(user and user["can_edit"])
+    ctx["back"] = request.url.path + (f"?{request.url.query}" if request.url.query else "")
     return templates.TemplateResponse(request, template, ctx)
+
+
+def back_to(target: str | None, notice: str | None = None) -> RedirectResponse:
+    """Back to the page a button was on, with an optional message shown at its top."""
+    target = safe_next(target)
+    if notice:
+        target += ("&" if "?" in target else "?") + urlencode({"notice": notice})
+    return RedirectResponse(target, status_code=303)
+
+
+# ---------------------------------------------------------------- account, admin and edit buttons
+
+
+@app.get("/account", response_class=HTMLResponse)
+def account_page(request: Request, new_token: str | None = None):
+    user = current_user(request)
+    if not user:
+        return RedirectResponse("/auth/login?" + urlencode({"next": "/account"}), status_code=303)
+    return page(request, "account.html", origin=None, tokens=auth.tokens(user), new_token=new_token)
+
+
+@app.post("/account/tokens", response_class=HTMLResponse)
+async def account_token_create(request: Request):
+    user, fields = await form_of(request, need="any")
+    # Rendered directly: the token is shown this once and never put in a URL.
+    return account_page(request, new_token=auth.create_token(user, fields.get("name", "")))
+
+
+@app.post("/account/tokens/revoke")
+async def account_token_revoke(request: Request):
+    user, fields = await form_of(request, need="any")
+    auth.revoke_token(user, int(fields["id"]))
+    return back_to("/account", "Token revoked")
+
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin_page(request: Request):
+    user = current_user(request)
+    if not user or not user["is_admin"]:
+        raise HTTPException(403, "admins only")
+    return page(request, "admin.html", origin=None, accounts=queries.accounts(db()), log=queries.audit_log(db()), roles=auth.ROLES)
+
+
+@app.post("/admin/role")
+async def admin_role(request: Request):
+    user, fields = await form_of(request, need="admin")
+    auth.set_role(user, int(fields["account"]), fields["role"])
+    return back_to("/admin", "Role updated")
+
+
+def _pairs(fields: dict) -> list[SourcePair]:
+    """The hidden `pairs` field: [[origin_a, stable_a, origin_b, stable_b], ...]."""
+    return [SourcePair(a=SourceRef(origin=oa, stable_id=sa), b=SourceRef(origin=ob, stable_id=sb))
+            for oa, sa, ob, sb in json.loads(fields.get("pairs") or "[]")]
+
+
+@app.post("/edit/source-links")
+async def edit_source_links(request: Request):
+    user, fields = await form_of(request)
+    action = {"hide": "remove", "restore": None, "add": "add"}[fields["action"]]
+    for pair in _pairs(fields):
+        set_source_override(pair, action, user)
+    return back_to(fields.get("back"), {"hide": "Link hidden", "restore": "Link restored", "add": "Linked"}[fields["action"]])
+
+
+@app.post("/edit/source-links/connect")
+async def edit_source_links_connect(request: Request):
+    """Link one folder's sources to another repo's folder: same language, or all to the side with a single source."""
+    user, fields = await form_of(request)
+    other_path = fields.get("other_path", "").strip().strip("/")
+    try:
+        pairs = queries.connect_pairs(db(), fields["origin"], fields["path"], fields["other_origin"], other_path)
+    except ValueError as e:
+        return back_to(fields.get("back"), str(e))
+    for a, b in pairs:
+        set_source_override(SourcePair(a=SourceRef(origin=a[0], stable_id=a[1]), b=SourceRef(origin=b[0], stable_id=b[1])), "add", user)
+    return back_to(fields.get("back"), f"Linked to {other_path}")
+
+
+@app.post("/edit/issue-link")
+async def edit_issue_link(request: Request):
+    user, fields = await form_of(request)
+    action = {"unlink": "remove", "restore": None, "reset": None, "add": "add"}[fields["action"]]
+    path = fields.get("path", "").strip().strip("/")
+    try:
+        set_override(fields["origin"], int(fields["issue"]), path, action, user)
+    except HTTPException as e:
+        return back_to(fields.get("back"), e.detail)
+    return back_to(fields.get("back"), {"unlink": "Unlinked", "restore": "Restored", "reset": "Removed", "add": "Linked"}[fields["action"]])
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -297,4 +390,5 @@ def search_page(request: Request, q: str = "", origin: str = Depends(origin_of))
 # Last: folder paths depend on the origin's layout (src/<lang>/<module>, web/src/engine/websites/<Name>...).
 @app.get("/{owner}/{repo}/{path:path}", response_class=HTMLResponse)
 def folder_page(request: Request, path: str, origin: str = Depends(origin_of)):
-    return page(request, "folder.html", origin=origin, f=found(queries.folder(db(), origin, path.strip("/")), "page"))
+    return page(request, "folder.html", origin=origin, f=found(queries.folder(db(), origin, path.strip("/")), "page"),
+                other_origins=[o["id"] for o in queries.origins(db()) if o["id"] != origin])
