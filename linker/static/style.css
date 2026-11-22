@@ -151,10 +151,19 @@ button { background: var(--accent); color: #fff; border-color: transparent; curs
 .cmds code { flex: 1; min-width: 0; overflow-x: auto; white-space: pre; font-size: .8rem; padding: .2rem .4rem; background: var(--bg); border-radius: 4px; }
 .cmds li.disabled code { color: var(--muted); font-family: inherit; }
 .device-form { display: grid; gap: .6rem; max-width: 52rem; }
-.device-form > label { display: grid; gap: .25rem; }
+.device-form > label.field { display: grid; gap: .25rem; }
 .device-form #device-custom, .device-form input[name=app] { width: 100%; box-sizing: border-box; font-size: .8rem; }
-.device-form fieldset { border: 1px solid var(--border); border-radius: var(--radius); padding: .5rem .75rem; display: grid; gap: .35rem; }
-.device-form .check code { overflow-wrap: anywhere; }
+.device-form fieldset { border: 1px solid var(--border); border-radius: var(--radius); padding: .25rem 0; margin: 0; }
+.device-form legend { margin-left: .75rem; padding: 0 .25rem; }
+/* One row per command: checkbox, label, then the template on its own tinted block; rows alternate. */
+.builtin { display: grid; grid-template-columns: auto 13rem 1fr; gap: .6rem; align-items: start; padding: .5rem .75rem; font-size: .9rem; cursor: pointer; }
+.builtin:nth-of-type(even) { background: color-mix(in srgb, var(--border) 35%, transparent); }
+.builtin input { margin-top: .2rem; }
+.builtin code { font-size: .78rem; padding: .25rem .5rem; border-radius: 4px; background: var(--bg); border: 1px solid var(--border); overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .builtin { grid-template-columns: auto 1fr; }
+  .builtin code { grid-column: 2; }
+}
 .device-form button { justify-self: start; }
 .notice.error { border-left-color: var(--fail); }
 @media (max-width: 600px) {

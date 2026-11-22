@@ -44,15 +44,15 @@
   {% if device_error %}<p class="notice error" role="alert">{{ device_error }}</p>{% endif %}
   {% set d = device_draft %}
   <form class="device-form" method="post" action="/account/device">{{ form_fields() }}
-    <label class="small">App package
+    <label class="small field">App package
       <input name="app" class="mono" required value="{{ d.app if d else device_prefs.app }}" placeholder="app.mihon">
     </label>
     <fieldset>
       <legend class="small">Built-in commands</legend>
       {% for b in device_builtin %}
       {% set shown = (d.get('show_' ~ b.id) == '1') if d else (b.id not in device_prefs.hidden) %}
-      <label class="check"><input type="checkbox" name="show_{{ b.id }}" value="1" {{ 'checked' if shown }}>
-        {{ b.label }} <code class="small">{{ b.template }}</code></label>
+      <label class="builtin"><input type="checkbox" name="show_{{ b.id }}" value="1" {{ 'checked' if shown }}>
+        <span>{{ b.label }}</span><code>{{ b.template }}</code></label>
       {% endfor %}
     </fieldset>
     <label class="small" for="device-custom">Your own commands, one <code>label: command</code> per line</label>
