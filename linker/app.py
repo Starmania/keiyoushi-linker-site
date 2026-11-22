@@ -66,10 +66,11 @@ def api_extensions(
     q: str | None = None, lang: str | None = None, theme: str | None = None, status: str | None = None,
     content: str | None = None, removed: bool = False, sort: str = "downloads",
     broken_days: int | None = Query(None, ge=0, description="Only extensions not working for at least this many days"),
+    fix: str | None = Query(None, description="issue: broken, with an open issue and no open PR; noissue: broken, no open issue or PR"),
     limit: int = Query(60, le=500), offset: int = 0,
 ):
     return queries.extensions(db(), origin, q=q, lang=lang, theme=theme, status=status, content=content,
-                              broken_days=broken_days, removed=removed, sort=sort, limit=limit, offset=offset)
+                              broken_days=broken_days, fix=fix, removed=removed, sort=sort, limit=limit, offset=offset)
 
 
 @api.get("/{owner}/{repo}/facets")
@@ -334,17 +335,17 @@ def missing_page(request: Request, target: str | None = Query(None, alias="in"),
 def gallery(
     request: Request, origin: str = Depends(origin_of),
     q: str | None = None, lang: str | None = None, theme: str | None = None, status: str | None = None,
-    content: str | None = None, broken: str | None = None, removed: bool = False, sort: str | None = None,
-    page_no: int = Query(1, alias="page", ge=1),
+    content: str | None = None, broken: str | None = None, fix: str | None = None, removed: bool = False,
+    sort: str | None = None, page_no: int = Query(1, alias="page", ge=1),
 ):
     per_page = 60
     sort = sort or ("downloads" if queries.tracked(db(), origin)["downloads"] else "name")
     broken_days = int(broken) if broken and broken.isdigit() else None
     data = queries.extensions(db(), origin, q=q or None, lang=lang or None, theme=theme or None, status=status or None,
-                              content=content or None, broken_days=broken_days, removed=removed, sort=sort,
-                              limit=per_page, offset=(page_no - 1) * per_page)
+                              content=content or None, broken_days=broken_days, fix=fix or None, removed=removed,
+                              sort=sort, limit=per_page, offset=(page_no - 1) * per_page)
     filters = {"q": q or "", "lang": lang or "", "theme": theme or "", "status": status or "", "content": content or "",
-               "broken": broken or "", "removed": removed, "sort": sort}
+               "broken": broken or "", "fix": fix or "", "removed": removed, "sort": sort}
     return page(request, "gallery.html", origin=origin, data=data, facets=queries.facets(db(), origin),
                 filters=filters, page_no=page_no, pages=max(1, -(-data["total"] // per_page)))
 

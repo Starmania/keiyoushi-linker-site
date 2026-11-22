@@ -96,6 +96,16 @@ SORTS = {
 }
 
 
+BROKEN = "st.status IN ('fail', 'partial', 'maybe')"
+# What a dev looking for something to fix narrows to: broken with an issue nobody has a PR open for, or broken
+# with no issue yet. `oi` and `pr` are joined once per query: issue_link_effective is a grouped view, too slow to
+# run per row in a WHERE.
+FIX = {
+    "issue": f"{BROKEN} AND coalesce(oi.n, 0) > 0 AND coalesce(pr.open, 0) = 0",
+    "noissue": f"{BROKEN} AND coalesce(oi.n, 0) = 0 AND coalesce(pr.open, 0) = 0",
+}
+
+
 def rows(cur) -> list[dict]:
     return [dict(r) for r in cur]
 
@@ -130,7 +140,7 @@ def facets(conn: sqlite3.Connection, origin: str) -> dict:
 
 
 def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, content=None, broken_days=None,
-               removed=False, sort="downloads", limit=60, offset=0) -> dict:
+               fix=None, removed=False, sort="downloads", limit=60, offset=0) -> dict:
     where = ["e.origin = ?", "e.kind = 'src'"]
     args: list = [origin]
     if not removed:
@@ -147,6 +157,8 @@ def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, cont
     if content:
         where.append("e.content_warning = ?")
         args.append(content)
+    if fix in FIX:
+        where.append(FIX[fix])
     if broken_days:
         where.append("st.status = 'fail' AND st.since <= date('now', ?)")
         args.append(f"-{int(broken_days)} days")
@@ -167,9 +179,14 @@ def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, cont
             FROM pr_folder f JOIN pull_request p ON p.origin = f.origin AND p.number = f.number
             WHERE f.origin = ? GROUP BY f.path
         ) pr ON pr.path = e.path
+        LEFT JOIN (
+            SELECT l.path, count(*) AS n
+            FROM issue_link_effective l JOIN issue i ON i.origin = l.origin AND i.number = l.issue
+            WHERE l.origin = ? AND i.state = 'OPEN' GROUP BY l.path
+        ) oi ON oi.path = e.path
         WHERE {' AND '.join(where)}
     """
-    args = [origin, *args]
+    args = [origin, origin, *args]
     total = conn.execute(f"SELECT count(*) {base}", args).fetchone()[0]
     first_run = conn.execute("SELECT min(date) FROM status_snapshot WHERE origin = ?", (origin,)).fetchone()[0]
     items = rows(conn.execute(
@@ -180,8 +197,7 @@ def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, cont
                CAST(julianday('now') - julianday(st.since) AS INTEGER) AS status_days,
                st.since <= ? AS status_since_open, d.d7 AS downloads_7d, d.all_time AS downloads_all,
                lc.date AS last_changed,
-               (SELECT count(*) FROM issue_link_effective l JOIN issue i ON i.origin = l.origin AND i.number = l.issue
-                 WHERE l.origin = e.origin AND l.path = e.path AND i.state = 'OPEN') AS open_issues,
+               coalesce(oi.n, 0) AS open_issues,
                coalesce(pr.n, 0) AS pr_count, coalesce(pr.open, 0) AS open_prs,
                (SELECT group_concat(DISTINCT host) FROM domain_usage du
                  WHERE du.origin = e.origin AND du.path = e.path AND du.to_sha IS NULL AND du.role = 'base') AS hosts
