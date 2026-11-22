@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from linker import auth, queries
+from linker import auth, device, queries
 from linker.auth import api_editor, audit, current_user, form_of, safe_next
 from linker.db import conn as db
 
@@ -229,11 +229,28 @@ def back_to(target: str | None, notice: str | None = None) -> RedirectResponse:
 
 
 @app.get("/account", response_class=HTMLResponse)
-def account_page(request: Request, new_token: str | None = None):
+def account_page(request: Request, new_token: str | None = None, device_draft: dict | None = None,
+                 device_error: str | None = None):
     user = current_user(request)
     if not user:
         return RedirectResponse("/auth/login?" + urlencode({"next": "/account"}), status_code=303)
-    return page(request, "account.html", origin=None, tokens=auth.tokens(user), new_token=new_token)
+    prefs = device.prefs(user["id"])
+    return page(request, "account.html", origin=None, tokens=auth.tokens(user), new_token=new_token,
+                device_builtin=device.BUILTIN, device_prefs=prefs,
+                device_custom=device_draft.get("custom", "") if device_draft else device.custom_text(prefs),
+                device_draft=device_draft, device_error=device_error)
+
+
+@app.post("/account/device", response_class=HTMLResponse)
+async def account_device(request: Request):
+    user, fields = await form_of(request, need="any")
+    try:
+        prefs = device.parse(fields)
+    except ValueError as e:
+        # Rendered directly so what was typed isn't lost.
+        return account_page(request, device_draft=fields, device_error=str(e))
+    device.save(user["id"], prefs)
+    return RedirectResponse("/account?" + urlencode({"notice": "Device commands saved"}) + "#device", status_code=303)
 
 
 @app.post("/account/tokens", response_class=HTMLResponse)
@@ -391,5 +408,8 @@ def search_page(request: Request, q: str = "", origin: str = Depends(origin_of))
 # Last: folder paths depend on the origin's layout (src/<lang>/<module>, web/src/engine/websites/<Name>...).
 @app.get("/{owner}/{repo}/{path:path}", response_class=HTMLResponse)
 def folder_page(request: Request, path: str, origin: str = Depends(origin_of)):
+    user = current_user(request)
+    prefs = device.prefs(user["id"]) if user else None
     return page(request, "folder.html", origin=origin, f=found(queries.folder(db(), origin, path.strip("/")), "page"),
-                other_origins=[o["id"] for o in queries.origins(db()) if o["id"] != origin])
+                other_origins=[o["id"] for o in queries.origins(db()) if o["id"] != origin],
+                device_app=prefs and prefs["app"], device_commands=prefs and device.commands(prefs))

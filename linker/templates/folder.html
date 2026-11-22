@@ -65,6 +65,36 @@
 </section>
 {% endif %}
 
+{% if user and f.kind == 'src' and f.sources and not f.removed_sha %}
+<section class="device" id="device">
+  <h2>Check on a device</h2>
+  <script type="application/json" id="device-data">{{ {'pkg': f.package_name, 'apk': f.apk_url, 'name': f.name, 'app': device_app, 'sources': f.sources}|tojson }}</script>
+  <div class="filters device-inputs">
+    {% if f.sources|length > 1 %}
+    <select id="dev-source" aria-label="Source">{% for s in f.sources %}<option value="{{ loop.index0 }}">{{ s.name }} ({{ s.lang }})</option>{% endfor %}</select>
+    {% endif %}
+    <input id="dev-query" type="search" placeholder="Title or title URL to try, e.g. from the issue" aria-label="Title or URL to try">
+  </div>
+
+  <h3 class="muted">On this phone</h3>
+  <ul class="rows dev-links">
+    <li><a href="https://keiyoushi.github.io/add-repo">Add the keiyoushi store to Mihon</a></li>
+    {% if f.apk_url %}<li><a data-href="{apk}">Install this extension’s APK</a></li>{% endif %}
+    <li><a data-href="{url}">Open the site</a> <span class="muted small">Android offers Mihon when the extension handles the site’s links</span></li>
+  </ul>
+
+  <h3 class="muted">Commands</h3>
+  {% if device_commands %}
+  <ul class="rows cmds">
+    {% for c in device_commands %}<li data-tpl="{{ c.template }}"><span class="cmd-label">{{ c.label }}</span><code></code><button type="button" class="copy">Copy</button></li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">All commands are hidden.</p>{% endif %}
+  <p class="muted small"><a href="/account#device">Choose these commands in your account settings</a> (app package: <span class="mono">{{ device_app }}</span>).</p>
+  <script src="/static/device.js" defer></script>
+</section>
+{% endif %}
+
 {% set xr = f.elsewhere %}
 <section>
   <h2>Same site in other repositories</h2>

@@ -295,6 +295,9 @@ def folder(conn, origin, path, history_limit=200) -> dict | None:
         for s in sources:
             s["mirror_urls"] = json.loads(s["mirror_urls"])
         out["sources"] = sources
+        apk = conn.execute("SELECT apk_url FROM extension_apk WHERE origin = ? AND package_name = ?",
+                           (origin, ext["package_name"])).fetchone()
+        out["apk_url"] = apk[0] if apk else None
         status = conn.execute(f"SELECT * FROM ({LATEST_STATUS}) WHERE origin = ? AND path = ?", (origin, path)).fetchone()
         first_run = conn.execute("SELECT min(date) FROM status_snapshot WHERE origin = ?", (origin,)).fetchone()[0]
         out["status"] = dict(status) | {

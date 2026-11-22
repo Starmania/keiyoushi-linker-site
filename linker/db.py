@@ -28,6 +28,13 @@ CREATE TABLE IF NOT EXISTS source_link_override (
     at       TEXT NOT NULL,
     PRIMARY KEY (origin_a, stable_a, origin_b, stable_b)
 );
+-- Per-account settings as JSON, e.g. key "device": the commands shown on folder pages (linker/device.py).
+CREATE TABLE IF NOT EXISTS account_pref (
+    account_id INTEGER NOT NULL,
+    key        TEXT NOT NULL,
+    value      TEXT NOT NULL,
+    PRIMARY KEY (account_id, key)
+);
 -- GitHub accounts, keyed by GitHub's numeric id (logins can be renamed).
 CREATE TABLE IF NOT EXISTS account (
     id            INTEGER PRIMARY KEY,

@@ -37,6 +37,35 @@
   </form>
 </section>
 
+<section id="device">
+  <h2>Device commands</h2>
+  <p class="notice">Saved on the server with your account, so they follow you to any browser. Don’t put passwords or keys in these commands.</p>
+  <p class="muted small">Shown under “Check on a device” on each extension’s page, filled in with that source and the title you type there.</p>
+  {% if device_error %}<p class="notice error" role="alert">{{ device_error }}</p>{% endif %}
+  {% set d = device_draft %}
+  <form class="device-form" method="post" action="/account/device">{{ form_fields() }}
+    <label class="small">App package
+      <input name="app" class="mono" required value="{{ d.app if d else device_prefs.app }}" placeholder="app.mihon">
+    </label>
+    <fieldset>
+      <legend class="small">Built-in commands</legend>
+      {% for b in device_builtin %}
+      {% set shown = (d.get('show_' ~ b.id) == '1') if d else (b.id not in device_prefs.hidden) %}
+      <label class="check"><input type="checkbox" name="show_{{ b.id }}" value="1" {{ 'checked' if shown }}>
+        {{ b.label }} <code class="small">{{ b.template }}</code></label>
+      {% endfor %}
+    </fieldset>
+    <label class="small" for="device-custom">Your own commands, one <code>label: command</code> per line</label>
+    <textarea id="device-custom" name="custom" rows="5" class="mono" spellcheck="false"
+      placeholder="Open over ssh: ssh phone am start -a android.intent.action.VIEW -d {url:sh2}">{{ device_custom }}</textarea>
+    <p class="muted small">Placeholders: <code>{url}</code> <code>{query}</code> <code>{pkg}</code> <code>{apk}</code>
+      <code>{app}</code> <code>{name}</code> <code>{source_id}</code> <code>{lang}</code>, raw. <code>{url:sh}</code> quotes
+      the value for your shell; <code>{url:sh2}</code> for a command that goes through two shells
+      (<code>ssh host cmd</code>, <code>adb shell cmd</code>).</p>
+    <button type="submit">Save</button>
+  </form>
+</section>
+
 <section>
   <h2>Sessions</h2>
   <div class="filters">
