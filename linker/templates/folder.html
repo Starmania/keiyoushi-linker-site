@@ -37,10 +37,29 @@
   <div class="strip" aria-label="Daily status, oldest first">
     {% for s in f.status_history %}<span class="cell st-{{ s.status }}" title="{{ s.date }}: {{ s.status }}"></span>{% endfor %}
   </div>
+  {% set rc = f.status.recheck if f.status %}
+  {% if rc and rc.verdict %}<p class="verdict st-{{ f.status.status }}">{{ rc.verdict }}</p>{% endif %}
+  {% if rc and rc.tries %}
+  <div class="rechecks">
+    <p class="muted small">{{ 'Rechecked through our proxies, in order:' if rc.decided else 'No recheck proxy could reach the site, so the verdict is GitHub’s. Proxies tried, in order:' }}</p>
+    {% for t in rc.tries %}
+    <div class="recheck">
+      <span class="small"><b>{{ t.from }}</b>: {{ t.text }}</span>
+      {% if t.ops and t.status != 'error' %}<ul class="ops">{% for op in t.ops %}<li class="op-{{ op.status }}" title="{{ op.status_label }}">{{ op.label }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if rc and rc.notes %}
+  <ul class="notes small">{% for n in rc.notes %}<li>{{ n }}</li>{% endfor %}</ul>
+  {% endif %}
   {% if f.status and f.status.ops %}
+  {% set github_ops %}
   <ul class="ops">
     {% for op in f.status.ops %}<li class="op-{{ op.status }}" title="{{ op.status_label }}{% if op.error %}: {{ op.error }}{% endif %}">{{ op.label }}</li>{% endfor %}
   </ul>
+  {% endset %}
+  {% if rc and rc.decided %}<details><summary>From GitHub’s servers</summary>{{ github_ops }}</details>{% else %}{{ github_ops }}{% endif %}
   {% endif %}
   <p class="muted small">Last check {{ f.status.date if f.status }}{% if f.status and f.status.since %}, in this state since {{ f.status.since }}{% endif %}. Source: <a href="https://hazptr.github.io/keiyoushi-monitor/">keiyoushi-monitor</a>.</p>
 </section>

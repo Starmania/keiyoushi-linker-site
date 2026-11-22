@@ -139,6 +139,11 @@ button { background: var(--accent); color: #fff; border-color: transparent; curs
 .ops { display: flex; flex-wrap: wrap; gap: .35rem; list-style: none; padding: 0; margin: .75rem 0 .25rem; }
 .ops li { font-size: .8rem; padding: 0 .5rem; border-radius: 6px; border: 1px solid var(--c); color: var(--text); }
 .ops li::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: .35rem; }
+.verdict { font-weight: 600; margin: .75rem 0 .25rem; padding-left: .6rem; border-left: 4px solid var(--c); }
+.rechecks { margin: .5rem 0; }
+.rechecks > p { margin: .25rem 0; }
+.recheck .ops { margin: .2rem 0 .5rem; }
+.notes { margin: .25rem 0 .5rem; padding-left: 1.2rem; color: var(--muted); }
 
 table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: block; overflow-x: auto; }
 thead, tbody { display: table; width: 100%; border-collapse: collapse; }

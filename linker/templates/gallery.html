@@ -43,7 +43,7 @@
   {% for e in data['items'] %}
   <a class="card{{ ' removed' if e.removed }}" href="/{{ origin }}/{{ e.path }}">
     {% if e.ops %}
-    <div class="ops-band" aria-label="Monitor checks: {% for o in e.ops %}{{ o.label }} {{ o.status_label|lower }}{{ ', ' if not loop.last }}{% endfor %}">
+    <div class="ops-band" aria-label="Monitor checks{{ ' through a recheck proxy' if e.rechecked }}: {% for o in e.ops %}{{ o.label }} {{ o.status_label|lower }}{{ ', ' if not loop.last }}{% endfor %}">
       {% for o in e.ops %}<span class="op-seg op-{{ o.status }}" title="{{ o.label }}: {{ o.status_label }}"></span>{% endfor %}
     </div>
     {% elif e.status and e.status != 'unsupported' %}

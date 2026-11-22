@@ -25,9 +25,58 @@ def op_results(ops_json: str | None) -> list[dict]:
     ]
 
 
+RECHECK_OUTCOME = {"pass": "works", "fail": "fails too", "maybe": "turned away too", "error": "couldn’t reach the site"}
+
+
+def recheck(status: str, rechecks_json: str | None, notes_json: str | None) -> dict | None:
+    """What the monitor's recheck through its proxies says, for a snapshot that has one.
+
+    The monitor keeps the first proxy that passed, else the last one that failed or was turned away, and gives the
+    extension that verdict. Tries that all ended in `error` (a timeout through the proxy) say nothing about the
+    site and leave the sweep's verdict, as does an untestable override that only a pass replaces; `decided` is then
+    False and the page shows GitHub's run as usual."""
+    tries = json.loads(rechecks_json or "[]")
+    notes = json.loads(notes_json or "[]")
+    if not tries:
+        return {"decided": False, "verdict": None, "tries": [], "ops": [], "notes": notes} if notes else None
+    final = next((t for t in tries if t["status"] == "pass"), None) or next(
+        (t for t in reversed(tries) if t["status"] in ("fail", "maybe")), None
+    )
+    decided = bool(final) and final["status"] == status
+    lines = []
+    for t in tries:
+        text = RECHECK_OUTCOME.get(t["status"], t["status"])
+        if t["status"] == "fail" and t.get("step"):
+            text += f" ({OPS.get(t['step'], t['step'])})"
+        elif t["status"] == "maybe":
+            step = next((o["op"] for o in t.get("ops", []) if o["status"] == "maybe"), None)
+            why = "Cloudflare" if "cloudflare" in t.get("tags", []) else None
+            text += " (" + ", ".join(x for x in (why, step and f"at {OPS.get(step, step)}") if x) + ")" if why or step else ""
+        if t.get("ticked"):
+            text += ", after ticking Cloudflare’s checkbox"
+        lines.append({"from": t["from"], "status": t["status"], "text": text, "ops": op_results(json.dumps(t.get("ops", [])))})
+    verdict = None
+    if decided:
+        if final["status"] == "pass":
+            verdict = f"Blocks datacenter servers, works from a regular connection (passed from {final['from']})"
+        elif final["status"] == "fail":
+            verdict = f"Broken: {OPS.get(final.get('step'), final.get('step'))}, also through our proxies"
+        else:
+            step = next((o["op"] for o in final.get("ops", []) if o["status"] == "maybe"), None)
+            who = "Cloudflare still blocks" if "cloudflare" in final.get("tags", []) else "Still turned away through"
+            verdict = f"{who} our proxies" + (f" at {OPS.get(step, step)}" if step else "")
+    return {
+        "decided": decided,
+        "verdict": verdict,
+        "tries": lines,
+        "ops": op_results(json.dumps(final["ops"])) if decided else [],
+        "notes": notes,
+    }
+
+
 # `since` is filled in by the extractor when the monitor gave none.
 LATEST_STATUS = """
-    SELECT s.origin, s.path, s.status, s.date, s.ops, s.since
+    SELECT s.origin, s.path, s.status, s.date, s.ops, s.since, s.notes, s.rechecks
     FROM status_snapshot s
     JOIN (SELECT origin, path, max(date) AS date FROM status_snapshot GROUP BY origin, path) m USING (origin, path, date)
 """
@@ -127,7 +176,7 @@ def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, cont
         f"""
         SELECT e.path, e.lang, e.module, e.name, e.package_name, e.theme, e.content_warning, e.lib_version,
                e.version_code, e.icon_url, e.removed_sha IS NOT NULL AS removed,
-               st.status, st.date AS status_date, st.since AS status_since, st.ops,
+               st.status, st.date AS status_date, st.since AS status_since, st.ops, st.rechecks,
                CAST(julianday('now') - julianday(st.since) AS INTEGER) AS status_days,
                st.since <= ? AS status_since_open, d.d7 AS downloads_7d, d.all_time AS downloads_all,
                lc.date AS last_changed,
@@ -143,7 +192,10 @@ def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, cont
         [first_run, *args, limit, offset],
     ))
     for it in items:
-        it["ops"] = op_results(it["ops"])
+        # The card's bar shows the proxy run that decided the status, when a recheck did.
+        rc = recheck(it["status"], it.pop("rechecks"), None)
+        it["ops"] = rc["ops"] if rc and rc["decided"] else op_results(it["ops"])
+        it["rechecked"] = bool(rc and rc["decided"])
         it["hosts"] = sorted((it["hosts"] or "").split(",")) if it["hosts"] else []
         it["removed"] = bool(it["removed"])
     return {"total": total, "limit": limit, "offset": offset, "items": items}
@@ -231,6 +283,7 @@ def folder(conn, origin, path, history_limit=200) -> dict | None:
         first_run = conn.execute("SELECT min(date) FROM status_snapshot WHERE origin = ?", (origin,)).fetchone()[0]
         out["status"] = dict(status) | {
             "ops": op_results(status["ops"]),
+            "recheck": recheck(status["status"], status["rechecks"], status["notes"]),
             "since_open": bool(status["since"] and status["since"] <= first_run),
         } if status else None
         out["status_history"] = rows(conn.execute(
