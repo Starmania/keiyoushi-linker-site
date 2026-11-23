@@ -44,7 +44,7 @@
   <form class="filters connect" method="post" action="/edit/issue-link">{{ form_fields() }}
     <input type="hidden" name="action" value="add"><input type="hidden" name="origin" value="{{ origin }}"><input type="hidden" name="issue" value="{{ i.number }}">
     <span class="small muted">Link a folder</span>
-    <input name="path" required placeholder="e.g. src/en/foo or lib-multisrc/madara" aria-label="Folder path">
+    <input name="path" required placeholder="Extension name or folder, e.g. src/en/foo" aria-label="Folder path" data-suggest="{{ origin }}">
     <button type="submit">Link</button>
   </form>
   {% endif %}

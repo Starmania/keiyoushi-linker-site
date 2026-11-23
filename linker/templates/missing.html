@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_pill, state_pill, edit_button, gh with context %}
+{% from "_macros.html" import status_pill, state_pill, edit_button, form_fields, gh with context %}
 {% block title %}Missing sites{% endblock %}
 {% block content %}
 <h1>Missing sites</h1>
@@ -39,7 +39,15 @@ the extension when they name one of its domains, past or current.</p>
       <div class="muted small"><span class="mono">{{ i.path }}</span>{% if i.hosts %} · {{ i.hosts|join(', ') }}{% endif %}</div>
       {% if i.removed_in_target %}<div class="small">Removed from {{ m.target }}: {% for r in i.removed_in_target %}<a href="/{{ m.target }}/{{ r.path }}">{{ r.name }}</a>{{ ', ' if not loop.last }}{% endfor %}</div>{% endif %}
       {% if i.same_name %}<div class="small same-name">Same name in {{ m.target }}: <a href="/{{ m.target }}/{{ i.same_name.path }}">{{ i.same_name.name }}</a> <span class="muted mono">{{ i.same_name.path }}</span>
-        {%- if can_edit %} {{ edit_button('/edit/source-links/connect', 'Link', {'origin': origin, 'path': i.path, 'other_origin': m.target, 'other_path': i.same_name.path}) }}{% endif %}</div>{% endif %}
+        {%- if can_edit %} {{ edit_button('/edit/source-links/connect', 'Link', {'origin': origin, 'path': i.path, 'other_origin': m.target, 'other_path': i.same_name.path}) }}{% endif %}</div>
+      {% elif can_edit and not i.removed_in_target %}
+      <details class="link-by-hand small"><summary>Same site in {{ m.target }} under another name?</summary>
+        <form class="filters connect" method="post" action="/edit/source-links/connect">{{ form_fields() }}
+          <input type="hidden" name="origin" value="{{ origin }}"><input type="hidden" name="path" value="{{ i.path }}"><input type="hidden" name="other_origin" value="{{ m.target }}">
+          <input name="other_path" required placeholder="Extension name or folder in {{ m.target }}" aria-label="Folder in {{ m.target }}" data-suggest="{{ m.target }}">
+          <button type="submit">Link</button>
+        </form>
+      </details>{% endif %}
       {% for r in i.requests %}<div class="small request">{{ state_pill(r.state) }} <a href="/{{ m.target }}/issues/{{ r.number }}">#{{ r.number }}</a>{{ gh(m.target, 'issues', r.number) }} {{ r.title }}
         {%- if r.removed %} <span class="tag warn" title="Labelled “Previously deleted”: removed on purpose, it may not be taken back">previously deleted</span>{% endif %}</div>{% endfor %}
     </div>

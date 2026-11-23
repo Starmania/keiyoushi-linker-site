@@ -176,7 +176,7 @@
     <input type="hidden" name="origin" value="{{ origin }}"><input type="hidden" name="path" value="{{ f.path }}">
     <span class="small muted">Link to</span>
     <select name="other_origin" aria-label="Repository">{% for o in other_origins %}<option>{{ o }}</option>{% endfor %}</select>
-    <input name="other_path" required placeholder="Folder path, e.g. web/src/engine/websites/Foo" aria-label="Folder path">
+    <input name="other_path" required placeholder="Extension name or folder, e.g. web/src/engine/websites/Foo" aria-label="Folder path" data-suggest-from="other_origin">
     <button type="submit">Link</button>
   </form>
   {% endif %}
