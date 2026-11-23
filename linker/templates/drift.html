@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{% from "_macros.html" import basis_title, edit_button with context %}
+{% from "_macros.html" import basis_title, edit_button, form_fields with context %}
 {% block title %}Domain drift{% endblock %}
 {% block content %}
 <h1>Domain drift</h1>
 <p class="muted">The same source in two repositories (they once declared a domain at the same time) whose current domains no longer overlap.
 "Behind" is the repository still on a domain the other one has left. When neither is, it's the one whose current domain is
-older, marked "probably": both domains may still work.</p>
+older, marked "probably": both domains may still work. Editors can ignore a row that is wrong or not worth fixing; it comes
+back when either side's domains change.</p>
 
 <form class="filters" method="get">
   <select name="behind" aria-label="Behind" onchange="this.form.submit()">
@@ -13,12 +14,16 @@ older, marked "probably": both domains may still work.</p>
     {% for o in origins %}<option value="{{ o }}" {{ 'selected' if behind == o }}>{{ o }} behind ({{ d.counts.get(o, 0) }})</option>{% endfor %}
     <option value="unknown" {{ 'selected' if behind == 'unknown' }}>Unknown ({{ d.counts.get(None, 0) }})</option>
   </select>
+  <select name="show" aria-label="Ignored rows" onchange="this.form.submit()">
+    <option value="">To fix</option>
+    <option value="ignored" {{ 'selected' if show == 'ignored' }}>Ignored ({{ d.counts.ignored }})</option>
+  </select>
   <noscript><button type="submit">Apply</button></noscript>
 </form>
 
 {% if d['items'] %}
 <div class="table-wrap"><table class="drift">
-  <thead><tr><th>Behind</th>{% set first = d['items'][0] %}<th>{{ first.a.origin }}</th><th>{{ first.b.origin }}</th><th>Linked</th>{% if can_edit %}<th></th>{% endif %}</tr></thead>
+  <thead><tr><th>Behind</th>{% set first = d['items'][0] %}<th>{{ first.a.origin }}</th><th>{{ first.b.origin }}</th><th>Linked</th>{% if can_edit or show == 'ignored' %}<th></th>{% endif %}</tr></thead>
   <tbody>
   {% for r in d['items'] %}
     <tr>
@@ -30,7 +35,20 @@ older, marked "probably": both domains may still work.</p>
       </td>
       {% endfor %}
       <td class="small muted" data-label="Linked">{% if r.host %}<span class="mono">{{ r.host }}</span><br>{{ r.since|day }}{% else %}by hand{% endif %}{% if r.langs|length > 1 %}<br>{{ r.langs|join(', ') }}{% endif %}</td>
-      {% if can_edit %}<td>{{ edit_button('/edit/source-links', 'Hide', {'action': 'hide', 'pairs': r['keys']}) }}</td>{% endif %}
+      {% if r.ignored %}<td class="small" data-label="Ignored"><span class="tag">{{ r.ignored.label }}</span>
+        <div class="muted">{{ r.ignored.at|day }}{% if r.ignored.by_login %} by @{{ r.ignored.by_login }}{% endif %}</div>
+        {% if can_edit %}{{ edit_button('/edit/drift-ignore', 'Unignore', {'action': 'unignore', 'pair': r.pair}) }}{% endif %}</td>
+      {% elif can_edit %}<td class="drift-actions">
+        <form class="inline-edit ignore" method="post" action="/edit/drift-ignore">{{ form_fields() }}
+          <input type="hidden" name="action" value="ignore"><input type="hidden" name="pair" value="{{ r.pair|tojson|forceescape }}">
+          <select name="reason" aria-label="Why ignore it" required>
+            <option value="">Ignore because…</option>
+            {% for k, label in reasons.items() %}<option value="{{ k }}">{{ label }}</option>{% endfor %}
+          </select>
+          <button type="submit" class="mini">Ignore</button>
+        </form>
+        {{ edit_button('/edit/source-links', 'Hide link', {'action': 'hide', 'pairs': r['keys']}, '', 'Not the same site: remove the link between the two') }}
+      </td>{% endif %}
     </tr>
   {% endfor %}
   </tbody>

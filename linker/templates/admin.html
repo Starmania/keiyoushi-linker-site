@@ -51,7 +51,7 @@
   <ul class="rows">
     {% for e in log %}
     <li>
-      <span class="tag{{ ' warn' if e.action in ('remove', 'untag') }}">{{ {'add': 'linked', 'remove': 'hid', 'reset': 'undid', 'role': 'role', 'tag': 'tagged', 'untag': 'untagged', 'tagdef': 'tags'}.get(e.action, e.action) }}</span>
+      <span class="tag{{ ' warn' if e.action in ('remove', 'untag', 'ignore') }}">{{ {'add': 'linked', 'remove': 'hid', 'reset': 'undid', 'role': 'role', 'tag': 'tagged', 'untag': 'untagged', 'tagdef': 'tags', 'ignore': 'ignored', 'unignore': 'unignored'}.get(e.action, e.action) }}</span>
       <span class="grow">{% if e.href %}<a href="{{ e.href }}">{{ e.what }}</a>{% else %}{{ e.what }}{% endif %}</span>
       <span class="muted small">@{{ e.login }}{{ ' · API' if e.via == 'token' }} · {{ e.at|replace('T', ' ')|truncate(16, True, '') }}</span>
     </li>

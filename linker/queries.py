@@ -568,8 +568,23 @@ def elsewhere(conn, origin: str, path: str) -> dict:
     return out
 
 
-def drift(conn, behind: str | None = None) -> dict:
-    """Linked sources that no longer share a current host, one row per pair of folders."""
+# Why an editor sets a drift row aside.
+DRIFT_IGNORE_REASONS = {
+    "right_side": "Wrong side: \"behind\" has the better domain",
+    "redirect": "Low priority: the old domain redirects",
+    "other": "Not worth fixing",
+}
+
+
+def drift_key(r: dict) -> tuple:
+    """A drift row's folder pair, side a first (the smaller), and both sides' current hosts in that order."""
+    sides = sorted([r["a"], r["b"]], key=lambda s: (s["origin"], s["path"]))
+    return (sides[0]["origin"], sides[0]["path"], sides[1]["origin"], sides[1]["path"]), [sorted(s["hosts"]) for s in sides]
+
+
+def drift(conn, behind: str | None = None, ignored: bool = False) -> dict:
+    """Linked sources that no longer share a current host, one row per pair of folders. Rows an editor ignored while
+    both sides still had the same hosts are left out (`ignored`: only those), and counted in counts["ignored"]."""
     sides = _sides(conn)
     folders: dict[tuple, dict] = {}
     for link in _links(conn):
@@ -584,13 +599,42 @@ def drift(conn, behind: str | None = None) -> dict:
         if p["basis"] == "left" and row["basis"] != "left" or row["behind"] is None:
             row["behind"], row["basis"] = p["behind"], p["basis"]
     items = sorted(folders.values(), key=lambda r: (r["behind"] is None, r["behind"] or "", r["basis"] != "left", (r["a"]["name"] or "").lower()))
-    counts: dict = {}
+    ignores = {(r["origin_a"], r["path_a"], r["origin_b"], r["path_b"]): r for r in conn.execute(
+        "SELECT i.*, a.login FROM main.drift_ignore i LEFT JOIN main.account a ON a.id = i.by_account")}
+    counts: dict = {"ignored": 0}
+    kept = []
     for r in items:
         r["langs"] = sorted(l for l in r["langs"] if l)
-        counts[r["behind"]] = counts.get(r["behind"], 0) + 1
+        key, hosts = drift_key(r)
+        r["pair"] = list(key)
+        i = ignores.get(key)
+        r["ignored"] = {"reason": i["reason"], "label": DRIFT_IGNORE_REASONS.get(i["reason"], i["reason"]), "by_login": i["login"],
+                        "at": i["at"]} if i and json.loads(i["hosts"]) == hosts else None
+        if r["ignored"]:
+            counts["ignored"] += 1
+        else:
+            counts[r["behind"]] = counts.get(r["behind"], 0) + 1
+        if bool(r["ignored"]) == ignored:
+            kept.append(r)
     if behind:
-        items = [r for r in items if (r["behind"] or "unknown") == behind]
-    return {"total": len(folders), "counts": counts, "items": items}
+        kept = [r for r in kept if (r["behind"] or "unknown") == behind]
+    return {"total": len(folders) - counts["ignored"], "counts": counts, "items": kept}
+
+
+def set_drift_ignore(conn, pair: list[str], reason: str | None, account_id: int, at: str) -> bool:
+    """Ignore the drift row of a folder pair (side a first) at its current hosts, or (reason None) stop ignoring it.
+    False when there is no such drift row now."""
+    key = tuple(pair)
+    with conn:
+        if reason is None:
+            return conn.execute("DELETE FROM main.drift_ignore WHERE origin_a = ? AND path_a = ? AND origin_b = ? AND path_b = ?",
+                                key).rowcount > 0
+        row = next((r for r in drift(conn)["items"] if tuple(r["pair"]) == key), None)
+        if not row:
+            return False
+        conn.execute("INSERT OR REPLACE INTO main.drift_ignore VALUES (?,?,?,?,?,?,?,?)",
+                     (*key, json.dumps(drift_key(row)[1]), reason, account_id, at))
+    return True
 
 
 def domain_elsewhere(conn, origin: str, host: str) -> dict[str, list[dict]]:
@@ -755,6 +799,9 @@ def audit_log(conn, limit: int = 200) -> list[dict]:
             a, b = sides.get(tuple(t["a"])), sides.get(tuple(t["b"]))
             name = lambda s, ref: f"{s.name} ({ref[0].split('/')[0]})" if s else f"{ref[1]} ({ref[0].split('/')[0]})"
             r |= {"what": f"{name(a, t['a'])} ↔ {name(b, t['b'])}", "href": f"/{a.origin}/{a.path}" if a else None}
+        elif t["kind"] == "drift":
+            why = f" ({DRIFT_IGNORE_REASONS.get(t['reason'], t['reason']).lower()})" if t.get("reason") else ""
+            r |= {"what": f"drift {t['pair'][1]} ↔ {t['pair'][3]}{why}", "href": "/drift?show=ignored"}
         elif t["kind"] == "tag":
             r |= {"what": f"{t['tag']} on {t['path']}", "href": f"/{t['origin']}/{t['path']}"}
         elif t["kind"] == "tag_def":

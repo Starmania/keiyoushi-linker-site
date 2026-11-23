@@ -334,3 +334,7 @@ button.tri-item:hover { background: color-mix(in srgb, var(--border) 50%, transp
 a.stat { color: inherit; display: block; }
 a.stat:hover { border-color: var(--accent); text-decoration: none; }
 #open .rows + .rows, #open .rows + p, #open p + .rows { margin-top: .5rem; }
+/* Drift: ignore a row with a reason, or hide a wrong link. */
+.drift-actions { display: grid; gap: .35rem; justify-items: start; }
+.drift-actions .ignore { display: flex; gap: .3rem; flex-wrap: wrap; }
+.drift-actions select { font-size: .78rem; padding: .1rem .3rem; max-width: 13rem; }

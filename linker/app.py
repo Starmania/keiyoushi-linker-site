@@ -51,9 +51,10 @@ def api_origins():
 
 
 @api.get("/drift")
-def api_drift(behind: str | None = Query(None, description="An origin (owner/repo), or 'unknown'")):
+def api_drift(behind: str | None = Query(None, description="An origin (owner/repo), or 'unknown'"),
+              ignored: bool = Query(False, description="Only the rows an editor ignored (their hosts unchanged since)")):
     """Sources linked across repos that no longer share a current domain, with the repo that is probably behind."""
-    return queries.drift(db(), behind)
+    return queries.drift(db(), behind, ignored)
 
 
 @api.get("/missing")
@@ -405,9 +406,24 @@ def home(request: Request):
     return page(request, "origins.html", origins=all_origins)
 
 
+@app.post("/edit/drift-ignore")
+async def edit_drift_ignore(request: Request):
+    """Set a drift row aside with a reason, or bring it back. Editors only."""
+    user, fields = await form_of(request)
+    pair = json.loads(fields.get("pair") or "[]")
+    reason = fields.get("reason") if fields.get("action") == "ignore" else None
+    if len(pair) != 4 or reason is not None and reason not in queries.DRIFT_IGNORE_REASONS:
+        raise HTTPException(422, "pair is [origin_a, path_a, origin_b, path_b], reason one of " + ", ".join(queries.DRIFT_IGNORE_REASONS))
+    if not queries.set_drift_ignore(db(), pair, reason, user["id"], auth.now()):
+        return back_to(fields.get("back"), "Nothing to change: the drift is gone or wasn't ignored")
+    auth.audit(user, "ignore" if reason else "unignore", {"kind": "drift", "pair": pair, "reason": reason})
+    return back_to(fields.get("back"), "Drift ignored" if reason else "Drift back in the list")
+
+
 @app.get("/drift", response_class=HTMLResponse)
-def drift_page(request: Request, behind: str | None = None):
-    return page(request, "drift.html", origin=None, d=queries.drift(db(), behind or None), behind=behind or "",
+def drift_page(request: Request, behind: str | None = None, show: str | None = None):
+    return page(request, "drift.html", origin=None, d=queries.drift(db(), behind or None, show == "ignored"), behind=behind or "",
+                show=show or "", reasons=queries.DRIFT_IGNORE_REASONS,
                 origins=[o["id"] for o in queries.origins(db())])
 
 

@@ -20,3 +20,9 @@ def test_site_requests_by_host(kx):  # noqa: F811
     assert [r["number"] for r in found["klmanga.town"]] == [10]  # www. dropped, case folded, the Bug issue ignored
     assert found["nhentai.net"][0]["removed"] and not found["klmanga.town"][0]["removed"]
     assert "keiyoushi.github.io" not in found and "github.com" not in found  # in every template: not a site
+
+
+def test_drift_key_orders_sides_and_their_hosts():
+    a = {"origin": "z/repo", "path": "src/x", "hosts": ["b.org", "a.org"]}
+    b = {"origin": "a/repo", "path": "web/X", "hosts": ["x.net"]}
+    assert queries.drift_key({"a": a, "b": b}) == (("a/repo", "web/X", "z/repo", "src/x"), [["x.net"], ["a.org", "b.org"]])

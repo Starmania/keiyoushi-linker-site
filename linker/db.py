@@ -80,6 +80,19 @@ CREATE TABLE IF NOT EXISTS folder_tag (
     at         TEXT NOT NULL,
     PRIMARY KEY (origin, path, tag_id)
 );
+-- Drift rows an editor set aside: the pair of folders (side a < side b) and both sides' current hosts then, as JSON
+-- [[a hosts], [b hosts]]. The row comes back once either side's hosts change.
+CREATE TABLE IF NOT EXISTS drift_ignore (
+    origin_a   TEXT NOT NULL,
+    path_a     TEXT NOT NULL,
+    origin_b   TEXT NOT NULL,
+    path_b     TEXT NOT NULL,
+    hosts      TEXT NOT NULL,
+    reason     TEXT NOT NULL,     -- a key of queries.DRIFT_IGNORE_REASONS
+    by_account INTEGER NOT NULL,
+    at         TEXT NOT NULL,
+    PRIMARY KEY (origin_a, path_a, origin_b, path_b)
+);
 CREATE TABLE IF NOT EXISTS site_setting (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -89,7 +102,7 @@ CREATE TABLE IF NOT EXISTS audit (
     at         TEXT NOT NULL,
     account_id INTEGER NOT NULL,
     via        TEXT NOT NULL,     -- "web" | "token"
-    action     TEXT NOT NULL,     -- "add" | "remove" | "reset" | "role" | "tag" | "untag" | "tagdef"
+    action     TEXT NOT NULL,     -- "add" | "remove" | "reset" | "role" | "tag" | "untag" | "tagdef" | "ignore" | "unignore"
     target     TEXT NOT NULL      -- JSON
 );
 """
