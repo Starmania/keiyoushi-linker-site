@@ -306,3 +306,6 @@ button.tri-item:hover { background: color-mix(in srgb, var(--border) 50%, transp
 .tagdef form.save { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; flex: 1; min-width: 0; }
 .tagdef input[name=name] { width: 12rem; }
 .tagdef input[name=labels] { flex: 1 1 14rem; min-width: 0; font-size: .85rem; }
+/* Missing: the target repo's site requests naming the extension's domains. */
+.request { margin-top: .2rem; }
+.request .gh-out { margin-left: 0; }

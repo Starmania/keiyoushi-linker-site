@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_pill, edit_button with context %}
+{% from "_macros.html" import status_pill, state_pill, edit_button, gh with context %}
 {% block title %}Missing sites{% endblock %}
 {% block content %}
 <h1>Missing sites</h1>
 <p class="muted">Current extensions of another repository with no link to a current extension of this one: no source of theirs
 ever declared a domain at the same time as one of its sources. A same-name extension is shown when there is one: it may be the
-same site on a domain the two never shared, to confirm and link by hand.</p>
+same site on a domain the two never shared, to confirm and link by hand. Site requests of this repository are listed under
+the extension when they name one of its domains, past or current.</p>
 
 <form class="filters" method="get">
   <select name="in" aria-label="Missing from" onchange="this.form.submit()">
@@ -16,6 +17,7 @@ same site on a domain the two never shared, to confirm and link by hand.</p>
     <option value="">All languages</option>
     {% for l in langs %}<option value="{{ l }}" {{ 'selected' if l == lang }}>{{ l }}</option>{% endfor %}
   </select>
+  <label class="check"><input type="checkbox" name="requested" value="1" {{ 'checked' if requested }} onchange="this.form.submit()"> Open request only</label>
   <button type="submit">Apply</button>
 </form>
 
@@ -38,6 +40,8 @@ same site on a domain the two never shared, to confirm and link by hand.</p>
       {% if i.removed_in_target %}<div class="small">Removed from {{ m.target }}: {% for r in i.removed_in_target %}<a href="/{{ m.target }}/{{ r.path }}">{{ r.name }}</a>{{ ', ' if not loop.last }}{% endfor %}</div>{% endif %}
       {% if i.same_name %}<div class="small same-name">Same name in {{ m.target }}: <a href="/{{ m.target }}/{{ i.same_name.path }}">{{ i.same_name.name }}</a> <span class="muted mono">{{ i.same_name.path }}</span>
         {%- if can_edit %} {{ edit_button('/edit/source-links/connect', 'Link', {'origin': origin, 'path': i.path, 'other_origin': m.target, 'other_path': i.same_name.path}) }}{% endif %}</div>{% endif %}
+      {% for r in i.requests %}<div class="small request">{{ state_pill(r.state) }} <a href="/{{ m.target }}/issues/{{ r.number }}">#{{ r.number }}</a>{{ gh(m.target, 'issues', r.number) }} {{ r.title }}
+        {%- if r.removed %} <span class="tag warn" title="Labelled “Previously deleted”: removed on purpose, it may not be taken back">previously deleted</span>{% endif %}</div>{% endfor %}
     </div>
   </li>
   {% endfor %}

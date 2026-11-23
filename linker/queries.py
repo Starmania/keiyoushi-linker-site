@@ -1,6 +1,7 @@
 """Every read the API and pages make. Each function returns plain dicts/lists, ready for JSON."""
 
 import json
+import re
 import sqlite3
 from datetime import datetime
 
@@ -616,11 +617,41 @@ def _name_key(name: str | None) -> str:
     return "".join(ch for ch in (name or "").lower() if ch.isalnum())
 
 
-def missing(conn, target: str, q: str | None = None, lang: str | None = None) -> dict:
+# Issue labels asking a repository to add a site, in each repository's own words.
+REQUEST_LABELS = ("Source request", "Website Request/Addition")
+# A host named in more request issues than this comes from the issue template (links to the repo, its docs), not a site.
+TEMPLATE_HOST_MIN = 20
+_HOST = re.compile(r"(?<![\w@.-])((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,})(?![\w-])", re.I)
+
+
+def hosts_in(text: str | None) -> set[str]:
+    """Host names written in an issue's text, lower case, without "www."."""
+    return {h.lower().removeprefix("www.") for h in _HOST.findall(text or "")}
+
+
+def site_requests(conn, target: str) -> dict[str, list[dict]]:
+    """`target`'s site-request issues by each host their title or body names. "removed": labelled "Previously
+    deleted", i.e. the repo dropped the site on purpose (e.g. the DMCA list) and may not take it back."""
+    by_host: dict[str, list[dict]] = {}
+    for r in conn.execute(
+        f"""SELECT number, title, state, labels, body FROM issue i WHERE origin = ?
+            AND EXISTS (SELECT 1 FROM json_each(i.labels) j WHERE j.value IN ({','.join('?' * len(REQUEST_LABELS))}))""",
+        (target, *REQUEST_LABELS),
+    ):
+        req = {"number": r["number"], "title": r["title"], "state": r["state"],
+               "removed": "Previously deleted" in json.loads(r["labels"])}
+        for host in hosts_in(f"{r['title']}\n{r['body'] or ''}"):
+            by_host.setdefault(host, []).append(req)
+    return {h: reqs for h, reqs in by_host.items() if len(reqs) <= TEMPLATE_HOST_MIN}
+
+
+def missing(conn, target: str, q: str | None = None, lang: str | None = None, requested: bool = False) -> dict:
     """Current extensions of the other origins with no link to a current extension of `target`: sites it lacks.
 
-    Each item says whether `target` had the site and removed it, and names a same-name `target` extension
-    that isn't linked (a possible match to confirm or link by hand)."""
+    Each item says whether `target` had the site and removed it, names a same-name `target` extension
+    that isn't linked (a possible match to confirm or link by hand), and lists `target`'s site-request issues
+    naming one of its domains, past or current. `requested`: only sites with an open request not marked removed."""
+    requests = site_requests(conn, target)
     sides = _sides(conn)
     partners: dict[tuple, set] = {}
     for l in _links(conn):
@@ -638,6 +669,9 @@ def missing(conn, target: str, q: str | None = None, lang: str | None = None) ->
     out: dict = {"target": target, "origins": {}, "total": 0}
     for origin in [o["id"] for o in origins(conn) if o["id"] != target]:
         have = tracked(conn, origin)
+        ever: dict[str, set] = {}
+        for r in conn.execute("SELECT DISTINCT path, host FROM domain_usage WHERE origin = ?", (origin,)):
+            ever.setdefault(r["path"], set()).add(r["host"].lower().removeprefix("www."))
         items = []
         for e in conn.execute(
             f"""SELECT e.path, e.name, e.lang, e.icon_url, e.content_warning, st.status, st.since AS status_since, d.d7 AS downloads_7d,
@@ -657,9 +691,13 @@ def missing(conn, target: str, q: str | None = None, lang: str | None = None) ->
                 continue
             if q and not any(q.lower() in (x or "").lower() for x in (e["name"], e["path"], *hosts)):
                 continue
+            asked = {r["number"]: r for h in ever.get(e["path"], ()) for r in requests.get(h, ())}
+            asked = sorted(asked.values(), key=lambda r: (r["state"] != "OPEN", -r["number"]))
+            if requested and not any(r["state"] == "OPEN" and not r["removed"] for r in asked):
+                continue
             gone = {s.path: {"path": s.path, "name": s.name} for s in linked}
             items.append(dict(e) | {"hosts": hosts, "removed_in_target": list(gone.values()),
-                                    "same_name": None if gone else by_name.get(_name_key(e["name"]))})
+                                    "same_name": None if gone else by_name.get(_name_key(e["name"])), "requests": asked})
         items.sort(key=lambda i: (-(i["downloads_7d"] or -1), (i["name"] or "").lower()) if have["downloads"] else (i["name"] or "").lower())
         out["origins"][origin] = {"tracked": have, "items": items}
         out["total"] += len(items)
