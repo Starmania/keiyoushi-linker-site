@@ -228,7 +228,7 @@
   <ul class="rows">
     {% for e in f.extensions %}
     <li>{% if tracked.status %}{{ status_pill(e.status) }} {% endif %}{{ folder_link(origin, e.path, e.name) }} <span class="muted small mono">{{ e.path }}</span>{% if e.removed %} <span class="tag">removed</span>{% endif %}</li>
-    {% else %}<li class="muted">None.</li>{% endfor %}
+    {% else %}<li class="muted">No extension uses this theme.</li>{% endfor %}
   </ul>
 </section>
 {% endif %}
@@ -236,7 +236,7 @@
 <section>
   <h2>Closed issues</h2>
   {% set closed = f.issues|rejectattr('state', 'equalto', 'OPEN')|list %}
-  {% if closed %}{{ issue_rows(origin, closed) }}{% else %}<p class="muted">None.</p>{% endif %}
+  {% if closed %}{{ issue_rows(origin, closed) }}{% else %}<p class="muted">No closed issue linked to this extension.</p>{% endif %}
 </section>
 
 {% if f.theme_folder %}
@@ -266,7 +266,7 @@
     </li>
     {% endfor %}
   </ul>
-  {% else %}<p class="muted">None.</p>{% endif %}
+  {% else %}<p class="muted">No merged or closed PR changed this folder since the history starts.</p>{% endif %}
 </section>
 
 <section>

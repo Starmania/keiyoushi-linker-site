@@ -25,5 +25,5 @@
 <ul class="rows foldable">{% for d in r.domains %}<li{% if loop.index > 10 %} class="folded"{% endif %}><a class="mono" href="/{{ origin }}/domains/{{ d.host }}">{{ d.host }}</a> <span class="muted small">{{ d.current_extensions }} extension{{ 's' if d.current_extensions != 1 }} now</span></li>{% endfor %}</ul>
 {{ unfold(r.domains|length, 'domains') }}
 {% endif %}
-{% if not (r.issue or r.pr or r.domains or r.extensions) %}<p class="muted">Nothing found.</p>{% endif %}
+{% if not (r.issue or r.pr or r.domains or r.extensions) %}<p class="muted">Nothing found. Search takes an extension name, a folder, a domain, a source id or an issue or PR number.</p>{% endif %}
 {% endblock %}

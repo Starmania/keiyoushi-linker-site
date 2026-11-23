@@ -53,5 +53,5 @@ back when either side's domains change.</p>
   {% endfor %}
   </tbody>
 </table></div>
-{% else %}<p class="muted">No drift.</p>{% endif %}
+{% else %}<p class="muted">{% if show == 'ignored' %}No ignored row.{% else %}No drift: every linked pair shares a current domain.{% endif %}</p>{% endif %}
 {% endblock %}

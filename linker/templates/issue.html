@@ -34,7 +34,7 @@
     {% endfor %}
     </tbody>
   </table></div>
-  {% else %}<p class="muted">No folder found for this issue.</p>{% endif %}
+  {% else %}<p class="muted">No folder found for this issue: its title, form and text name no extension or domain we know.{% if can_edit %} Link one below.{% endif %}</p>{% endif %}
   {% if i.removed_links %}
   <ul class="rows small removed-links">
     {% for r in i.removed_links %}<li><span class="muted grow">Unlinked by hand: <span class="mono">{{ r.path }}</span> · {{ r.at|day }}{% if r.by_login %} by @{{ r.by_login }}{% endif %}</span>{% if can_edit %}{{ edit_button('/edit/issue-link', 'Restore', {'action': 'restore', 'origin': origin, 'issue': i.number, 'path': r.path}) }}{% endif %}</li>{% endfor %}
@@ -55,7 +55,7 @@
   <ul class="rows">
     {% for p in i.prs %}
     <li>{{ state_pill(p.state) }} <a href="/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a>{{ gh(origin, 'pull', p.number) }} <span class="grow">{{ p.title }}</span> <span class="muted small">{{ p.merged_at|day }}</span></li>
-    {% else %}<li class="muted">None.</li>{% endfor %}
+    {% else %}<li class="muted">No PR closes this issue yet · <a href="https://github.com/{{ origin }}/pulls?q={{ ('is:pr ' ~ i.number)|urlencode }}">search PRs that mention #{{ i.number }}</a></li>{% endfor %}
   </ul>
 </section>
 

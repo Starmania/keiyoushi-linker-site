@@ -28,7 +28,7 @@
   <ul class="rows">
     {% for i in p.issues %}
     <li>{{ state_pill(i.state) }} <a href="/{{ origin }}/issues/{{ i.number }}">#{{ i.number }}</a>{{ gh(origin, 'issues', i.number) }} <span class="grow">{{ i.title }}</span></li>
-    {% else %}<li class="muted">None.</li>{% endfor %}
+    {% else %}<li class="muted">It closes no issue: none is named with “Fixes #…” or “Closes #…”.</li>{% endfor %}
   </ul>
 </section>
 
