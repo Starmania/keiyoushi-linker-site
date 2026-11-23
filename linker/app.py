@@ -17,6 +17,7 @@ HERE = Path(__file__).parent
 app = FastAPI(title="Keiyoushi linker", docs_url="/api/docs", openapi_url="/api/openapi.json")
 app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
 templates = Jinja2Templates(directory=HERE / "templates")
+templates.env.globals["tag_colors"] = tags.COLORS
 templates.env.filters["day"] = lambda iso: (iso or "")[:10]
 templates.env.filters["ago"] = lambda iso: f"{d} d" if (d := (datetime.now(UTC).date() - date.fromisoformat(iso[:10])).days) else "today"
 # A facet row {value, n} with a label for tri_filter; names: {value: label}, else the value itself.
@@ -358,7 +359,7 @@ async def tag_save(request: Request):
     user, fields = await form_of(request, need="any")
     try:
         tags.save_def(user, fields.get("scope", ""), fields.get("id") or None, fields.get("name", ""),
-                      tags.parse_labels(fields.get("labels", "")))
+                      tags.parse_labels(fields.get("labels", "")), fields.get("color"))
     except ValueError as e:
         return back_to(fields.get("back"), str(e))
     return back_to(fields.get("back"), "Tag saved")

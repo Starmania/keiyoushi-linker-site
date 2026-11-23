@@ -19,28 +19,43 @@ from linker.db import conn as db
 PUBLIC, DEFAULTS = 0, -1
 SCOPES = {"public": PUBLIC, "defaults": DEFAULTS}  # plus "mine": the signed-in account
 MAX_NAME, MAX_TAGS, MAX_LABELS = 30, 50, 10
+# A tag's colour is one of these names ("" = none); style.css gives each a shade per theme (.tc-<name>).
+COLORS = ("red", "orange", "yellow", "green", "teal", "blue", "purple", "pink", "gray")
 
 # Written once into a new site database; admins change them afterwards. A Cloudflare or geo label is not "Is hostile".
 SEED_PUBLIC = [
-    ("Is hostile", []), ("May be down", ["Source website/server issue"]), ("Is down", ["Source is down"]),
-    ("Is valid", ["Valid"]), ("On it", []), ("CF", ["Cloudflare protected", "Cloudflare"]), ("Geo", ["Geo-blocked"]),
+    ("Is hostile", [], "red"), ("May be down", ["Source website/server issue"], "yellow"),
+    ("Is down", ["Source is down"], "orange"), ("Is valid", ["Valid"], "green"), ("On it", [], "blue"),
+    ("CF", ["Cloudflare protected", "Cloudflare"], "pink"), ("Geo", ["Geo-blocked"], "purple"),
+    ("Domain changed", ["Domain changed"], "teal"),
 ]
-SEED_DEFAULTS = ["TODO", "Skipped", "Important", "Waiting for PR"]
+SEED_DEFAULTS = [("TODO", "blue"), ("Skipped", "gray"), ("Important", "red"), ("Waiting for PR", "purple")]
+# Seeded tags added after the first seed: databases seeded before get them once, by the "tags_seeded_2" step.
+SEED_2_NEW = {"Domain changed"}
 
 
 def seed(conn: sqlite3.Connection) -> None:
-    """The starting public and default private tags, the first time only (an admin may delete them all later)."""
-    if conn.execute("SELECT 1 FROM main.site_setting WHERE key = 'tags_seeded'").fetchone():
+    """The starting public and default private tags, the first time only (an admin may delete them all later).
+    Databases seeded before colours and SEED_2_NEW get those once: colours only on seeded tags still uncoloured."""
+    done = {r[0] for r in conn.execute("SELECT key FROM main.site_setting WHERE key LIKE 'tags_seeded%'")}
+    if {"tags_seeded", "tags_seeded_2"} <= done:
         return
+    public = [(PUBLIC, n, json.dumps(labels), color) for n, labels, color in SEED_PUBLIC]
+    defaults = [(DEFAULTS, n, "[]", color) for n, color in SEED_DEFAULTS]
     with conn:
-        conn.executemany("INSERT INTO main.tag (owner, name, labels) VALUES (?, ?, ?)",
-                         [(PUBLIC, n, json.dumps(labels)) for n, labels in SEED_PUBLIC] +
-                         [(DEFAULTS, n, "[]") for n in SEED_DEFAULTS])
-        conn.execute("INSERT INTO main.site_setting VALUES ('tags_seeded', '1')")
+        if "tags_seeded" not in done:
+            conn.executemany("INSERT INTO main.tag (owner, name, labels, color) VALUES (?, ?, ?, ?)", public + defaults)
+        else:
+            conn.executemany("INSERT OR IGNORE INTO main.tag (owner, name, labels, color) VALUES (?, ?, ?, ?)",
+                             [t for t in public if t[1] in SEED_2_NEW])
+            conn.executemany("UPDATE main.tag SET color = ? WHERE owner = ? AND name = ? AND color = ''",
+                             [(color, owner, name) for owner, name, _, color in public + defaults])
+        conn.executemany("INSERT OR IGNORE INTO main.site_setting VALUES (?, '1')", [("tags_seeded",), ("tags_seeded_2",)])
 
 
 def _def(row) -> dict:
-    return {"id": row["id"], "owner": row["owner"], "name": row["name"], "labels": json.loads(row["labels"])}
+    return {"id": row["id"], "owner": row["owner"], "name": row["name"], "labels": json.loads(row["labels"]),
+            "color": row["color"]}
 
 
 def defs(owner: int) -> list[dict]:
@@ -52,7 +67,7 @@ def mine(account_id: int) -> list[dict]:
     c = db()
     if not c.execute("SELECT 1 FROM main.account_pref WHERE account_id = ? AND key = 'tags_seeded'", (account_id,)).fetchone():
         with c:
-            c.execute("INSERT INTO main.tag (owner, name, labels) SELECT ?, name, '[]' FROM main.tag WHERE owner = ? ORDER BY id",
+            c.execute("INSERT INTO main.tag (owner, name, labels, color) SELECT ?, name, '[]', color FROM main.tag WHERE owner = ? ORDER BY id",
                       (account_id, DEFAULTS))
             c.execute("INSERT INTO main.account_pref VALUES (?, 'tags_seeded', '1')", (account_id,))
     return defs(account_id)
@@ -91,15 +106,15 @@ def of(conn, origin: str, paths: list[str], account_id: int | None) -> dict[str,
     found: dict[str, dict[int, dict]] = {p: {} for p in paths}
     names = {}
     for r in conn.execute(
-        "SELECT ft.path, d.id, d.owner, d.name, ft.at, a.login FROM main.folder_tag ft JOIN main.tag d ON d.id = ft.tag_id "
+        "SELECT ft.path, d.id, d.owner, d.name, d.color, ft.at, a.login FROM main.folder_tag ft JOIN main.tag d ON d.id = ft.tag_id "
         "LEFT JOIN main.account a ON a.id = ft.by_account "
         "WHERE ft.origin = ? AND d.owner IN (0, ?) AND ft.path IN (SELECT value FROM json_each(?))",
         (origin, _viewer(account_id), json.dumps(paths)),
     ):
-        names[r["id"]] = (r["owner"], r["name"])
+        names[r["id"]] = (r["owner"], r["name"], r["color"])
         found[r["path"]][r["id"]] = {"by_login": r["login"], "at": r["at"], "issues": []}
     for r in conn.execute(
-        """SELECT l.path, d.id, d.name, i.number, i.title, i.author, i.created_at
+        """SELECT l.path, d.id, d.name, d.color, i.number, i.title, i.author, i.created_at
            FROM issue_link_effective l
            JOIN issue i ON i.origin = l.origin AND i.number = l.issue
            JOIN json_each(i.labels) j
@@ -109,7 +124,7 @@ def of(conn, origin: str, paths: list[str], account_id: int | None) -> dict[str,
            ORDER BY i.number DESC""",
         (origin, json.dumps(paths)),
     ):
-        names[r["id"]] = (PUBLIC, r["name"])
+        names[r["id"]] = (PUBLIC, r["name"], r["color"])
         t = found[r["path"]].setdefault(r["id"], {"by_login": None, "at": None, "issues": []})
         if r["number"] not in [i["number"] for i in t["issues"]]:
             t["issues"].append({"number": r["number"], "title": r["title"], "author": r["author"], "created_at": r["created_at"]})
@@ -120,7 +135,7 @@ def of(conn, origin: str, paths: list[str], account_id: int | None) -> dict[str,
             t = tags[tag_id]
             lines = [f"Set by @{t['by_login'] or 'someone'} on {_day(t['at'])}"] if t["at"] else []
             lines += [f"From #{i['number']} “{i['title']}”, opened by @{i['author']} on {_day(i['created_at'])}" for i in t["issues"]]
-            out[path].append(t | {"id": tag_id, "label": names[tag_id][1], "scope": "public" if names[tag_id][0] == PUBLIC else "private",
+            out[path].append(t | {"id": tag_id, "label": names[tag_id][1], "color": names[tag_id][2], "scope": "public" if names[tag_id][0] == PUBLIC else "private",
                                   "manual": t["at"] is not None, "title": "\n".join(lines)})
     return out
 
@@ -152,7 +167,7 @@ def facet(conn, origin: str, account_id: int | None) -> dict[str, list[dict]]:
            GROUP BY x.tag_id""",
         (origin, _viewer(account_id), origin, origin),
     ).fetchall())
-    entry = lambda d: {"value": d["id"], "label": d["name"], "n": counts.get(d["id"], 0)}
+    entry = lambda d: {"value": d["id"], "label": d["name"], "color": d["color"], "n": counts.get(d["id"], 0)}
     out = {"public": [entry(d) for d in defs(PUBLIC)]}
     if account_id is not None:
         out["private"] = [entry(d) for d in mine(account_id)]
@@ -200,8 +215,8 @@ def parse_labels(text: str) -> list[str]:
     return labels
 
 
-def save_def(user: dict, scope: str, tag_id: str | None, name: str, labels: list[str]) -> None:
-    """Add a tag (no tag_id) or rename one. Raises ValueError with a message for the page."""
+def save_def(user: dict, scope: str, tag_id: str | None, name: str, labels: list[str], color: str | None = None) -> None:
+    """Add a tag (no tag_id) or rename or recolour one (color None: keep it). Raises ValueError with a message for the page."""
     owner = _owner_of(user, scope)
     name = " ".join(name.split())
     if not name or len(name) > MAX_NAME:
@@ -215,18 +230,25 @@ def save_def(user: dict, scope: str, tag_id: str | None, name: str, labels: list
         old = get(tag_id)
         if not old or old["owner"] != owner:
             raise HTTPException(404, "no such tag")
+        color = old["color"] if color is None else color if color in COLORS else ""
         with c:
-            c.execute("UPDATE main.tag SET name = ?, labels = ? WHERE id = ?", (name, json.dumps(labels), old["id"]))
+            c.execute("UPDATE main.tag SET name = ?, labels = ?, color = ? WHERE id = ?",
+                      (name, json.dumps(labels), color, old["id"]))
         change = {"from": old["name"], "to": name} if old["name"] != name else {"name": name}
         if old["labels"] != labels:
             change["labels"] = labels
-        op = "rename" if old["name"] != name else "labels" if old["labels"] != labels else None
+        if old["color"] != color:
+            change["color"] = color
+        op = ("rename" if old["name"] != name else "labels" if old["labels"] != labels
+              else "color" if old["color"] != color else None)
     else:
         if c.execute("SELECT count(*) FROM main.tag WHERE owner = ?", (owner,)).fetchone()[0] >= MAX_TAGS:
             raise ValueError(f"At most {MAX_TAGS} tags")
+        color = color if color in COLORS else ""
         with c:
-            c.execute("INSERT INTO main.tag (owner, name, labels) VALUES (?,?,?)", (owner, name, json.dumps(labels)))
-        change, op = {"name": name, "labels": labels}, "add"
+            c.execute("INSERT INTO main.tag (owner, name, labels, color) VALUES (?,?,?,?)",
+                      (owner, name, json.dumps(labels), color))
+        change, op = {"name": name, "labels": labels, "color": color}, "add"
     if op and owner != user["id"]:
         audit(user, "tagdef", {"kind": "tag_def", "scope": scope, "op": op} | change)
 

@@ -16,6 +16,9 @@
   --warn-bg: #fdf0e6;
   --warn-text: #9a4a12;
   --radius: 10px;
+  /* Tag colours (linker/tags.py COLORS): text-strength shades, readable on --surface; tints are mixed from them. */
+  --tc-red: #c42b2b; --tc-orange: #b4530a; --tc-yellow: #876a00; --tc-green: #1d7a35; --tc-teal: #0b7569;
+  --tc-blue: #2251d1; --tc-purple: #7c2fc4; --tc-pink: #b8215f; --tc-gray: #5f5f59;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -35,6 +38,8 @@
     --gh-merged: #a371f7;
     --warn-bg: #3a2616;
     --warn-text: #f4b07a;
+    --tc-red: #f47b7b; --tc-orange: #f6a05a; --tc-yellow: #e8c547; --tc-green: #5fcf7e; --tc-teal: #3fcfbd;
+    --tc-blue: #79a6ff; --tc-purple: #c39bff; --tc-pink: #f37fb0; --tc-gray: #aeaea7;
     color-scheme: dark;
   }
 }
@@ -120,6 +125,22 @@ button { background: var(--accent); color: #fff; border-color: transparent; curs
 .tag.t-inherited { color: var(--accent); border: 1px dashed color-mix(in srgb, var(--accent) 60%, transparent); }
 .tag.t-private { color: var(--text); background: color-mix(in srgb, var(--border) 60%, transparent); border-color: transparent; }
 .tag a { color: inherit; }
+/* A coloured tag keeps its scope's border style (solid, dashed, none) in its own colour. */
+.tc-red { --tc: var(--tc-red); } .tc-orange { --tc: var(--tc-orange); } .tc-yellow { --tc: var(--tc-yellow); }
+.tc-green { --tc: var(--tc-green); } .tc-teal { --tc: var(--tc-teal); } .tc-blue { --tc: var(--tc-blue); }
+.tc-purple { --tc: var(--tc-purple); } .tc-pink { --tc: var(--tc-pink); } .tc-gray { --tc: var(--tc-gray); }
+.tag.tc { color: var(--tc); background: color-mix(in srgb, var(--tc) 13%, transparent); border-color: color-mix(in srgb, var(--tc) 50%, transparent); }
+.tag.tc.t-private { border-color: transparent; }
+button.mini.tc { color: var(--tc); }
+button.mini.tc:hover { border-color: var(--tc); }
+button.mini.tc.on { background: var(--tc); color: var(--surface); }
+.tc-dot { width: .6rem; height: .6rem; border-radius: 50%; background: var(--tc); flex: none; }
+.swatches { display: inline-flex; flex-wrap: wrap; gap: .25rem; align-items: center; }
+.swatch { width: 1.05rem; height: 1.05rem; border-radius: 50%; background: var(--tc); cursor: pointer; position: relative; }
+.swatch.tc-none { background: none; border: 1px dashed var(--muted); }
+.swatch input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.swatch:has(input:checked) { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--tc, var(--muted)); }
+.swatch:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 3px; }
 .card-tags > .more { font-size: .75rem; color: var(--accent); }
 .pill { color: #fff; border-color: transparent; background: var(--neutral); }
 .st-pass { --c: var(--pass); }

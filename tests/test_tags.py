@@ -70,6 +70,41 @@ def test_seeded_once_and_open_issue_labels_tag_their_folders(kx):
     assert names(K, BAR) == [] and names(H, BAZ) == ["CF"]
 
 
+def test_a_database_seeded_before_colours_gets_them_and_domain_changed_once(kx):
+    c = db.conn()
+    with c:
+        c.execute("DELETE FROM main.site_setting WHERE key = 'tags_seeded_2'")
+        c.execute("DELETE FROM main.tag WHERE name IN ('Domain changed', 'Geo')")  # an admin had deleted Geo
+        c.execute("UPDATE main.tag SET color = ''")
+        c.execute("UPDATE main.tag SET color = 'gray' WHERE name = 'On it'")  # an admin's choice stays
+    tags.seed(c)
+    by_name = {d["name"]: d for d in tags.defs(tags.PUBLIC)}
+    assert "Geo" not in by_name and by_name["Domain changed"]["labels"] == ["Domain changed"]
+    assert (by_name["Is hostile"]["color"], by_name["On it"]["color"], by_name["Domain changed"]["color"]) == ("red", "gray", "teal")
+    assert tags.defs(tags.DEFAULTS)[0]["color"] == "blue"
+    with c:
+        c.execute("DELETE FROM main.tag WHERE name = 'Domain changed'")
+    tags.seed(c)
+    assert "Domain changed" not in [d["name"] for d in tags.defs(tags.PUBLIC)]  # once only
+
+
+def test_tag_colours(kx, monkeypatch):
+    login(kx, monkeypatch, "boss")
+    post(kx, "/tags/save", scope="public", id=tag_id("CF"), name="CF", labels="Cloudflare protected", color="purple")
+    assert tags.of(db.conn(), K, [FOO], None)[FOO][0]["color"] == "purple"
+    post(kx, "/tags/save", scope="public", id=tag_id("CF"), name="CF", labels="Cloudflare protected")  # no colour field: kept
+    assert tags.get(tag_id("CF"))["color"] == "purple"
+    post(kx, "/tags/save", scope="public", id=tag_id("CF"), name="CF", labels="Cloudflare protected", color="none")
+    post(kx, "/tags/save", scope="mine", name="Odd", color="chartreuse")
+    assert tags.get(tag_id("CF"))["color"] == "" and tags.get(tag_id("Odd", 1))["color"] == ""
+    assert "public tag “CF” colour set to none" in [e["what"] for e in queries.audit_log(db.conn())]
+    from linker.app import templates
+    chip = templates.env.get_template("_macros.html").module.tag_chip
+    assert 'class="tag t-inherited" ' in str(chip(tags.of(db.conn(), K, [FOO], None)[FOO][0]))  # no colour, no tc class
+    post(kx, "/tags/save", scope="public", id=tag_id("CF"), name="CF", labels="Cloudflare protected", color="pink")
+    assert 'value="pink" checked' in kx.get("/admin").text
+
+
 def test_accounts_get_the_defaults_then_manage_their_own(kx, monkeypatch):
     login(kx, monkeypatch, "viewer")
     assert [d["name"] for d in tags.mine(3)] == ["TODO", "Skipped", "Important", "Waiting for PR"]
@@ -136,7 +171,7 @@ def test_chip_markup(kx):
     chip = templates.env.get_template("_macros.html").module.tag_chip
     (cf,) = tags.of(db.conn(), K, [FOO], None)[FOO]
     html = str(chip(cf, K))
-    assert 'class="tag t-inherited" title="From #2 “Foo behind CF”, opened by @alice on 2026-11-02"' in html
+    assert 'class="tag t-inherited tc tc-pink" title="From #2 “Foo behind CF”, opened by @alice on 2026-11-02"' in html
     assert f'<a href="/{K}/issues/2">#2</a>' in html and "<a" not in str(chip(cf))
 
 

@@ -68,7 +68,8 @@ CREATE TABLE IF NOT EXISTS tag (
     id     INTEGER PRIMARY KEY,
     owner  INTEGER NOT NULL,
     name   TEXT NOT NULL,
-    labels TEXT NOT NULL DEFAULT '[]'   -- JSON: issue labels that put a public tag on an open issue's folders
+    labels TEXT NOT NULL DEFAULT '[]',  -- JSON: issue labels that put a public tag on an open issue's folders
+    color  TEXT NOT NULL DEFAULT ''     -- one of tags.COLORS, or '' for none
 );
 CREATE UNIQUE INDEX IF NOT EXISTS tag_name ON tag (owner, name COLLATE NOCASE);
 CREATE TABLE IF NOT EXISTS folder_tag (
@@ -97,6 +98,7 @@ CREATE TABLE IF NOT EXISTS audit (
 ADDED_COLUMNS = [
     ("issue_link_override", "by_account", "INTEGER"),
     ("source_link_override", "by_account", "INTEGER"),
+    ("tag", "color", "TEXT NOT NULL DEFAULT ''"),
 ]
 
 # Issue links as served: automatic links minus manual removals, plus manual additions.

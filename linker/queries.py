@@ -725,6 +725,7 @@ def audit_log(conn, limit: int = 200) -> list[dict]:
             what = {"add": f"{whose} “{t.get('name')}” added",
                     "rename": f"{whose} “{t.get('from')}” renamed “{t.get('to')}”",
                     "labels": f"{whose} “{t.get('name')}” labels changed",
+                    "color": f"{whose} “{t.get('name')}” colour set to {t.get('color') or 'none'}",
                     "delete": f"{whose} “{t.get('name')}” deleted, off {t.get('folders', 0)} folders"}[t["op"]]
             r |= {"what": what + (labels if t["op"] != "delete" else ""), "href": "/admin#tags"}
         else:

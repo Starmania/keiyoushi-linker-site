@@ -31,8 +31,8 @@
     <span class="muted small">{{ heading }}</span>
     {% for d in tag_defs[scope] %}
     {% set t = by_id.get(d.id) %}
-    {% if t and not t.manual %}<span class="tag t-inherited" title="{{ t.title }}&#10;Close or unlink the issue to remove it.">{{ d.name }}</span>
-    {% else %}{{ edit_button('/edit/tag', d.name, {'origin': origin, 'path': f.path, 'tag': d.id, 'on': 0 if t else 1}, 'on' if t else '', t.title if t else 'Add ' ~ d.name) }}{% endif %}
+    {% if t and not t.manual %}<span class="tag t-inherited{{ ' tc tc-' ~ d.color if d.color }}" title="{{ t.title }}&#10;Close or unlink the issue to remove it.">{{ d.name }}</span>
+    {% else %}{{ edit_button('/edit/tag', d.name, {'origin': origin, 'path': f.path, 'tag': d.id, 'on': 0 if t else 1}, ('on' if t else '') ~ (' tc tc-' ~ d.color if d.color), t.title if t else 'Add ' ~ d.name) }}{% endif %}
     {% else %}<span class="muted small">none yet</span>
     {% endfor %}
     {% if scope == 'private' %}<a class="small" href="/account#tags">Edit your tags</a>{% elif user.is_admin %}<a class="small" href="/admin#tags">Edit public tags</a>{% endif %}
