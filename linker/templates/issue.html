@@ -20,7 +20,7 @@
 <section>
   <h2>Linked folders</h2>
   {% if i.links %}
-  <table>
+  <div class="table-wrap"><table>
     <thead><tr><th>Folder</th><th>Theme</th><th>Found by</th><th>Confidence</th>{% if can_edit %}<th></th>{% endif %}</tr></thead>
     <tbody>
     {% for l in i.links %}
@@ -33,7 +33,7 @@
       </tr>
     {% endfor %}
     </tbody>
-  </table>
+  </table></div>
   {% else %}<p class="muted">No folder found for this issue.</p>{% endif %}
   {% if i.removed_links %}
   <ul class="rows small removed-links">

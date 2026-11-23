@@ -204,8 +204,9 @@ button.mini.tc.on { background: var(--tc); color: var(--surface); }
   .cmd-label { flex-basis: 100%; }
 }
 
-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: block; overflow-x: auto; }
-thead, tbody { display: table; width: 100%; border-collapse: collapse; }
+/* Tables keep native layout, so headers line up with their columns; the wrapper scrolls them sideways on phones. */
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: .45rem .75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
 th { font-size: .8rem; color: var(--muted); font-weight: 600; }
 tr:last-child td { border-bottom: none; }
@@ -238,6 +239,7 @@ details summary { cursor: pointer; color: var(--muted); font-size: .85rem; }
 @media (max-width: 640px) {
   table.drift thead { display: none; }
   table.drift, table.drift tbody, table.drift tr, table.drift td { display: block; width: auto; }
+  .table-wrap:has(table.drift) { overflow-x: visible; }
   table.drift tr { border-bottom: 1px solid var(--border); padding: .35rem 0; }
   table.drift td { border: none; padding: .2rem .75rem; }
   table.drift td[data-label]::before { content: attr(data-label); display: block; font-size: .72rem; color: var(--muted); }

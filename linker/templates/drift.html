@@ -17,7 +17,7 @@ older, marked "probably": both domains may still work.</p>
 </form>
 
 {% if d['items'] %}
-<table class="drift">
+<div class="table-wrap"><table class="drift">
   <thead><tr><th>Behind</th>{% set first = d['items'][0] %}<th>{{ first.a.origin }}</th><th>{{ first.b.origin }}</th><th>Linked</th>{% if can_edit %}<th></th>{% endif %}</tr></thead>
   <tbody>
   {% for r in d['items'] %}
@@ -34,6 +34,6 @@ older, marked "probably": both domains may still work.</p>
     </tr>
   {% endfor %}
   </tbody>
-</table>
+</table></div>
 {% else %}<p class="muted">No drift.</p>{% endif %}
 {% endblock %}

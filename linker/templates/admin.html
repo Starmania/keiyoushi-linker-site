@@ -8,7 +8,7 @@
   <h2>Accounts <span class="muted">({{ accounts|length }})</span></h2>
   <p class="muted small">Everyone who logs in starts as a viewer. Editors can correct links and set public tags; admins also manage roles.
   Logins listed in <code>LINKER_ADMINS</code> become admins when they log in.</p>
-  <table>
+  <div class="table-wrap"><table>
     <thead><tr><th>Account</th><th>Role</th><th>Edits</th><th>Last login</th></tr></thead>
     <tbody>
     {% for a in accounts %}
@@ -30,7 +30,7 @@
       </tr>
     {% endfor %}
     </tbody>
-  </table>
+  </table></div>
 </section>
 
 <section id="tags">

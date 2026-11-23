@@ -163,7 +163,7 @@
 
 <section>
   <h2>Sources</h2>
-  <table class="foldable">
+  <div class="table-wrap foldable"><table>
     <thead><tr><th>Name</th><th>Lang</th><th>Base URL</th><th>Id</th></tr></thead>
     <tbody>
     {% for s in f.sources %}
@@ -174,7 +174,7 @@
       </tr>
     {% endfor %}
     </tbody>
-  </table>
+  </table></div>
   {% if f.sources|length > 3 %}
   <button type="button" class="unfold" aria-expanded="false" data-more="Show all {{ f.sources|length }} sources" data-less="Show fewer"
           onclick="const open = this.previousElementSibling.classList.toggle('open'); this.setAttribute('aria-expanded', open); this.textContent = this.dataset[open ? 'less' : 'more']">Show all {{ f.sources|length }} sources</button>
@@ -185,7 +185,7 @@
 <section>
   <h2>Domains</h2>
   {% if f.domains %}
-  <table>
+  <div class="table-wrap"><table>
     <thead><tr><th>Host</th><th>Role</th><th>Declared</th><th>Until</th></tr></thead>
     <tbody>
     {% for d in f.domains %}
@@ -197,7 +197,7 @@
       </tr>
     {% endfor %}
     </tbody>
-  </table>
+  </table></div>
   {% else %}<p class="muted">No domains declared.</p>{% endif %}
 </section>
 

@@ -5,7 +5,7 @@
 <h1 class="mono">{{ d.host }}</h1>
 <p class="muted">Folders that declared this host or one of its subdomains, as base URL, mirror or deeplink.</p>
 {% if d.usages %}
-<table>
+<div class="table-wrap"><table>
   <thead><tr><th>Folder</th><th>Host</th><th>Role</th><th>Declared</th><th>Until</th></tr></thead>
   <tbody>
   {% for u in d.usages %}
@@ -18,12 +18,12 @@
     </tr>
   {% endfor %}
   </tbody>
-</table>
+</table></div>
 {% else %}<p>No folder has declared this host since the history anchor.</p>{% endif %}
 
 {% for other, usages in elsewhere.items() %}
 <h2>In {{ other }}</h2>
-<table>
+<div class="table-wrap"><table>
   <thead><tr><th>Folder</th><th>Host</th><th>Role</th><th>Declared</th><th>Until</th></tr></thead>
   <tbody>
   {% for u in usages %}
@@ -36,6 +36,6 @@
     </tr>
   {% endfor %}
   </tbody>
-</table>
+</table></div>
 {% endfor %}
 {% endblock %}

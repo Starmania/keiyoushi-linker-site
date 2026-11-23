@@ -7,7 +7,7 @@
   <button type="submit">Filter</button>
 </form>
 <p class="muted">{{ data.total|num }} hosts{% if data.total > data['items']|length %}, showing {{ data['items']|length }}{% endif %}</p>
-<table>
+<div class="table-wrap"><table>
   <thead><tr><th>Host</th><th>Extensions now</th><th>Ever</th><th>Roles</th></tr></thead>
   <tbody>
   {% for d in data['items'] %}
@@ -17,5 +17,5 @@
     </tr>
   {% endfor %}
   </tbody>
-</table>
+</table></div>
 {% endblock %}
