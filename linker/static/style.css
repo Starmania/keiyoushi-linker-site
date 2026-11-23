@@ -268,8 +268,11 @@ button.mini:hover { border-color: var(--accent); }
 button.mini.danger { color: var(--fail); }
 button.mini.danger:hover { border-color: var(--fail); }
 .edit-slot { margin-left: auto; }
-.tag-edit { margin: -.5rem 0 1rem; }
-.tag-edit summary { cursor: pointer; color: var(--muted); font-size: .85rem; }
+/* "+ Tag" under the folder's tag row; opens the tag buttons in the page head's flow, so nothing overlaps. */
+.tag-edit { margin-top: .4rem; }
+.tag-edit summary { cursor: pointer; color: var(--accent); font-size: .8rem; list-style: none; display: inline-block; border: 1px dashed var(--border); border-radius: 999px; padding: 0 .55rem; }
+.tag-edit summary::-webkit-details-marker { display: none; }
+.tag-edit[open] summary { border-style: solid; }
 .tag-group { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin-top: .5rem; }
 .tag-group > .muted { min-width: 7rem; }
 button.mini.on { background: var(--accent); color: #fff; border-color: transparent; }

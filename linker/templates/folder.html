@@ -19,28 +19,28 @@
       {% if f.removed_sha %}<span class="tag warn">removed {{ f.last_date|day }}</span>{% endif %}
       {% for t in f.tags %}{{ tag_chip(t, origin) }}{% endfor %}
     </div>
+    {% if user %}
+    {% set by_id = {} %}{% for t in f.tags %}{% set _ = by_id.update({t.id: t}) %}{% endfor %}
+    <details class="tag-edit">
+      <summary title="Put tags on this extension">+ Tag</summary>
+      {% for scope, heading in [('public', 'Everyone sees'), ('private', 'Only you')] if scope == 'private' or can_edit %}
+      <div class="tag-group">
+        <span class="muted small">{{ heading }}</span>
+        {% for d in tag_defs[scope] %}
+        {% set t = by_id.get(d.id) %}
+        {% if t and not t.manual %}<span class="tag t-inherited{{ ' tc tc-' ~ d.color if d.color }}" title="{{ t.title }}&#10;Close or unlink the issue to remove it.">{{ d.name }}</span>
+        {% else %}{{ edit_button('/edit/tag', d.name, {'origin': origin, 'path': f.path, 'tag': d.id, 'on': 0 if t else 1}, ('on' if t else '') ~ (' tc tc-' ~ d.color if d.color), t.title if t else 'Add ' ~ d.name) }}{% endif %}
+        {% else %}<span class="muted small">none yet</span>
+        {% endfor %}
+        {% if scope == 'private' %}<a class="small" href="/account#tags">Edit your tags</a>{% elif user.is_admin %}<a class="small" href="/admin#tags">Edit public tags</a>{% endif %}
+      </div>
+      {% endfor %}
+    </details>
+    {% endif %}
   </div>
   {% if f.source_url %}{{ gh_button(f.source_url) }}{% endif %}
 </section>
 
-{% if user %}
-{% set by_id = {} %}{% for t in f.tags %}{% set _ = by_id.update({t.id: t}) %}{% endfor %}
-<details class="tag-edit">
-  <summary>Tags</summary>
-  {% for scope, heading in [('public', 'Everyone sees'), ('private', 'Only you')] if scope == 'private' or can_edit %}
-  <div class="tag-group">
-    <span class="muted small">{{ heading }}</span>
-    {% for d in tag_defs[scope] %}
-    {% set t = by_id.get(d.id) %}
-    {% if t and not t.manual %}<span class="tag t-inherited{{ ' tc tc-' ~ d.color if d.color }}" title="{{ t.title }}&#10;Close or unlink the issue to remove it.">{{ d.name }}</span>
-    {% else %}{{ edit_button('/edit/tag', d.name, {'origin': origin, 'path': f.path, 'tag': d.id, 'on': 0 if t else 1}, ('on' if t else '') ~ (' tc tc-' ~ d.color if d.color), t.title if t else 'Add ' ~ d.name) }}{% endif %}
-    {% else %}<span class="muted small">none yet</span>
-    {% endfor %}
-    {% if scope == 'private' %}<a class="small" href="/account#tags">Edit your tags</a>{% elif user.is_admin %}<a class="small" href="/admin#tags">Edit public tags</a>{% endif %}
-  </div>
-  {% endfor %}
-</details>
-{% endif %}
 
 {% if f.kind == 'src' %}
 <section class="stats">
