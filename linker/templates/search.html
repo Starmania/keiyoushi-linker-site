@@ -1,17 +1,29 @@
 {% extends "base.html" %}
-{% from "_macros.html" import state_pill, status_pill %}
+{% from "_macros.html" import state_pill, status_pill, gh %}
 {% block title %}Search · {{ origin }}{% endblock %}
+{# A result group: the first 10 rows, the rest behind "Show all". #}
+{% macro unfold(n, what) -%}
+{% if n > 10 %}<button type="button" class="unfold" aria-expanded="false" data-more="Show {{ n - 10 }} more {{ what }}" data-less="Show fewer"
+  onclick="const open = this.previousElementSibling.classList.toggle('open'); this.setAttribute('aria-expanded', open); this.textContent = this.dataset[open ? 'less' : 'more']">Show {{ n - 10 }} more {{ what }}</button>{% endif %}
+{%- endmacro %}
 {% block content %}
 <h1>Results for “{{ r.query }}”</h1>
-{% if r.issue %}<p>Issue {{ state_pill(r.issue.state) }} <a href="/{{ origin }}/issues/{{ r.issue.number }}">#{{ r.issue.number }} {{ r.issue.title }}</a></p>{% endif %}
-{% if r.pr %}<p>Pull request {{ state_pill(r.pr.state) }} <a href="/{{ origin }}/pull/{{ r.pr.number }}">#{{ r.pr.number }} {{ r.pr.title }}</a></p>{% endif %}
-{% if r.domains %}
-<h2>Domains</h2>
-<ul class="rows">{% for d in r.domains %}<li><a class="mono" href="/{{ origin }}/domains/{{ d.host }}">{{ d.host }}</a> <span class="muted small">{{ d.current_extensions }} extension(s) now</span></li>{% endfor %}</ul>
+{% if r.issue or r.pr %}
+<ul class="rows">
+  {% if r.issue %}<li>{{ state_pill(r.issue.state) }} Issue <a href="/{{ origin }}/issues/{{ r.issue.number }}">#{{ r.issue.number }}</a>{{ gh(origin, 'issues', r.issue.number) }} <span class="grow">{{ r.issue.title }}</span></li>{% endif %}
+  {% if r.pr %}<li>{{ state_pill(r.pr.state) }} Pull request <a href="/{{ origin }}/pull/{{ r.pr.number }}">#{{ r.pr.number }}</a>{{ gh(origin, 'pull', r.pr.number) }} <span class="grow">{{ r.pr.title }}</span></li>{% endif %}
+</ul>
 {% endif %}
 {% if r.extensions %}
-<h2>Extensions</h2>
-<ul class="rows">{% for e in r.extensions %}<li>{% if tracked.status %}{{ status_pill(e.status) }} {% endif %}<a href="/{{ origin }}/{{ e.path }}">{{ e.name }}</a> <span class="muted small mono">{{ e.path }}</span>{% if e.removed %} <span class="tag">removed</span>{% endif %}</li>{% endfor %}</ul>
+<h2>Extensions <span class="muted">({{ r.extensions_total }})</span></h2>
+<ul class="rows foldable">{% for e in r.extensions %}<li{% if loop.index > 10 %} class="folded"{% endif %}>{% if tracked.status %}{{ status_pill(e.status) }} {% endif %}<a href="/{{ origin }}/{{ e.path }}">{{ e.name }}</a> <span class="muted small mono">{{ e.path }}</span>{% if e.removed %} <span class="tag">removed</span>{% endif %}</li>{% endfor %}</ul>
+{{ unfold(r.extensions|length, 'extensions') }}
+{% if r.extensions_total > r.extensions|length %}<p class="muted small">The first {{ r.extensions|length }} by downloads; <a href="/{{ origin }}?q={{ r.query|urlencode }}">all {{ r.extensions_total }} in the gallery</a>, with filters.</p>{% endif %}
+{% endif %}
+{% if r.domains %}
+<h2>Domains <span class="muted">({{ r.domains_total }})</span></h2>
+<ul class="rows foldable">{% for d in r.domains %}<li{% if loop.index > 10 %} class="folded"{% endif %}><a class="mono" href="/{{ origin }}/domains/{{ d.host }}">{{ d.host }}</a> <span class="muted small">{{ d.current_extensions }} extension{{ 's' if d.current_extensions != 1 }} now</span></li>{% endfor %}</ul>
+{{ unfold(r.domains|length, 'domains') }}
 {% endif %}
 {% if not (r.issue or r.pr or r.domains or r.extensions) %}<p class="muted">Nothing found.</p>{% endif %}
 {% endblock %}

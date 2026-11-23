@@ -444,7 +444,7 @@ def theme_path(conn, origin, name) -> str | None:
 def search(conn, origin, q: str) -> dict:
     """Routes a free-text query: "#123" / "123" to issues and PRs, hosts to domains, rest to the gallery."""
     q = q.strip()
-    out: dict = {"query": q, "issue": None, "pr": None, "domains": [], "extensions": []}
+    out: dict = {"query": q, "issue": None, "pr": None, "domains": [], "extensions": [], "domains_total": 0, "extensions_total": 0}
     num = q.removeprefix("#")
     if num.isdigit():
         n = int(num)
@@ -452,8 +452,8 @@ def search(conn, origin, q: str) -> dict:
         out["pr"] = conn.execute("SELECT number, title, state FROM pull_request WHERE origin = ? AND number = ?", (origin, n)).fetchone()
         out["issue"] = dict(out["issue"]) if out["issue"] else None
         out["pr"] = dict(out["pr"]) if out["pr"] else None
-    out["domains"] = domains(conn, origin, q=q, limit=20)["items"]
-    out["extensions"] = extensions(conn, origin, q=q, removed=True, limit=30)["items"]
+    d, e = domains(conn, origin, q=q, limit=100), extensions(conn, origin, q=q, removed=True, limit=100)
+    out |= {"domains": d["items"], "domains_total": d["total"], "extensions": e["items"], "extensions_total": e["total"]}
     return out
 
 
