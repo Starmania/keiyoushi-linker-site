@@ -476,8 +476,12 @@ def pr_page(request: Request, number: int, origin: str = Depends(origin_of)):
 
 
 @app.get("/{owner}/{repo}/domains", response_class=HTMLResponse)
-def domains_page(request: Request, origin: str = Depends(origin_of), q: str | None = None):
-    return page(request, "domains.html", origin=origin, data=queries.domains(db(), origin, q=q or None, limit=1000), q=q or "")
+def domains_page(request: Request, origin: str = Depends(origin_of), q: str | None = None,
+                 page_no: int = Query(1, alias="page", ge=1)):
+    per_page = 100
+    data = queries.domains(db(), origin, q=q or None, limit=per_page, offset=(page_no - 1) * per_page)
+    return page(request, "domains.html", origin=origin, data=data, q=q or "", page_no=page_no,
+                pages=max(1, -(-data["total"] // per_page)), qs=urlencode({"q": q}) if q else "")
 
 
 @app.get("/{owner}/{repo}/domains/{host}", response_class=HTMLResponse)

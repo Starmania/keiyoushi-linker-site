@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{% from "_macros.html" import pager %}
 {% block title %}Domains · {{ origin }}{% endblock %}
 {% block content %}
 <h1>Domains</h1>
 <form class="filters" method="get">
-  <input name="q" type="search" value="{{ q }}" placeholder="Filter hosts" aria-label="Filter hosts">
+  <input name="q" type="search" value="{{ q }}" placeholder="Filter hosts, e.g. manga or .to" aria-label="Filter hosts" autofocus>
   <button type="submit">Filter</button>
 </form>
-<p class="muted">{{ data.total|num }} hosts{% if data.total > data['items']|length %}, showing {{ data['items']|length }}{% endif %}</p>
+<p class="muted">{{ data.total|num }} hosts{% if pages > 1 %} · page {{ page_no }} of {{ pages }}{% endif %}</p>
 <div class="table-wrap"><table>
   <thead><tr><th>Host</th><th>Extensions now</th><th>Ever</th><th>Roles</th></tr></thead>
   <tbody>
@@ -18,4 +19,5 @@
   {% endfor %}
   </tbody>
 </table></div>
+{{ pager(page_no, pages, qs) }}
 {% endblock %}
