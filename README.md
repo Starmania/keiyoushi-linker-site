@@ -43,32 +43,10 @@ built with the public scheme and host.
 
 ## API
 
-OpenAPI docs are served at `/api/docs`. Every route is scoped by origin (`/api/v1/{owner}/{repo}/…`):
+The JSON API lives under `/api/v1`. Its schema, `/api/openapi.json` (browsable at `/api/docs`), documents every route,
+parameter, response field and error. Most routes are scoped by repository: `/api/v1/{owner}/{repo}/…`.
 
-- `GET extensions?q=&lang=&theme=&status=&content=&removed=&sort=downloads|name|status|issues|updated&limit=&offset=`
-- `GET facets`
-- `GET folders/{path}` (any layout), `GET themes/{name}`, `GET extensions/{lang}/{module}` (keiyoushi layout): sources, domains with their date
-  ranges, status, downloads, issues, PRs and history (PR merge date and title, commit date and body). For an extension
-  on a theme, the theme's own issues and history are included. For a theme, the extensions that use it are included.
-- `GET issues/{n}`: linked folders with how each link was found, their themes, and closing PRs
-- `GET prs/{n}`: folders touched, `single_target`, issues closed, commits on main
-- `GET domains?q=`, `GET domains/{host}` (subdomains included)
-- `GET search?q=`: `#123`, a host, a name or a source id
-
-With a token (`Authorization: Bearer lk_…`, any account), the reads show that account's private tags too: in
-`extensions`, `facets` and the folder routes. `GET /api/v1/tags/mine` lists them, and `extensions?my_tag=` filters on them
-like `tag=` does on public tags. `PUT` and `DELETE my-tags/{tag}/{path}` put one on a folder or take it off.
-
-Cross-repo pages: `GET /api/v1/drift?behind=&ignored=` (ignored rows are left out unless `ignored=true`), `GET /api/v1/missing?in=<owner/repo>`.
-
-Link corrections need an editor's API token (`/account`): `Authorization: Bearer lk_…`. Each one is recorded under that
-account and can be undone:
-
-- `PUT issues/{n}/links/{path}`: link an issue to a folder by hand
-- `DELETE issues/{n}/links/{path}`: hide a wrong automatic link
-- `DELETE issues/{n}/overrides/{path}`: drop the manual decision and go back to the automatic links
-- `PUT /api/v1/source-links`, `DELETE /api/v1/source-links`, `DELETE /api/v1/source-links/override`, with a JSON body
-  `{"a": {"origin", "stable_id"}, "b": {"origin", "stable_id"}}`: link two repos' sources by hand, hide a link, undo
-- `PUT /api/v1/drift/ignored` with `{"pair": [origin_a, path_a, origin_b, path_b], "reason": "right_side" | "redirect" | "other"}`
-  (the row's `pair` from `GET drift`): set a drift row aside until either side's hosts change; `DELETE` with `{"pair"}`
-  brings it back
+- **Reads** need no token. With one (`Authorization: Bearer lk_…`, created on `/account`), `extensions`, `facets` and
+  the folder routes add that account's private tags.
+- **Writes** need a token: an editor's for link corrections, public tags and drift, any account's for its own private
+  tags (`my-tags`). Each correction is recorded under that account and can be undone.

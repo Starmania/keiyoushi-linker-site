@@ -12,7 +12,8 @@ from datetime import UTC, datetime, timedelta
 from urllib.parse import parse_qs, urlencode
 
 import httpx
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Security
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.responses import RedirectResponse
 
 from linker.db import conn as db
@@ -109,7 +110,14 @@ def current_user(request: Request) -> dict | None:
     return request.state.user
 
 
-def api_viewer(request: Request) -> dict | None:
+# Declares the token in the OpenAPI document; the checks below read the header themselves.
+bearer = HTTPBearer(auto_error=False, scheme_name="token", description=(
+    "A personal API token, `lk_…`, created on the site's /account page after logging in with GitHub. "
+    "Writes need it (most need an editor's); on reads it is optional and adds that account's private tags."))
+Token = HTTPAuthorizationCredentials | None
+
+
+def api_viewer(request: Request, _: Token = Security(bearer)) -> dict | None:
     """The token's account on a read, to show its private tags; None without a token, 401 with a bad one."""
     if not request.headers.get("authorization"):
         return None
@@ -119,7 +127,7 @@ def api_viewer(request: Request) -> dict | None:
     return user
 
 
-def api_account(request: Request) -> dict:
+def api_account(request: Request, _: Token = Security(bearer)) -> dict:
     """Any account with a valid token (its own private tags)."""
     user = from_token(request)
     if not user:
@@ -127,7 +135,7 @@ def api_account(request: Request) -> dict:
     return user
 
 
-def api_editor(request: Request) -> dict:
+def api_editor(request: Request, _: Token = Security(bearer)) -> dict:
     """The JSON API authenticates with a per-user Bearer token only, never the cookie, so it needs no CSRF check."""
     user = from_token(request)
     if not user:

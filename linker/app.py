@@ -1,14 +1,16 @@
 import json
 from datetime import UTC, date, datetime
 from pathlib import Path
+from typing import Annotated, Literal
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
+from fastapi import Path as PathParam
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, Field
 
+from linker import api_models as M
 from linker import auth, device, issue_body, queries, tags
 from linker.auth import api_account, api_editor, api_viewer, audit, current_user, form_of, safe_next
 from linker.db import conn as db
@@ -39,7 +41,8 @@ templates.env.filters["num"] = lambda n: "–" if n is None else f"{n:,}".replac
 
 
 
-def origin_of(owner: str, repo: str) -> str:
+def origin_of(owner: Annotated[str, PathParam(description="Repository owner, e.g. keiyoushi")],
+              repo: Annotated[str, PathParam(description="Repository name, e.g. extensions-source")]) -> str:
     origin = f"{owner}/{repo}"
     if not db().execute("SELECT 1 FROM origin WHERE id = ?", (origin,)).fetchone():
         raise HTTPException(404, f"unknown origin {origin}")
@@ -53,50 +56,63 @@ def found(value, what: str):
 
 
 # ---------------------------------------------------------------- API
+# Response shapes live in linker/api_models.py; see its docstring for the compatibility rule.
 
 api = APIRouter(prefix="/api/v1")
 
+ERRORS = {
+    401: "No token, or an invalid or revoked one", 403: "The token's account may not do this",
+    404: "Not found (the message says what)", 422: "A parameter or the body is invalid",
+}
 
-@api.get("/origins")
+
+def errors(*codes: int) -> dict:
+    return {code: {"model": M.Error, "description": ERRORS[code]} for code in codes}
+
+
+Owner = Annotated[str, PathParam(description="Repository owner, e.g. keiyoushi")]
+Repo = Annotated[str, PathParam(description="Repository name, e.g. extensions-source")]
+FolderPath = Annotated[str, PathParam(description="A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, "
+                                                  "web/src/engine/websites/Foo")]
+TagName = Annotated[str, PathParam(description="The tag's name, any case")]
+SORT = Literal["downloads", "name", "status", "issues", "updated", "broken"]
+TRI = 'Repeat it to pick several; prefix a value with "-" to exclude it'
+
+
+def api_drift_of(d: dict) -> dict:
+    counts = dict(d["counts"])
+    ignored = counts.pop("ignored")
+    return {"total": d["total"], "counts": {"behind": {k or "unknown": n for k, n in counts.items()}, "ignored": ignored},
+            "items": d["items"]}
+
+
+@api.get("/origins", response_model=list[M.Origin], tags=["repositories"])
 def api_origins():
+    """The repositories served, with their number of current extensions. Every other route takes one as {owner}/{repo}."""
     return queries.origins(db())
 
 
-@api.get("/drift")
-def api_drift(behind: str | None = Query(None, description="An origin (owner/repo), or 'unknown'"),
-              ignored: bool = Query(False, description="Only the rows an editor ignored (their hosts unchanged since)")):
-    """Sources linked across repos that no longer share a current domain, with the repo that is probably behind."""
-    return queries.drift(db(), behind, ignored)
-
-
-@api.get("/missing")
-def api_missing(target: str = Query(..., alias="in", description="The repo (owner/repo) the sites are missing from"),
-                q: str | None = None, lang: str | None = None,
-                requested: bool = Query(False, description="Only sites with an open, not previously deleted, site request in `in`")):
-    """Current extensions of the other repos with no link to a current extension of `in`, with the site-request
-    issues of `in` that name one of their domains."""
-    found(db().execute("SELECT 1 FROM origin WHERE id = ?", (target,)).fetchone(), f"origin {target}")
-    return queries.missing(db(), target, q, lang, requested)
-
-
-@api.get("/{owner}/{repo}/extensions")
+@api.get("/{owner}/{repo}/extensions", response_model=M.ExtensionPage, responses=errors(401, 404, 422), tags=["extensions"])
 def api_extensions(
     origin: str = Depends(origin_of),
-    q: str | None = None,
-    lang: list[str] = Query([], description='Repeat it to pick several; prefix a value with "-" to exclude it, e.g. lang=en&lang=-all'),
-    theme: list[str] = Query([], description='Repeat it to pick several; prefix a value with "-" to exclude it'),
-    status: list[str] = Query([], description='Repeat it to pick several; prefix a value with "-" to exclude it: pass, partial, fail, maybe, untestable, unsupported'),
-    content: str | None = None, removed: bool = False, sort: str = "downloads",
+    q: str | None = Query(None, description="Name (also without spaces or punctuation), module, path, source name or id, or current host"),
+    lang: list[str] = Query([], description=f"Languages (facets `lang`). {TRI}, e.g. lang=en&lang=-all"),
+    theme: list[str] = Query([], description=f"Themes (facets `theme`). {TRI}"),
+    status: list[str] = Query([], description=f"Monitor verdicts: pass, partial, fail, maybe, untestable, unsupported. {TRI}"),
+    content: Literal["SAFE", "MIXED", "NSFW"] | None = Query(None, description="Content warning"),
+    removed: bool = Query(False, description="Include removed extensions"),
+    sort: SORT = Query("downloads", description="downloads (last 7 days), name, status (most broken first), issues (most open "
+                                                "first), updated (last commit), broken (broken longest first)"),
     broken_days: int | None = Query(None, ge=0, description="Only extensions not working for at least this many days"),
-    fix: str | None = Query(None, description="issue: broken, with an open issue and no open PR; noissue: broken, no open issue or PR"),
-    tag: list[str] = Query([], description='Public tag names (GET /api/v1/tags). All included tags are needed; '
-                                           '"-" excludes'),
-    my_tag: list[str] = Query([], description="Your private tag names (GET /api/v1/tags/mine; needs your token), "
-                                              'like `tag`'),
-    limit: int = Query(60, le=500), offset: int = 0,
+    fix: Literal["issue", "noissue"] | None = Query(None, description="issue: broken, with an open issue and no open PR; "
+                                                                      "noissue: broken, no open issue or PR"),
+    tag: list[str] = Query([], description=f"Public tag names (GET /api/v1/tags); all included tags are needed. {TRI}"),
+    my_tag: list[str] = Query([], description=f"Your private tag names (GET /api/v1/tags/mine), like `tag`; needs your token"),
+    limit: int = Query(60, ge=1, le=500), offset: int = Query(0, ge=0),
     user: dict | None = Depends(api_viewer),
 ):
-    """With a token, each extension's tags include that account's private tags."""
+    """The gallery: extensions with their monitor status, downloads, open issues and PRs, hosts and tags.
+    With a token, each extension's tags include that account's private tags."""
     if my_tag and not user:
         raise HTTPException(401, "my_tag needs your Bearer token")
     sign = lambda t: "-" if t.startswith("-") else ""
@@ -106,65 +122,102 @@ def api_extensions(
                               fix=fix, tag=tag_ids, account_id=user and user["id"], removed=removed, sort=sort, limit=limit, offset=offset)
 
 
-@api.get("/tags")
+@api.get("/{owner}/{repo}/facets", response_model=M.Facets, response_model_exclude_unset=True, responses=errors(401, 404),
+         tags=["extensions"])
+def api_facets(origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
+    """The values the gallery filters take, with how many current extensions have each. tags.private: with a token only."""
+    return queries.facets(db(), origin, user and user["id"])
+
+
+@api.get("/{owner}/{repo}/extensions/{lang}/{module}", response_model=M.Folder, response_model_exclude_unset=True,
+         responses=errors(401, 404), tags=["extensions"])
+def api_extension(lang: str = PathParam(description="Its language folder, e.g. en or all"),
+                  module: str = PathParam(description="Its module folder, e.g. mangadex"),
+                  origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
+    """An extension of a repository laid out as src/{lang}/{module} (keiyoushi); the same as folders/src/{lang}/{module}."""
+    return found(queries.folder(db(), origin, f"src/{lang}/{module}", account_id=user and user["id"]), "extension")
+
+
+@api.get("/{owner}/{repo}/themes/{name}", response_model=M.Folder, response_model_exclude_unset=True,
+         responses=errors(401, 404), tags=["extensions"])
+def api_theme(name: str = PathParam(description="The theme's name, e.g. madara"),
+              origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
+    """A theme (multisrc) folder by name, whatever the layout, with the extensions built on it."""
+    path = found(queries.theme_path(db(), origin, name), "theme")
+    return queries.folder(db(), origin, path, account_id=user and user["id"])
+
+
+@api.get("/{owner}/{repo}/folders/{path:path}", response_model=M.Folder, response_model_exclude_unset=True,
+         responses=errors(401, 404), tags=["extensions"])
+def api_folder(path: FolderPath, origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
+    """Any extension or theme folder: its sources, domains with their date ranges, status, downloads, issues, PRs,
+    history (PR merge date and title, commit date and body) and links to other repositories. An extension on a theme
+    also gets the theme's own issues and history; a theme gets the extensions that use it.
+    With a token, its tags include that account's private tags."""
+    return found(queries.folder(db(), origin, path.strip("/"), account_id=user and user["id"]), "folder")
+
+
+@api.get("/{owner}/{repo}/issues/{number}", response_model=M.Issue, responses=errors(404), tags=["issues and PRs"])
+def api_issue(number: int, origin: str = Depends(origin_of)):
+    """An issue with the folders it is linked to, how each link was found, and the PRs that close it."""
+    return found(queries.issue(db(), origin, number), "issue")
+
+
+@api.get("/{owner}/{repo}/prs/{number}", response_model=M.PullRequest, responses=errors(404), tags=["issues and PRs"])
+def api_pr(number: int, origin: str = Depends(origin_of)):
+    """A PR with the folders it touches, the issues it closes and its commits on the default branch."""
+    return found(queries.pull_request(db(), origin, number), "pull request")
+
+
+@api.get("/{owner}/{repo}/domains", response_model=M.DomainPage, responses=errors(404, 422), tags=["domains"])
+def api_domains(origin: str = Depends(origin_of), q: str | None = Query(None, description="Part of a host"),
+                limit: int = Query(200, ge=1, le=1000), offset: int = Query(0, ge=0)):
+    """Every host the repository's extensions declared, now or in the past, by host name."""
+    return queries.domains(db(), origin, q=q, limit=limit, offset=offset) | {"limit": limit, "offset": offset}
+
+
+@api.get("/{owner}/{repo}/domains/{host}", response_model=M.Domain, responses=errors(404), tags=["domains"])
+def api_domain(host: str = PathParam(description="A host; its subdomains are included"), origin: str = Depends(origin_of)):
+    """The extensions that declared a host or one of its subdomains, now or in the past."""
+    return queries.domain(db(), origin, host.lower())
+
+
+@api.get("/{owner}/{repo}/search", response_model=M.Search, responses=errors(404, 422), tags=["extensions"])
+def api_search(q: str = Query(description="#123 or 123 (an issue or PR), a host, a name or a source id"),
+               origin: str = Depends(origin_of)):
+    """The site's search box: an issue or PR by number, and the domains and extensions that match."""
+    return queries.search(db(), origin, q)
+
+
+@api.get("/drift", response_model=M.Drift, responses=errors(422), tags=["cross-repo"])
+def api_drift(behind: str | None = Query(None, description="Only rows where this repo (owner/repo) is behind, or 'unknown'"),
+              ignored: bool = Query(False, description="Only the rows an editor ignored (their hosts unchanged since)")):
+    """Sources linked across repositories that no longer share a current domain, one row per pair of folders, with the
+    repository that probably has the old domain. Rows an editor ignored are left out unless `ignored`."""
+    return api_drift_of(queries.drift(db(), behind, ignored))
+
+
+@api.get("/missing", response_model=M.Missing, responses=errors(404, 422), tags=["cross-repo"])
+def api_missing(target: str = Query(..., alias="in", description="The repo (owner/repo) the sites are missing from"),
+                q: str | None = Query(None, description="Part of a name, path or host"),
+                lang: str | None = Query(None, description="One language"),
+                requested: bool = Query(False, description="Only sites with an open, not previously deleted, site request in `in`")):
+    """Current extensions of the other repositories with no link to a current extension of `in`, with the site-request
+    issues of `in` that name one of their domains."""
+    found(db().execute("SELECT 1 FROM origin WHERE id = ?", (target,)).fetchone(), f"origin {target}")
+    return queries.missing(db(), target, q, lang, requested)
+
+
+@api.get("/tags", response_model=list[M.PublicTag], tags=["tags"])
 def api_tags():
     """Public tags, with the issue labels that put them on an open issue's folders."""
     return [{"name": d["name"], "labels": d["labels"]} for d in tags.defs(tags.PUBLIC)]
 
 
-@api.get("/tags/mine")
+@api.get("/tags/mine", response_model=list[M.PrivateTag], responses=errors(401), tags=["tags"])
 def api_my_tags(user: dict = Depends(api_account)):
-    """Your private tags, seen by you only."""
+    """Your private tags, seen by you only. A new account starts with a copy of the site's default ones."""
     return [{"name": d["name"]} for d in tags.mine(user["id"])]
-
-
-@api.get("/{owner}/{repo}/facets")
-def api_facets(origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
-    """With a token, tags.private counts that account's private tags."""
-    return queries.facets(db(), origin, user and user["id"])
-
-
-@api.get("/{owner}/{repo}/extensions/{lang}/{module}")
-def api_extension(lang: str, module: str, origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
-    return found(queries.folder(db(), origin, f"src/{lang}/{module}", account_id=user and user["id"]), "extension")
-
-
-@api.get("/{owner}/{repo}/themes/{name}")
-def api_theme(name: str, origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
-    path = found(queries.theme_path(db(), origin, name), "theme")
-    return queries.folder(db(), origin, path, account_id=user and user["id"])
-
-
-@api.get("/{owner}/{repo}/folders/{path:path}")
-def api_folder(path: str, origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
-    """Any extension or theme folder (e.g. src/<lang>/<module>, lib-multisrc/<theme>): its PRs, issues, domains and history.
-    With a token, its tags include that account's private tags."""
-    return found(queries.folder(db(), origin, path.strip("/"), account_id=user and user["id"]), "folder")
-
-
-@api.get("/{owner}/{repo}/issues/{number}")
-def api_issue(number: int, origin: str = Depends(origin_of)):
-    return found(queries.issue(db(), origin, number), "issue")
-
-
-@api.get("/{owner}/{repo}/prs/{number}")
-def api_pr(number: int, origin: str = Depends(origin_of)):
-    return found(queries.pull_request(db(), origin, number), "pull request")
-
-
-@api.get("/{owner}/{repo}/domains")
-def api_domains(origin: str = Depends(origin_of), q: str | None = None, limit: int = Query(200, le=1000), offset: int = 0):
-    return queries.domains(db(), origin, q=q, limit=limit, offset=offset)
-
-
-@api.get("/{owner}/{repo}/domains/{host}")
-def api_domain(host: str, origin: str = Depends(origin_of)):
-    return queries.domain(db(), origin, host.lower())
-
-
-@api.get("/{owner}/{repo}/search")
-def api_search(q: str, origin: str = Depends(origin_of)):
-    return queries.search(db(), origin, q)
 
 
 def set_named_tag(origin: str, path: str, tag: dict, on: bool, user: dict):
@@ -173,27 +226,27 @@ def set_named_tag(origin: str, path: str, tag: dict, on: bool, user: dict):
     return tags.of(db(), origin, [path], user["id"])[path]
 
 
-@api.put("/{owner}/{repo}/tags/{tag}/{path:path}")
-def api_tag_add(tag: str, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
-    """Put a public tag on a folder; returns the folder's tags."""
+@api.put("/{owner}/{repo}/tags/{tag}/{path:path}", response_model=list[M.Tag], responses=errors(401, 403, 404), tags=["tags"])
+def api_tag_add(tag: TagName, path: FolderPath, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
+    """Put a public tag on a folder (editor token); returns the folder's tags."""
     return set_named_tag(origin, path.strip("/"), tags.public_named(tag), True, user)
 
 
-@api.delete("/{owner}/{repo}/tags/{tag}/{path:path}")
-def api_tag_remove(tag: str, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
-    """Take a public tag off a folder (tags inherited from issue labels stay)."""
+@api.delete("/{owner}/{repo}/tags/{tag}/{path:path}", response_model=list[M.Tag], responses=errors(401, 403, 404), tags=["tags"])
+def api_tag_remove(tag: TagName, path: FolderPath, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
+    """Take a public tag off a folder (editor token); tags inherited from issue labels stay. Returns the folder's tags."""
     return set_named_tag(origin, path.strip("/"), tags.public_named(tag), False, user)
 
 
-@api.put("/{owner}/{repo}/my-tags/{tag}/{path:path}")
-def api_my_tag_add(tag: str, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_account)):
+@api.put("/{owner}/{repo}/my-tags/{tag}/{path:path}", response_model=list[M.Tag], responses=errors(401, 404), tags=["tags"])
+def api_my_tag_add(tag: TagName, path: FolderPath, origin: str = Depends(origin_of), user: dict = Depends(api_account)):
     """Put one of your private tags on a folder (any account's token); returns the folder's tags."""
     return set_named_tag(origin, path.strip("/"), tags.private_named(user["id"], tag), True, user)
 
 
-@api.delete("/{owner}/{repo}/my-tags/{tag}/{path:path}")
-def api_my_tag_remove(tag: str, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_account)):
-    """Take one of your private tags off a folder."""
+@api.delete("/{owner}/{repo}/my-tags/{tag}/{path:path}", response_model=list[M.Tag], responses=errors(401, 404), tags=["tags"])
+def api_my_tag_remove(tag: TagName, path: FolderPath, origin: str = Depends(origin_of), user: dict = Depends(api_account)):
+    """Take one of your private tags off a folder; returns the folder's tags."""
     return set_named_tag(origin, path.strip("/"), tags.private_named(user["id"], tag), False, user)
 
 
@@ -214,32 +267,36 @@ def set_override(origin: str, number: int, path: str, action: str | None, user: 
     return queries.issue(db(), origin, number)
 
 
-@api.put("/{owner}/{repo}/issues/{number}/links/{path:path}")
-def api_link_add(number: int, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
-    """Manually link an issue to a folder."""
+LINK_DOC = "Editor token; recorded under its account and undoable. Returns the issue."
+
+
+@api.put("/{owner}/{repo}/issues/{number}/links/{path:path}", response_model=M.Issue, responses=errors(401, 403, 404),
+         tags=["corrections"])
+def api_link_add(number: int, path: FolderPath, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
     return set_override(origin, number, path, "add", user)
 
 
-@api.delete("/{owner}/{repo}/issues/{number}/links/{path:path}")
-def api_link_remove(number: int, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
-    """Hide a wrong automatic link (or drop a manual one)."""
+api_link_add.__doc__ = f"Link an issue to a folder by hand. {LINK_DOC}"
+
+
+@api.delete("/{owner}/{repo}/issues/{number}/links/{path:path}", response_model=M.Issue, responses=errors(401, 403, 404),
+            tags=["corrections"])
+def api_link_remove(number: int, path: FolderPath, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
     return set_override(origin, number, path, "remove", user)
 
 
-@api.delete("/{owner}/{repo}/issues/{number}/overrides/{path:path}")
-def api_override_reset(number: int, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
-    """Undo a manual add or remove, going back to the automatic links."""
+api_link_remove.__doc__ = f"Hide a wrong automatic link, or drop a manual one. {LINK_DOC}"
+
+
+@api.delete("/{owner}/{repo}/issues/{number}/overrides/{path:path}", response_model=M.Issue, responses=errors(401, 403, 404),
+            tags=["corrections"])
+def api_override_reset(number: int, path: FolderPath, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
     return set_override(origin, number, path, None, user)
 
 
-class SourceRef(BaseModel):
-    origin: str
-    stable_id: str
+api_override_reset.__doc__ = f"Drop the manual decision and go back to the automatic links. {LINK_DOC}"
 
-
-class SourcePair(BaseModel):
-    a: SourceRef
-    b: SourceRef
+SourcePair, SourceRef = M.SourcePair, M.SourceRef
 
 
 def set_source_override(pair: SourcePair, action: str | None, user: dict):
@@ -260,22 +317,32 @@ def set_source_override(pair: SourcePair, action: str | None, user: dict):
     return {"a": {"origin": a[0], "stable_id": a[1]}, "b": {"origin": b[0], "stable_id": b[1]}, "override": action}
 
 
-@api.put("/source-links")
+PAIR_DOC = ("Two sources of different repositories, by stable_id (folder `sources`, or `source_link` in a folder's "
+            "`elsewhere` and drift's `source_links`). Editor token; recorded and undoable.")
+
+
+@api.put("/source-links", response_model=M.SourceLinkResult, responses=errors(401, 403, 404, 422), tags=["corrections"])
 def api_source_link_add(pair: SourcePair, user: dict = Depends(api_editor)):
-    """Link two sources of different repos by hand (stable ids as on extension pages)."""
     return set_source_override(pair, "add", user)
 
 
-@api.delete("/source-links")
+api_source_link_add.__doc__ = f"Link two sources by hand. {PAIR_DOC}"
+
+
+@api.delete("/source-links", response_model=M.SourceLinkResult, responses=errors(401, 403, 422), tags=["corrections"])
 def api_source_link_remove(pair: SourcePair, user: dict = Depends(api_editor)):
-    """Hide a wrong automatic link (or drop a manual one)."""
     return set_source_override(pair, "remove", user)
 
 
-@api.delete("/source-links/override")
+api_source_link_remove.__doc__ = f"Hide a wrong automatic link, or drop a manual one. {PAIR_DOC}"
+
+
+@api.delete("/source-links/override", response_model=M.SourceLinkResult, responses=errors(401, 403, 422), tags=["corrections"])
 def api_source_link_reset(pair: SourcePair, user: dict = Depends(api_editor)):
-    """Undo a manual add or hide, going back to the automatic links."""
     return set_source_override(pair, None, user)
+
+
+api_source_link_reset.__doc__ = f"Undo a manual link or hide, going back to the automatic links. {PAIR_DOC}"
 
 
 def ignore_drift(pair: list[str], reason: str | None, user: dict) -> bool:
@@ -288,23 +355,19 @@ def ignore_drift(pair: list[str], reason: str | None, user: dict) -> bool:
     return True
 
 
-class DriftIgnore(BaseModel):
-    pair: list[str] = Field(description="The row's `pair` from GET /api/v1/drift: [origin_a, path_a, origin_b, path_b]")
-    reason: str | None = Field(None, description="PUT only: " + ", ".join(queries.DRIFT_IGNORE_REASONS))
-
-
-@api.put("/drift/ignored")
-def api_drift_ignore(body: DriftIgnore, user: dict = Depends(api_editor)):
-    """Set a drift row aside with a reason, at both sides' current hosts: it comes back once either side's hosts change."""
+@api.put("/drift/ignored", response_model=M.DriftIgnoreResult, responses=errors(401, 403, 404, 422), tags=["corrections"])
+def api_drift_ignore(body: M.DriftIgnore, user: dict = Depends(api_editor)):
+    """Set a drift row aside with a reason, at both sides' current hosts: it comes back once either side's hosts
+    change. Editor token; recorded and undoable."""
     if body.reason is None:
         raise HTTPException(422, "reason is one of " + ", ".join(queries.DRIFT_IGNORE_REASONS))
     found(ignore_drift(body.pair, body.reason, user) or None, "drift row")
     return {"pair": body.pair, "reason": body.reason}
 
 
-@api.delete("/drift/ignored")
-def api_drift_unignore(body: DriftIgnore, user: dict = Depends(api_editor)):
-    """Bring an ignored drift row back into the list."""
+@api.delete("/drift/ignored", response_model=M.DriftIgnoreResult, responses=errors(401, 403, 404, 422), tags=["corrections"])
+def api_drift_unignore(body: M.DriftIgnore, user: dict = Depends(api_editor)):
+    """Bring an ignored drift row back into the list. Editor token; recorded."""
     found(ignore_drift(body.pair, None, user) or None, "ignored drift row")
     return {"pair": body.pair, "reason": None}
 

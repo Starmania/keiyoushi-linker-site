@@ -1,6 +1,7 @@
 import sqlite3
 
 import pytest
+from fastapi import HTTPException
 
 from linker import db, queries, tags
 from tests.test_auth import H, K, client, csrf, login, make_editor, token_for  # noqa: F401 (client is a fixture)
@@ -220,9 +221,13 @@ def test_api_token_reads_and_sets_its_own_private_tags(kx, monkeypatch):
 
     # The reads pass the token's account on, so its private tags show (tags.of is tested above).
     seen = []
-    monkeypatch.setattr(queries, "folder", lambda conn, origin, path, account_id=None, **kw: seen.append(account_id) or {})
-    monkeypatch.setattr(queries, "facets", lambda conn, origin, account_id=None: seen.append(account_id) or {})
-    monkeypatch.setattr(queries, "extensions", lambda conn, origin, *, tag=None, account_id=None, **kw: seen.append((account_id, tag)) or {})
+
+    def record(value):  # the test schema lacks the tables these read, so stop at the call
+        seen.append(value)
+        raise HTTPException(404, "recorded")
+    monkeypatch.setattr(queries, "folder", lambda conn, origin, path, account_id=None, **kw: record(account_id))
+    monkeypatch.setattr(queries, "facets", lambda conn, origin, account_id=None: record(account_id))
+    monkeypatch.setattr(queries, "extensions", lambda conn, origin, *, tag=None, account_id=None, **kw: record((account_id, tag)))
     for h in (viewer, {}):
         kx.get(f"/api/v1/{K}/folders/{FOO}", headers=h)
         kx.get(f"/api/v1/{K}/extensions/en/foo", headers=h)
