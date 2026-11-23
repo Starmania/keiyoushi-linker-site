@@ -109,6 +109,24 @@ def current_user(request: Request) -> dict | None:
     return request.state.user
 
 
+def api_viewer(request: Request) -> dict | None:
+    """The token's account on a read, to show its private tags; None without a token, 401 with a bad one."""
+    if not request.headers.get("authorization"):
+        return None
+    user = from_token(request)
+    if not user:
+        raise HTTPException(401, "invalid or revoked Bearer token")
+    return user
+
+
+def api_account(request: Request) -> dict:
+    """Any account with a valid token (its own private tags)."""
+    user = from_token(request)
+    if not user:
+        raise HTTPException(401, "a valid Bearer token is required (create one on /account)")
+    return user
+
+
 def api_editor(request: Request) -> dict:
     """The JSON API authenticates with a per-user Bearer token only, never the cookie, so it needs no CSRF check."""
     user = from_token(request)

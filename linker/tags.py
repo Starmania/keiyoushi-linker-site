@@ -80,6 +80,14 @@ def public_named(name: str) -> dict:
     return _def(row)
 
 
+def private_named(account_id: int, name: str) -> dict:
+    mine(account_id)  # a first-time account gets its default private tags
+    row = db().execute("SELECT * FROM main.tag WHERE owner = ? AND name = ? COLLATE NOCASE", (account_id, name)).fetchone()
+    if not row:
+        raise HTTPException(404, f"no private tag of yours named {name!r}")
+    return _def(row)
+
+
 def get(tag_id) -> dict | None:
     try:
         row = db().execute("SELECT * FROM main.tag WHERE id = ?", (int(tag_id),)).fetchone()

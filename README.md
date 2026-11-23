@@ -55,6 +55,10 @@ OpenAPI docs are served at `/api/docs`. Every route is scoped by origin (`/api/v
 - `GET domains?q=`, `GET domains/{host}` (subdomains included)
 - `GET search?q=`: `#123`, a host, a name or a source id
 
+With a token (`Authorization: Bearer lk_…`, any account), the reads show that account's private tags too: in
+`extensions`, `facets` and the folder routes. `GET /api/v1/tags/mine` lists them, and `extensions?my_tag=` filters on them
+like `tag=` does on public tags. `PUT` and `DELETE my-tags/{tag}/{path}` put one on a folder or take it off.
+
 Cross-repo pages: `GET /api/v1/drift?behind=&ignored=` (ignored rows are left out unless `ignored=true`), `GET /api/v1/missing?in=<owner/repo>`.
 
 Link corrections need an editor's API token (`/account`): `Authorization: Bearer lk_…`. Each one is recorded under that

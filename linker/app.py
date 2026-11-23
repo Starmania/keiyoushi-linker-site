@@ -10,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
 from linker import auth, device, issue_body, queries, tags
-from linker.auth import api_editor, audit, current_user, form_of, safe_next
+from linker.auth import api_account, api_editor, api_viewer, audit, current_user, form_of, safe_next
 from linker.db import conn as db
 
 HERE = Path(__file__).parent
@@ -91,11 +91,19 @@ def api_extensions(
     fix: str | None = Query(None, description="issue: broken, with an open issue and no open PR; noissue: broken, no open issue or PR"),
     tag: list[str] = Query([], description='Public tag names (GET /api/v1/tags). All included tags are needed; '
                                            '"-" excludes'),
+    my_tag: list[str] = Query([], description="Your private tag names (GET /api/v1/tags/mine; needs your token), "
+                                              'like `tag`'),
     limit: int = Query(60, le=500), offset: int = 0,
+    user: dict | None = Depends(api_viewer),
 ):
-    tag_ids = [("-" if t.startswith("-") else "") + str(tags.public_named(t.removeprefix("-"))["id"]) for t in tag]
-    return queries.extensions(db(), origin, q=q, lang=lang, theme=theme, status=status, content=content,
-                              broken_days=broken_days, fix=fix, tag=tag_ids, removed=removed, sort=sort, limit=limit, offset=offset)
+    """With a token, each extension's tags include that account's private tags."""
+    if my_tag and not user:
+        raise HTTPException(401, "my_tag needs your Bearer token")
+    sign = lambda t: "-" if t.startswith("-") else ""
+    tag_ids = [sign(t) + str(tags.public_named(t.removeprefix("-"))["id"]) for t in tag]
+    tag_ids += [sign(t) + str(tags.private_named(user["id"], t.removeprefix("-"))["id"]) for t in my_tag]
+    return queries.extensions(db(), origin, q=q, lang=lang, theme=theme, status=status, content=content, broken_days=broken_days,
+                              fix=fix, tag=tag_ids, account_id=user and user["id"], removed=removed, sort=sort, limit=limit, offset=offset)
 
 
 @api.get("/tags")
@@ -104,26 +112,34 @@ def api_tags():
     return [{"name": d["name"], "labels": d["labels"]} for d in tags.defs(tags.PUBLIC)]
 
 
+@api.get("/tags/mine")
+def api_my_tags(user: dict = Depends(api_account)):
+    """Your private tags, seen by you only."""
+    return [{"name": d["name"]} for d in tags.mine(user["id"])]
+
+
 @api.get("/{owner}/{repo}/facets")
-def api_facets(origin: str = Depends(origin_of)):
-    return queries.facets(db(), origin)
+def api_facets(origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
+    """With a token, tags.private counts that account's private tags."""
+    return queries.facets(db(), origin, user and user["id"])
 
 
 @api.get("/{owner}/{repo}/extensions/{lang}/{module}")
-def api_extension(lang: str, module: str, origin: str = Depends(origin_of)):
-    return found(queries.folder(db(), origin, f"src/{lang}/{module}"), "extension")
+def api_extension(lang: str, module: str, origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
+    return found(queries.folder(db(), origin, f"src/{lang}/{module}", account_id=user and user["id"]), "extension")
 
 
 @api.get("/{owner}/{repo}/themes/{name}")
-def api_theme(name: str, origin: str = Depends(origin_of)):
+def api_theme(name: str, origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
     path = found(queries.theme_path(db(), origin, name), "theme")
-    return queries.folder(db(), origin, path)
+    return queries.folder(db(), origin, path, account_id=user and user["id"])
 
 
 @api.get("/{owner}/{repo}/folders/{path:path}")
-def api_folder(path: str, origin: str = Depends(origin_of)):
-    """Any extension or theme folder (e.g. src/<lang>/<module>, lib-multisrc/<theme>): its PRs, issues, domains and history."""
-    return found(queries.folder(db(), origin, path.strip("/")), "folder")
+def api_folder(path: str, origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
+    """Any extension or theme folder (e.g. src/<lang>/<module>, lib-multisrc/<theme>): its PRs, issues, domains and history.
+    With a token, its tags include that account's private tags."""
+    return found(queries.folder(db(), origin, path.strip("/"), account_id=user and user["id"]), "folder")
 
 
 @api.get("/{owner}/{repo}/issues/{number}")
@@ -151,21 +167,34 @@ def api_search(q: str, origin: str = Depends(origin_of)):
     return queries.search(db(), origin, q)
 
 
-def set_public_tag(origin: str, path: str, name: str, on: bool, user: dict):
-    tags.set_tag(user, origin, path, tags.public_named(name), on)
-    return tags.of(db(), origin, [path], None)[path]
+def set_named_tag(origin: str, path: str, tag: dict, on: bool, user: dict):
+    """Returns the folder's tags as the token's account sees them: public, inherited and its private ones."""
+    tags.set_tag(user, origin, path, tag, on)
+    return tags.of(db(), origin, [path], user["id"])[path]
 
 
 @api.put("/{owner}/{repo}/tags/{tag}/{path:path}")
 def api_tag_add(tag: str, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
-    """Put a public tag on a folder; returns the folder's public and inherited tags."""
-    return set_public_tag(origin, path.strip("/"), tag, True, user)
+    """Put a public tag on a folder; returns the folder's tags."""
+    return set_named_tag(origin, path.strip("/"), tags.public_named(tag), True, user)
 
 
 @api.delete("/{owner}/{repo}/tags/{tag}/{path:path}")
 def api_tag_remove(tag: str, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
     """Take a public tag off a folder (tags inherited from issue labels stay)."""
-    return set_public_tag(origin, path.strip("/"), tag, False, user)
+    return set_named_tag(origin, path.strip("/"), tags.public_named(tag), False, user)
+
+
+@api.put("/{owner}/{repo}/my-tags/{tag}/{path:path}")
+def api_my_tag_add(tag: str, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_account)):
+    """Put one of your private tags on a folder (any account's token); returns the folder's tags."""
+    return set_named_tag(origin, path.strip("/"), tags.private_named(user["id"], tag), True, user)
+
+
+@api.delete("/{owner}/{repo}/my-tags/{tag}/{path:path}")
+def api_my_tag_remove(tag: str, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_account)):
+    """Take one of your private tags off a folder."""
+    return set_named_tag(origin, path.strip("/"), tags.private_named(user["id"], tag), False, user)
 
 
 def set_override(origin: str, number: int, path: str, action: str | None, user: dict):

@@ -206,3 +206,32 @@ def test_api_sets_public_tags_by_name_with_an_editor_token(kx, monkeypatch):
     assert kx.put(f"/api/v1/{K}/tags/CF/src/en/none", headers=auth).status_code == 404
     assert [t["label"] for t in kx.delete(url, headers=auth).json()] == ["CF"]
     assert kx.get("/api/v1/tags").json()[5] == {"name": "CF", "labels": ["Cloudflare protected", "Cloudflare"]}
+
+
+def test_api_token_reads_and_sets_its_own_private_tags(kx, monkeypatch):
+    viewer = {"Authorization": f"Bearer {token_for(kx, monkeypatch, 'viewer')}"}
+    kx.cookies.clear()
+    url = f"/api/v1/{K}/my-tags/todo/{FOO}"
+    assert kx.put(url).status_code == 401
+    r = kx.put(url, headers=viewer)  # a viewer's token is enough for its own private tags
+    assert r.status_code == 200 and [(t["label"], t["scope"]) for t in r.json()] == [("CF", "public"), ("TODO", "private")]
+    assert kx.put(f"/api/v1/{K}/my-tags/CF/{FOO}", headers=viewer).status_code == 404  # public: not a private tag
+    assert {"name": "TODO"} in kx.get("/api/v1/tags/mine", headers=viewer).json()
+
+    # The reads pass the token's account on, so its private tags show (tags.of is tested above).
+    seen = []
+    monkeypatch.setattr(queries, "folder", lambda conn, origin, path, account_id=None, **kw: seen.append(account_id) or {})
+    monkeypatch.setattr(queries, "facets", lambda conn, origin, account_id=None: seen.append(account_id) or {})
+    monkeypatch.setattr(queries, "extensions", lambda conn, origin, *, tag=None, account_id=None, **kw: seen.append((account_id, tag)) or {})
+    for h in (viewer, {}):
+        kx.get(f"/api/v1/{K}/folders/{FOO}", headers=h)
+        kx.get(f"/api/v1/{K}/extensions/en/foo", headers=h)
+        kx.get(f"/api/v1/{K}/facets", headers=h)
+    assert seen == [3, 3, 3, None, None, None]
+    assert kx.get(f"/api/v1/{K}/folders/{FOO}", headers={"Authorization": "Bearer lk_unknown"}).status_code == 401
+    todo = tag_id("TODO", 3)
+    kx.get(f"/api/v1/{K}/extensions", params={"my_tag": ["TODO", "-todo"], "tag": "CF"}, headers=viewer)
+    assert seen[-1] == (3, [str(tag_id("CF")), str(todo), f"-{todo}"])
+    assert kx.get(f"/api/v1/{K}/extensions", params={"my_tag": "TODO"}).status_code == 401
+    assert kx.get(f"/api/v1/{K}/extensions", params={"my_tag": "Nope"}, headers=viewer).status_code == 404
+    assert [t["label"] for t in kx.delete(url, headers=viewer).json()] == ["CF"]
