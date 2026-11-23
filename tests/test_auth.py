@@ -157,3 +157,24 @@ def test_logout_ends_the_session(client, monkeypatch):
     client.post("/auth/logout", data={"csrf": csrf(client)}, follow_redirects=False)
     client.cookies.set(auth.SESSION_COOKIE, cookie)
     assert client.get("/account", follow_redirects=False).status_code == 303  # back to login
+
+
+def test_api_ignores_a_drift_row_with_an_editor_token(client, monkeypatch):
+    from linker import queries
+    a, b = {"origin": H, "path": "web/Foo.ts", "hosts": ["new.org"]}, {"origin": K, "path": "src/en/foo", "hosts": ["old.org"]}
+    pair = [H, "web/Foo.ts", K, "src/en/foo"]
+    monkeypatch.setattr(queries, "drift", lambda conn, *args: {"items": [{"a": a, "b": b, "pair": pair}]})
+    body = {"pair": pair, "reason": "redirect"}
+    assert client.put("/api/v1/drift/ignored", json=body).status_code == 401
+    make_editor(client, monkeypatch)
+    auth_ = {"Authorization": f"Bearer {token_for(client, monkeypatch, 'ed')}"}
+    client.cookies.clear()
+    assert client.put("/api/v1/drift/ignored", json=body | {"reason": "nope"}, headers=auth_).status_code == 422
+    assert client.put("/api/v1/drift/ignored", json={"pair": pair}, headers=auth_).status_code == 422
+    assert client.put("/api/v1/drift/ignored", json=body | {"pair": pair[:2] + ["x/y", "z"]}, headers=auth_).status_code == 404
+    assert client.put("/api/v1/drift/ignored", json=body, headers=auth_).json() == body
+    assert db.conn().execute("SELECT reason, by_account FROM main.drift_ignore").fetchone()[:] == ("redirect", 2)
+    assert client.request("DELETE", "/api/v1/drift/ignored", json={"pair": pair}, headers=auth_).status_code == 200
+    assert client.request("DELETE", "/api/v1/drift/ignored", json={"pair": pair}, headers=auth_).status_code == 404
+    actions = [r[0] for r in db.conn().execute("SELECT action FROM main.audit WHERE via = 'token' ORDER BY id")]
+    assert actions == ["ignore", "unignore"]

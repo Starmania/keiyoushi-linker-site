@@ -55,7 +55,7 @@ OpenAPI docs are served at `/api/docs`. Every route is scoped by origin (`/api/v
 - `GET domains?q=`, `GET domains/{host}` (subdomains included)
 - `GET search?q=`: `#123`, a host, a name or a source id
 
-Cross-repo pages: `GET /api/v1/drift?behind=`, `GET /api/v1/missing?in=<owner/repo>`.
+Cross-repo pages: `GET /api/v1/drift?behind=&ignored=` (ignored rows are left out unless `ignored=true`), `GET /api/v1/missing?in=<owner/repo>`.
 
 Link corrections need an editor's API token (`/account`): `Authorization: Bearer lk_…`. Each one is recorded under that
 account and can be undone:
@@ -65,3 +65,6 @@ account and can be undone:
 - `DELETE issues/{n}/overrides/{path}`: drop the manual decision and go back to the automatic links
 - `PUT /api/v1/source-links`, `DELETE /api/v1/source-links`, `DELETE /api/v1/source-links/override`, with a JSON body
   `{"a": {"origin", "stable_id"}, "b": {"origin", "stable_id"}}`: link two repos' sources by hand, hide a link, undo
+- `PUT /api/v1/drift/ignored` with `{"pair": [origin_a, path_a, origin_b, path_b], "reason": "right_side" | "redirect" | "other"}`
+  (the row's `pair` from `GET drift`): set a drift row aside until either side's hosts change; `DELETE` with `{"pair"}`
+  brings it back

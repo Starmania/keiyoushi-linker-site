@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from linker import auth, device, issue_body, queries, tags
 from linker.auth import api_editor, audit, current_user, form_of, safe_next
@@ -249,6 +249,37 @@ def api_source_link_reset(pair: SourcePair, user: dict = Depends(api_editor)):
     return set_source_override(pair, None, user)
 
 
+def ignore_drift(pair: list[str], reason: str | None, user: dict) -> bool:
+    """Set a drift row aside with a reason, or (reason None) bring it back; False when there was nothing to change."""
+    if len(pair) != 4 or reason is not None and reason not in queries.DRIFT_IGNORE_REASONS:
+        raise HTTPException(422, "pair is [origin_a, path_a, origin_b, path_b], reason one of " + ", ".join(queries.DRIFT_IGNORE_REASONS))
+    if not queries.set_drift_ignore(db(), pair, reason, user["id"], auth.now()):
+        return False
+    audit(user, "ignore" if reason else "unignore", {"kind": "drift", "pair": pair, "reason": reason})
+    return True
+
+
+class DriftIgnore(BaseModel):
+    pair: list[str] = Field(description="The row's `pair` from GET /api/v1/drift: [origin_a, path_a, origin_b, path_b]")
+    reason: str | None = Field(None, description="PUT only: " + ", ".join(queries.DRIFT_IGNORE_REASONS))
+
+
+@api.put("/drift/ignored")
+def api_drift_ignore(body: DriftIgnore, user: dict = Depends(api_editor)):
+    """Set a drift row aside with a reason, at both sides' current hosts: it comes back once either side's hosts change."""
+    if body.reason is None:
+        raise HTTPException(422, "reason is one of " + ", ".join(queries.DRIFT_IGNORE_REASONS))
+    found(ignore_drift(body.pair, body.reason, user) or None, "drift row")
+    return {"pair": body.pair, "reason": body.reason}
+
+
+@api.delete("/drift/ignored")
+def api_drift_unignore(body: DriftIgnore, user: dict = Depends(api_editor)):
+    """Bring an ignored drift row back into the list."""
+    found(ignore_drift(body.pair, None, user) or None, "ignored drift row")
+    return {"pair": body.pair, "reason": None}
+
+
 app.include_router(api)
 app.include_router(auth.router)
 
@@ -432,11 +463,8 @@ async def edit_drift_ignore(request: Request):
     user, fields = await form_of(request)
     pair = json.loads(fields.get("pair") or "[]")
     reason = fields.get("reason") if fields.get("action") == "ignore" else None
-    if len(pair) != 4 or reason is not None and reason not in queries.DRIFT_IGNORE_REASONS:
-        raise HTTPException(422, "pair is [origin_a, path_a, origin_b, path_b], reason one of " + ", ".join(queries.DRIFT_IGNORE_REASONS))
-    if not queries.set_drift_ignore(db(), pair, reason, user["id"], auth.now()):
+    if not ignore_drift(pair, reason, user):
         return back_to(fields.get("back"), "Nothing to change: the drift is gone or wasn't ignored")
-    auth.audit(user, "ignore" if reason else "unignore", {"kind": "drift", "pair": pair, "reason": reason})
     return back_to(fields.get("back"), "Drift ignored" if reason else "Drift back in the list")
 
 
