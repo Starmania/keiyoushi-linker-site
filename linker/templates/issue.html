@@ -27,7 +27,7 @@
       <tr>
         <td>{{ folder_link(origin, l.path, l.name) }} <span class="muted small mono">{{ l.path }}</span></td>
         <td>{% if l.theme_path %}{{ folder_link(origin, l.theme_path, l.theme) }}{% endif %}</td>
-        <td>{{ l.methods }}</td>
+        <td class="small">{{ l.methods|how_linked }}</td>
         <td>{{ ('manual' ~ (' · @' ~ l.by_login if l.by_login else '')) if l.manual else '%.0f%%'|format(l.confidence * 100) }}</td>
         {% if can_edit %}<td>{{ edit_button('/edit/issue-link', 'Remove' if l.manual else 'Unlink', {'action': 'reset' if l.manual else 'unlink', 'origin': origin, 'issue': i.number, 'path': l.path}) }}</td>{% endif %}
       </tr>

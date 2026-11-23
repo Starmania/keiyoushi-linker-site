@@ -13,9 +13,9 @@
     <div class="tags">
       {% if f.kind == 'src' and tracked.status %}{{ status_pill(f.status.status, f.status.since, f.status.since_open) if f.status else status_pill(None) }}{% endif %}
       {% if f.theme_path %}<a class="tag" href="/{{ origin }}/{{ f.theme_path }}">theme: {{ f.theme }}</a>{% endif %}
-      {% if f.lib_version %}<span class="tag">lib {{ f.lib_version }}</span>{% endif %}
-      {% if f.version_code is not none %}<span class="tag">{{ 'base ' if f.kind == 'theme' }}versionCode {{ f.version_code }}</span>{% endif %}
-      {% if f.content_warning %}<span class="tag{{ ' warn' if f.content_warning != 'SAFE' }}">{{ f.content_warning }}</span>{% endif %}
+      {% if f.lib_version %}<span class="tag hint" title="{{ glossary.lib }}">lib {{ f.lib_version }}</span>{% endif %}
+      {% if f.version_code is not none %}<span class="tag hint" title="{{ glossary.versionCode }}">{{ 'base ' if f.kind == 'theme' }}versionCode {{ f.version_code }}</span>{% endif %}
+      {% if f.content_warning %}<span class="tag hint{{ ' warn' if f.content_warning != 'SAFE' }}" title="{{ glossary.get(f.content_warning, '') }}">{{ f.content_warning }}</span>{% endif %}
       {% if f.removed_sha %}<span class="tag warn">removed {{ f.last_date|day }}</span>{% endif %}
       {% for t in f.tags %}{{ tag_chip(t, origin) }}{% endfor %}
     </div>
@@ -55,7 +55,7 @@
       {{ state_pill(p.state) }}
       <a href="/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a>{{ gh(origin, 'pull', p.number) }}
       <span class="grow">{{ p.title }}</span>
-      {% if p.single_target %}<span class="tag">single target</span>{% else %}<span class="muted small">{{ p.folder_count }} folders</span>{% endif %}
+      {% if p.single_target %}<span class="tag hint" title="{{ glossary['single target'] }}">single target</span>{% else %}<span class="muted small">{{ p.folder_count }} folders</span>{% endif %}
       <span class="muted small">{{ (p.merged_at or p.created_at)|day }}</span>
     </li>
     {% endfor %}
@@ -261,7 +261,7 @@
       {{ state_pill(p.state) }}
       <a href="/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a>{{ gh(origin, 'pull', p.number) }}
       <span class="grow">{{ p.title }}</span>
-      {% if p.single_target %}<span class="tag">single target</span>{% else %}<span class="muted small">{{ p.folder_count }} folders</span>{% endif %}
+      {% if p.single_target %}<span class="tag hint" title="{{ glossary['single target'] }}">single target</span>{% else %}<span class="muted small">{{ p.folder_count }} folders</span>{% endif %}
       <span class="muted small">{{ (p.merged_at or p.created_at)|day }}</span>
     </li>
     {% endfor %}

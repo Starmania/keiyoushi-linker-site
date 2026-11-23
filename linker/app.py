@@ -20,6 +20,17 @@ templates = Jinja2Templates(directory=HERE / "templates")
 templates.env.globals["tag_colors"] = tags.COLORS
 templates.env.filters["issue_body"] = issue_body.render
 templates.env.globals |= {"monitor_ops": queries.OPS, "op_status": queries.OP_STATUS}
+# How an issue was linked to a folder (issue_link.method), in words.
+LINK_METHODS = {"title-name": "extension name in the issue title", "form-name": "extension name in the issue form",
+                "domain": "one of its domains in the issue", "closing-pr": "a PR closing the issue changed it",
+                "manual": "linked by hand"}
+templates.env.filters["how_linked"] = lambda methods: "; ".join(LINK_METHODS.get(m, m) for m in (methods or "").split(","))
+templates.env.globals["glossary"] = {
+    "single target": "The PR changes this folder only, so it is about this extension",
+    "lib": "Version of the extensions library it is built against",
+    "versionCode": "The extension's build number, raised on each release",
+    "SAFE": "No adult content", "MIXED": "Some adult content", "NSFW": "Adult content",
+}
 templates.env.filters["day"] = lambda iso: (iso or "")[:10]
 templates.env.filters["ago"] = lambda iso: f"{d} d" if (d := (datetime.now(UTC).date() - date.fromisoformat(iso[:10])).days) else "today"
 # A facet row {value, n} with a label for tri_filter; names: {value: label}, else the value itself.

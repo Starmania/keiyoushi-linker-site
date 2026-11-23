@@ -382,3 +382,5 @@ a.stat:hover { border-color: var(--accent); text-decoration: none; }
 .repo-stats a { color: var(--text); }
 .repo-stats b { display: inline-block; min-width: 3.2rem; font-variant-numeric: tabular-nums; }
 .repo-stats b.bad { color: var(--fail); }
+/* Jargon with an explanation on hover. */
+.hint[title] { cursor: help; text-decoration: underline dotted color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: 3px; }

@@ -7,7 +7,7 @@
     <h1>{{ p.title }} <span class="muted">#{{ p.number }}</span></h1>
     <div class="tags">
       {{ state_pill(p.state) }}
-      {% if p.single_target %}<span class="tag">single target</span>{% endif %}
+      {% if p.single_target %}<span class="tag hint" title="{{ glossary['single target'] }}">single target</span>{% endif %}
       <span class="muted small">opened {{ p.created_at|day }}{% if p.author %} by {{ p.author }}{% endif %}{% if p.merged_at %} · merged {{ p.merged_at|day }}{% elif p.closed_at %} · closed {{ p.closed_at|day }}{% endif %}</span>
     </div>
   </div>

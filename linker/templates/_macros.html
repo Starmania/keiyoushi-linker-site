@@ -34,7 +34,7 @@
     {{ state_pill(i.state) }}
     <a href="/{{ origin }}/issues/{{ i.number }}">#{{ i.number }}</a>{{ gh(origin, 'issues', i.number) }}
     <span class="grow">{{ i.title }}</span>
-    {% if show_how %}<span class="muted small" title="How this link was found">{{ i.methods }}{% if not i.manual %} · {{ '%.0f'|format(i.confidence * 100) }}%{% endif %}</span>{% endif %}
+    {% if show_how %}<span class="muted small hint" title="How this link was found: {{ i.methods|how_linked }}{% if not i.manual %}. Confidence {{ '%.0f'|format(i.confidence * 100) }}%{% endif %}">{{ i.methods|how_linked if i.methods == 'manual' else 'auto' }}{% if not i.manual %} · {{ '%.0f'|format(i.confidence * 100) }}%{% endif %}</span>{% endif %}
     <span class="muted small">{{ i.created_at|day }}</span>
   </li>
   {% endfor %}
