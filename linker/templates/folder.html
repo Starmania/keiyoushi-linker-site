@@ -42,6 +42,27 @@
 </section>
 
 
+{% set open_issues = f.issues|selectattr('state', 'equalto', 'OPEN')|list %}
+{% set open_prs = f.prs|selectattr('state', 'equalto', 'OPEN')|list %}
+<section id="open">
+  <h2>Open issues and pull requests</h2>
+  {% if open_issues %}{{ issue_rows(origin, open_issues) }}
+  {% else %}<p class="muted">No open issue · <a href="https://github.com/{{ origin }}/issues/new/choose">open one on GitHub</a></p>{% endif %}
+  {% if open_prs %}
+  <ul class="rows open-prs">
+    {% for p in open_prs %}
+    <li>
+      {{ state_pill(p.state) }}
+      <a href="/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a>{{ gh(origin, 'pull', p.number) }}
+      <span class="grow">{{ p.title }}</span>
+      {% if p.single_target %}<span class="tag">single target</span>{% else %}<span class="muted small">{{ p.folder_count }} folders</span>{% endif %}
+      <span class="muted small">{{ (p.merged_at or p.created_at)|day }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">No open pull request.</p>{% endif %}
+</section>
+
 {% if f.kind == 'src' %}
 <section class="stats">
   {% if tracked.downloads %}
@@ -49,7 +70,7 @@
   <div class="stat"><div class="stat-v">{{ f.downloads.d30|num if f.downloads else '–' }}</div><div class="stat-l">downloads, 30 d</div></div>
   <div class="stat"><div class="stat-v">{{ f.downloads.all_time|num if f.downloads else '–' }}</div><div class="stat-l">downloads, all time</div></div>
   {% endif %}
-  <div class="stat"><div class="stat-v">{{ f.issues|selectattr('state', 'equalto', 'OPEN')|list|length }}</div><div class="stat-l">open issues</div></div>
+  <a class="stat" href="#open"><div class="stat-v">{{ open_issues|length }}</div><div class="stat-l">open issues</div></a>
 </section>
 
 {% if f.status_history %}
@@ -213,8 +234,9 @@
 {% endif %}
 
 <section>
-  <h2>Issues</h2>
-  {{ issue_rows(origin, f.issues) }}
+  <h2>Closed issues</h2>
+  {% set closed = f.issues|rejectattr('state', 'equalto', 'OPEN')|list %}
+  {% if closed %}{{ issue_rows(origin, closed) }}{% else %}<p class="muted">None.</p>{% endif %}
 </section>
 
 {% if f.theme_folder %}
@@ -230,10 +252,11 @@
 {% endif %}
 
 <section>
-  <h2>Pull requests</h2>
-  {% if f.prs %}
+  <h2>Merged and closed pull requests</h2>
+  {% set done = f.prs|rejectattr('state', 'equalto', 'OPEN')|list %}
+  {% if done %}
   <ul class="rows">
-    {% for p in f.prs %}
+    {% for p in done %}
     <li>
       {{ state_pill(p.state) }}
       <a href="/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a>{{ gh(origin, 'pull', p.number) }}
