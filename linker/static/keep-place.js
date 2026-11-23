@@ -23,3 +23,13 @@ addEventListener("DOMContentLoaded", () => {
     history.replaceState(null, "", location.pathname + (params.size ? "?" + params : "") + location.hash);
   }
 });
+
+// Tag lists (/account, /admin): a row saves when its name, labels or colour change, no Save button needed.
+addEventListener("DOMContentLoaded", () => {
+  for (const list of document.querySelectorAll("[data-autosave]")) {
+    list.classList.add("js-autosave");
+    for (const form of list.querySelectorAll(".tagdef > form.save")) {
+      form.addEventListener("change", () => form.requestSubmit());
+    }
+  }
+});

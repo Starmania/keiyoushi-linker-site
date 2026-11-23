@@ -99,14 +99,14 @@
 
 {# Editable list of tag definitions (linker/tags.py) for scope "mine", "public" or "defaults"; import with context. #}
 {% macro tag_defs_editor(scope, defs, labels=False) -%}
-<div class="tagdefs">
+<div class="tagdefs" data-autosave>
   {% for d in defs %}
   <div class="tagdef">
     <form class="save" method="post" action="/tags/save">{{ form_fields() }}<input type="hidden" name="scope" value="{{ scope }}"><input type="hidden" name="id" value="{{ d.id }}">
       <input name="name" required maxlength="30" value="{{ d.name }}" aria-label="Tag name">
       {{ color_picker(d.color, d.name) }}
       {% if labels %}<input name="labels" value="{{ d.labels|join(', ') }}" placeholder="Issue labels, comma-separated" aria-label="Issue labels of {{ d.name }}">{% endif %}
-      <button type="submit" class="mini">Save</button>
+      <button type="submit" class="mini save-btn">Save</button>
     </form>
     <form class="inline-edit" method="post" action="/tags/delete" onsubmit="return confirm('Delete “{{ d.name }}” and take it off every folder?')">{{ form_fields() }}
       <input type="hidden" name="scope" value="{{ scope }}"><input type="hidden" name="id" value="{{ d.id }}">
