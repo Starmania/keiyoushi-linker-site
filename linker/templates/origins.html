@@ -1,7 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Repositories</h1>
-<ul class="rows">
-  {% for o in origins %}<li><a href="/{{ o.id }}">{{ o.id }}</a> <span class="muted small">{{ o.extensions }} extensions · {{ o.kind }}</span></li>{% endfor %}
-</ul>
+<h1>Extension linker</h1>
+<p class="lede muted">Each repository's extensions with their issues, pull requests, domains and monitor status, and the same
+sites across repositories. Start from what needs fixing.</p>
+<div class="repo-cards">
+  {% for o in origins %}
+  <section class="repo-card">
+    <h2><a href="/{{ o.id }}">{{ o.id }}</a></h2>
+    <p class="muted small">{{ o.extensions|num }} extensions</p>
+    <ul class="repo-stats">
+      {% if o.tracked.status %}
+      <li><a href="/{{ o.id }}?status=pass"><b>{{ o.status.get('pass', 0)|num }}</b> working</a></li>
+      <li><a href="/{{ o.id }}?status=fail"><b class="bad">{{ o.status.get('fail', 0)|num }}</b> not working</a></li>
+      <li><a href="/{{ o.id }}?fix=noissue"><b>{{ o.to_fix.noissue|num }}</b> broken, no issue yet</a></li>
+      <li><a href="/{{ o.id }}?fix=issue"><b>{{ o.to_fix.issue|num }}</b> broken, issue but no PR</a></li>
+      {% endif %}
+      <li><a href="/drift?behind={{ o.id }}"><b>{{ o.behind }}</b> behind on a domain</a></li>
+      <li><a href="/missing?in={{ o.id }}"><b>{{ o.missing }}</b> sites only elsewhere</a></li>
+    </ul>
+  </section>
+  {% endfor %}
+</div>
 {% endblock %}

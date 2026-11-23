@@ -404,6 +404,14 @@ def home(request: Request):
     all_origins = queries.origins(db())
     if len(all_origins) == 1:
         return RedirectResponse(f"/{all_origins[0]['id']}")
+    c = db()
+    drift = queries.drift(c)
+    for o in all_origins:
+        o["tracked"] = queries.tracked(c, o["id"])
+        o["status"] = {f["value"]: f["n"] for f in queries.facets(c, o["id"])["status"]}
+        o["to_fix"] = {fix: queries.extensions(c, o["id"], fix=fix, limit=0)["total"] for fix in ("noissue", "issue")}
+        o["behind"] = drift["counts"].get(o["id"], 0)
+        o["missing"] = queries.missing(c, o["id"])["total"]
     return page(request, "origins.html", origins=all_origins)
 
 
@@ -495,7 +503,7 @@ def active_filters(params: list[tuple[str, str]], facets: dict) -> list[dict]:
 
 def gallery_views(facets: dict) -> list[tuple[str, str]]:
     """Ready-made triage filters: (label, query string)."""
-    views = [("Broken, no issue yet", "status=fail&fix=noissue"), ("Broken, issue but no PR", "status=fail&fix=issue"),
+    views = [("Broken, no issue yet", "fix=noissue"), ("Broken, issue but no PR", "fix=issue"),
              ("Broken a week or more", "broken=7&sort=broken")]
     on_it = next((t for t in facets["tags"]["public"] if t["label"] == "On it"), None)
     if on_it:

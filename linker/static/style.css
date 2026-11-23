@@ -372,3 +372,13 @@ a.stat:hover { border-color: var(--accent); text-decoration: none; }
 @media (max-width: 600px) {
   .filter-box > summary { display: inline-block; margin-bottom: .75rem; padding: .3rem .8rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: .9rem; }
 }
+/* Home: a card per repository, each count a link to the filtered list. */
+.lede { max-width: 62ch; }
+.repo-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+.repo-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0 1.1rem 1rem; }
+.repo-card h2 { margin: 1rem 0 0; }
+.repo-card > p { margin: .1rem 0 .75rem; }
+.repo-stats { list-style: none; padding: 0; margin: 0; display: grid; gap: .3rem; }
+.repo-stats a { color: var(--text); }
+.repo-stats b { display: inline-block; min-width: 3.2rem; font-variant-numeric: tabular-nums; }
+.repo-stats b.bad { color: var(--fail); }
