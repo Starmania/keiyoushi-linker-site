@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_pill, tag_chip, tri_filter %}
+{% from "_macros.html" import status_pill, tag_chip, tri_filter, pager %}
 {% set status_names = {'pass': 'Working', 'partial': 'Partly working', 'fail': 'Not working', 'maybe': 'Might be broken', 'untestable': 'Can’t test', 'unsupported': 'Not supported'} %}
 {% block title %}Extensions · {{ origin }}{% endblock %}
 {% block content %}
@@ -91,12 +91,6 @@
   {% endfor %}
 </div>
 
-{% if pages > 1 %}
-<nav class="pager">
-  {% if page_no > 1 %}<a href="?{{ qs }}&page={{ page_no - 1 }}">← Previous</a>{% endif %}
-  <span class="muted">Page {{ page_no }} of {{ pages }}</span>
-  {% if page_no < pages %}<a href="?{{ qs }}&page={{ page_no + 1 }}">Next →</a>{% endif %}
-</nav>
-{% endif %}
+{{ pager(page_no, pages, qs) }}
 <script src="/static/tri.js" defer></script>
 {% endblock %}

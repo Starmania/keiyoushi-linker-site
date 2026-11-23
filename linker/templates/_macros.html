@@ -150,3 +150,22 @@
 <span class="tag t-{{ 'private' if t.scope == 'private' else 'public' if t.manual else 'inherited' }}{{ ' tc tc-' ~ t.color if t.color }}" title="{{ t.title }}">{{ t.label }}
 {%- if t.issues and not t.manual %} · {% if origin %}<a href="/{{ origin }}/issues/{{ t.issues[0].number }}">#{{ t.issues[0].number }}</a>{% else %}#{{ t.issues[0].number }}{% endif %}{% endif %}</span>
 {%- endmacro %}
+
+
+{# Numbered pages: the first, the last, and two either side of the current one. qs: the query string without page. #}
+{% macro pager(page_no, pages, qs='') -%}
+{% if pages > 1 %}
+{% set base = '?' ~ (qs ~ '&' if qs else '') ~ 'page=' %}
+<nav class="pager" aria-label="Pages">
+  {% if page_no > 1 %}<a href="{{ base }}{{ page_no - 1 }}" rel="prev">← Previous</a>{% endif %}
+  {% set ns = namespace(gap=False) %}
+  {% for n in range(1, pages + 1) %}
+    {% if n == 1 or n == pages or (n - page_no)|abs <= 2 %}
+      {% set ns.gap = False %}
+      {% if n == page_no %}<span class="page-n current" aria-current="page">{{ n }}</span>{% else %}<a class="page-n" href="{{ base }}{{ n }}">{{ n }}</a>{% endif %}
+    {% elif not ns.gap %}{% set ns.gap = True %}<span class="muted">…</span>{% endif %}
+  {% endfor %}
+  {% if page_no < pages %}<a href="{{ base }}{{ page_no + 1 }}" rel="next">Next →</a>{% endif %}
+</nav>
+{% endif %}
+{%- endmacro %}
