@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_pill, state_pill, folder_link, issue_rows, history_rows, link_state, edit_button, form_fields, tag_chip with context %}
+{% from "_macros.html" import status_pill, state_pill, folder_link, issue_rows, history_rows, link_state, edit_button, form_fields, tag_chip, gh, gh_button with context %}
 {% block title %}{{ f.name }} · {{ origin }}{% endblock %}
 {% block content %}
 <section class="head">
@@ -20,6 +20,7 @@
       {% for t in f.tags %}{{ tag_chip(t, origin) }}{% endfor %}
     </div>
   </div>
+  {% if f.source_url %}{{ gh_button(f.source_url) }}{% endif %}
 </section>
 
 {% if user %}
@@ -235,7 +236,7 @@
     {% for p in f.prs %}
     <li>
       {{ state_pill(p.state) }}
-      <a href="/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a>
+      <a href="/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a>{{ gh(origin, 'pull', p.number) }}
       <span class="grow">{{ p.title }}</span>
       {% if p.single_target %}<span class="tag">single target</span>{% else %}<span class="muted small">{{ p.folder_count }} folders</span>{% endif %}
       <span class="muted small">{{ (p.merged_at or p.created_at)|day }}</span>

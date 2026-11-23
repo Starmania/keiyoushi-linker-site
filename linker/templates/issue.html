@@ -1,16 +1,17 @@
 {% extends "base.html" %}
-{% from "_macros.html" import state_pill, folder_link, edit_button, form_fields with context %}
+{% from "_macros.html" import state_pill, folder_link, edit_button, form_fields, gh, gh_button with context %}
 {% block title %}#{{ i.number }} · {{ origin }}{% endblock %}
 {% block content %}
 <section class="head">
   <div>
-    <h1>{{ i.title }} <a class="muted" href="https://github.com/{{ origin }}/issues/{{ i.number }}">#{{ i.number }}</a></h1>
+    <h1>{{ i.title }} <span class="muted">#{{ i.number }}</span></h1>
     <div class="tags">
       {{ state_pill(i.state) }}
       {% for l in i.labels %}<span class="tag">{{ l }}</span>{% endfor %}
       <span class="muted small">opened {{ i.created_at|day }}{% if i.author %} by {{ i.author }}{% endif %}{% if i.closed_at %} · closed {{ i.closed_at|day }}{% endif %}</span>
     </div>
   </div>
+  {{ gh_button('https://github.com/' ~ origin ~ '/issues/' ~ i.number) }}
 </section>
 
 <section>
@@ -50,7 +51,7 @@
   <h2>Pull requests closing it</h2>
   <ul class="rows">
     {% for p in i.prs %}
-    <li>{{ state_pill(p.state) }} <a href="/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a> <span class="grow">{{ p.title }}</span> <span class="muted small">{{ p.merged_at|day }}</span></li>
+    <li>{{ state_pill(p.state) }} <a href="/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a>{{ gh(origin, 'pull', p.number) }} <span class="grow">{{ p.title }}</span> <span class="muted small">{{ p.merged_at|day }}</span></li>
     {% else %}<li class="muted">None.</li>{% endfor %}
   </ul>
 </section>

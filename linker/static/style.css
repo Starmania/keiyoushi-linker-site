@@ -156,6 +156,12 @@ button.mini.tc.on { background: var(--tc); color: var(--surface); }
 
 .head { display: flex; gap: 1rem; align-items: flex-start; }
 .head > div { min-width: 0; }
+/* Ways out to GitHub: a button at the end of a page head, a small arrow after an issue or PR number in lists. */
+.gh-logo { width: 1em; height: 1em; vertical-align: -.125em; flex: none; }
+.gh-button { margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: .4rem; color: var(--text); font-size: .85rem; padding: .25rem .7rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
+.gh-button:hover { border-color: var(--accent); text-decoration: none; }
+.gh-out { color: var(--muted); font-size: .85em; margin-left: -.25rem; padding: 0 .15rem; }
+.gh-out:hover { color: var(--accent); text-decoration: none; }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .75rem; margin-top: 1.5rem; }
 .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .75rem 1rem; }
 .stat-v { font-size: 1.4rem; font-weight: 650; font-variant-numeric: tabular-nums; }
@@ -221,6 +227,7 @@ details summary { cursor: pointer; color: var(--muted); font-size: .85rem; }
 @media (max-width: 600px) {
   .search { max-width: none; }
   .head { flex-direction: column; }
+  .gh-button { margin-left: 0; }
 }
 
 .tag.ok { color: var(--pass); border-color: color-mix(in srgb, var(--pass) 45%, transparent); }

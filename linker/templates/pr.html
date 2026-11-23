@@ -1,16 +1,17 @@
 {% extends "base.html" %}
-{% from "_macros.html" import state_pill, folder_link %}
+{% from "_macros.html" import state_pill, folder_link, gh, gh_button %}
 {% block title %}PR #{{ p.number }} · {{ origin }}{% endblock %}
 {% block content %}
 <section class="head">
   <div>
-    <h1>{{ p.title }} <a class="muted" href="https://github.com/{{ origin }}/pull/{{ p.number }}">#{{ p.number }}</a></h1>
+    <h1>{{ p.title }} <span class="muted">#{{ p.number }}</span></h1>
     <div class="tags">
       {{ state_pill(p.state) }}
       {% if p.single_target %}<span class="tag">single target</span>{% endif %}
       <span class="muted small">opened {{ p.created_at|day }}{% if p.author %} by {{ p.author }}{% endif %}{% if p.merged_at %} · merged {{ p.merged_at|day }}{% elif p.closed_at %} · closed {{ p.closed_at|day }}{% endif %}</span>
     </div>
   </div>
+  {{ gh_button('https://github.com/' ~ origin ~ '/pull/' ~ p.number) }}
 </section>
 
 <section>
@@ -26,7 +27,7 @@
   <h2>Issues it closes</h2>
   <ul class="rows">
     {% for i in p.issues %}
-    <li>{{ state_pill(i.state) }} <a href="/{{ origin }}/issues/{{ i.number }}">#{{ i.number }}</a> <span class="grow">{{ i.title }}</span></li>
+    <li>{{ state_pill(i.state) }} <a href="/{{ origin }}/issues/{{ i.number }}">#{{ i.number }}</a>{{ gh(origin, 'issues', i.number) }} <span class="grow">{{ i.title }}</span></li>
     {% else %}<li class="muted">None.</li>{% endfor %}
   </ul>
 </section>
