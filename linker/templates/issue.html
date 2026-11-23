@@ -14,6 +14,9 @@
   {{ gh_button('https://github.com/' ~ origin ~ '/issues/' ~ i.number) }}
 </section>
 
+{% set body = i.body|issue_body %}
+{% if body %}<section class="issue-body">{{ body }}</section>{% endif %}
+
 <section>
   <h2>Linked folders</h2>
   {% if i.links %}
@@ -56,9 +59,4 @@
   </ul>
 </section>
 
-{% if i.body %}
-<section>
-  <details><summary>Issue body</summary><pre>{{ i.body }}</pre></details>
-</section>
-{% endif %}
 {% endblock %}

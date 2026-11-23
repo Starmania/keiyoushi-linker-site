@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from linker import auth, device, queries, tags
+from linker import auth, device, issue_body, queries, tags
 from linker.auth import api_editor, audit, current_user, form_of, safe_next
 from linker.db import conn as db
 
@@ -18,6 +18,7 @@ app = FastAPI(title="Keiyoushi linker", docs_url="/api/docs", openapi_url="/api/
 app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
 templates = Jinja2Templates(directory=HERE / "templates")
 templates.env.globals["tag_colors"] = tags.COLORS
+templates.env.filters["issue_body"] = issue_body.render
 templates.env.filters["day"] = lambda iso: (iso or "")[:10]
 templates.env.filters["ago"] = lambda iso: f"{d} d" if (d := (datetime.now(UTC).date() - date.fromisoformat(iso[:10])).days) else "today"
 # A facet row {value, n} with a label for tri_filter; names: {value: label}, else the value itself.
