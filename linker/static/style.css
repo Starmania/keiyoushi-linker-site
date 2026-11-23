@@ -385,3 +385,14 @@ a.stat:hover { border-color: var(--accent); text-decoration: none; }
 .repo-stats b.bad { color: var(--fail); }
 /* Jargon with an explanation on hover. */
 .hint[title] { cursor: help; text-decoration: underline dotted color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: 3px; }
+/* Phones: brand, repo and account on one row, the sections on a second (scrolling sideways if needed), search last. */
+@media (max-width: 600px) {
+  .top-row { gap: .5rem .75rem; }
+  .top .brand { order: 1; }
+  .top .repo-menu { order: 2; min-width: 0; }
+  .top .repo-menu summary { max-width: 8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .top .who { order: 3; margin-left: auto; gap: .5rem; }
+  .top .who .me:has(img) .me-name { display: none; }
+  .top nav { order: 4; flex-basis: 100%; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+  .top .search { order: 5; flex-basis: 100%; }
+}
