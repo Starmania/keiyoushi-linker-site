@@ -1,0 +1,6014 @@
+{
+ "components": {
+  "schemas": {
+   "Commit": {
+    "properties": {
+     "author": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Author"
+     },
+     "body": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Body"
+     },
+     "commit_date": {
+      "title": "Commit Date",
+      "type": "string"
+     },
+     "pr_created_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pr Created At"
+     },
+     "pr_merged_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pr Merged At"
+     },
+     "pr_number": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pr Number"
+     },
+     "pr_title": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pr Title"
+     },
+     "sha": {
+      "title": "Sha",
+      "type": "string"
+     },
+     "subject": {
+      "title": "Subject",
+      "type": "string"
+     }
+    },
+    "required": [
+     "sha",
+     "commit_date",
+     "subject",
+     "body",
+     "author",
+     "pr_number",
+     "pr_title",
+     "pr_merged_at",
+     "pr_created_at"
+    ],
+    "title": "Commit",
+    "type": "object"
+   },
+   "Domain": {
+    "properties": {
+     "host": {
+      "title": "Host",
+      "type": "string"
+     },
+     "usages": {
+      "description": "Current first, subdomains included",
+      "items": {
+       "$ref": "#/components/schemas/DomainUsage"
+      },
+      "title": "Usages",
+      "type": "array"
+     }
+    },
+    "required": [
+     "host",
+     "usages"
+    ],
+    "title": "Domain",
+    "type": "object"
+   },
+   "DomainItem": {
+    "properties": {
+     "all_extensions": {
+      "title": "All Extensions",
+      "type": "integer"
+     },
+     "current_extensions": {
+      "title": "Current Extensions",
+      "type": "integer"
+     },
+     "host": {
+      "title": "Host",
+      "type": "string"
+     },
+     "roles": {
+      "description": "base, mirror, deeplink",
+      "items": {
+       "type": "string"
+      },
+      "title": "Roles",
+      "type": "array"
+     }
+    },
+    "required": [
+     "host",
+     "current_extensions",
+     "all_extensions",
+     "roles"
+    ],
+    "title": "DomainItem",
+    "type": "object"
+   },
+   "DomainPage": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/DomainItem"
+      },
+      "title": "Items",
+      "type": "array"
+     },
+     "limit": {
+      "title": "Limit",
+      "type": "integer"
+     },
+     "offset": {
+      "title": "Offset",
+      "type": "integer"
+     },
+     "total": {
+      "title": "Total",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "total",
+     "limit",
+     "offset",
+     "items"
+    ],
+    "title": "DomainPage",
+    "type": "object"
+   },
+   "DomainUsage": {
+    "properties": {
+     "from_date": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "From Date"
+     },
+     "from_sha": {
+      "title": "From Sha",
+      "type": "string"
+     },
+     "host": {
+      "title": "Host",
+      "type": "string"
+     },
+     "kind": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Kind"
+     },
+     "lang": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lang"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     },
+     "removed": {
+      "title": "Removed",
+      "type": "boolean"
+     },
+     "role": {
+      "description": "base, mirror or deeplink",
+      "title": "Role",
+      "type": "string"
+     },
+     "to_date": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "To Date"
+     },
+     "to_sha": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "null: still declared",
+      "title": "To Sha"
+     }
+    },
+    "required": [
+     "host",
+     "role",
+     "from_sha",
+     "from_date",
+     "to_sha",
+     "to_date",
+     "path",
+     "name",
+     "lang",
+     "kind",
+     "removed"
+    ],
+    "title": "DomainUsage",
+    "type": "object"
+   },
+   "Downloads": {
+    "properties": {
+     "all_time": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "All Time"
+     },
+     "d30": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "D30"
+     },
+     "d7": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "D7"
+     },
+     "date": {
+      "title": "Date",
+      "type": "string"
+     },
+     "h1": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "H1"
+     },
+     "h24": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "H24"
+     }
+    },
+    "required": [
+     "h1",
+     "h24",
+     "d7",
+     "d30",
+     "all_time",
+     "date"
+    ],
+    "title": "Downloads",
+    "type": "object"
+   },
+   "Drift": {
+    "properties": {
+     "counts": {
+      "$ref": "#/components/schemas/DriftCounts"
+     },
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/DriftRow"
+      },
+      "title": "Items",
+      "type": "array"
+     },
+     "total": {
+      "description": "Rows not ignored",
+      "title": "Total",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "total",
+     "counts",
+     "items"
+    ],
+    "title": "Drift",
+    "type": "object"
+   },
+   "DriftCounts": {
+    "properties": {
+     "behind": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "description": "Rows not ignored, by the repo behind (\"unknown\" when not known)",
+      "title": "Behind",
+      "type": "object"
+     },
+     "ignored": {
+      "title": "Ignored",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "behind",
+     "ignored"
+    ],
+    "title": "DriftCounts",
+    "type": "object"
+   },
+   "DriftIgnore": {
+    "properties": {
+     "pair": {
+      "description": "The row's `pair` from GET /api/v1/drift: [origin_a, path_a, origin_b, path_b]",
+      "items": {
+       "type": "string"
+      },
+      "maxItems": 4,
+      "minItems": 4,
+      "title": "Pair",
+      "type": "array"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "enum": [
+         "right_side",
+         "redirect",
+         "other"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "PUT only: right_side (\"behind\" has the better domain), redirect (the old domain redirects), other (not worth fixing)",
+      "title": "Reason"
+     }
+    },
+    "required": [
+     "pair"
+    ],
+    "title": "DriftIgnore",
+    "type": "object"
+   },
+   "DriftIgnoreResult": {
+    "properties": {
+     "pair": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Pair",
+      "type": "array"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "enum": [
+         "right_side",
+         "redirect",
+         "other"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "null: back in the list",
+      "title": "Reason"
+     }
+    },
+    "required": [
+     "pair",
+     "reason"
+    ],
+    "title": "DriftIgnoreResult",
+    "type": "object"
+   },
+   "DriftIgnored": {
+    "properties": {
+     "at": {
+      "title": "At",
+      "type": "string"
+     },
+     "by_login": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "By Login"
+     },
+     "label": {
+      "description": "The reason in words",
+      "title": "Label",
+      "type": "string"
+     },
+     "reason": {
+      "description": "right_side, redirect or other",
+      "title": "Reason",
+      "type": "string"
+     }
+    },
+    "required": [
+     "reason",
+     "label",
+     "by_login",
+     "at"
+    ],
+    "title": "DriftIgnored",
+    "type": "object"
+   },
+   "DriftRow": {
+    "properties": {
+     "a": {
+      "$ref": "#/components/schemas/Side"
+     },
+     "b": {
+      "$ref": "#/components/schemas/Side"
+     },
+     "basis": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Why: left (it still has a host the other side left) or older (it adopted its host first)",
+      "title": "Basis"
+     },
+     "behind": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "The repo that probably has the old domain (null: unknown)",
+      "title": "Behind"
+     },
+     "host": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "The host that once linked them",
+      "title": "Host"
+     },
+     "ignored": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/DriftIgnored"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "langs": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Langs",
+      "type": "array"
+     },
+     "pair": {
+      "description": "[origin_a, path_a, origin_b, path_b]: the body's pair for /api/v1/drift/ignored",
+      "items": {
+       "type": "string"
+      },
+      "title": "Pair",
+      "type": "array"
+     },
+     "since": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Since"
+     },
+     "source_links": {
+      "description": "The linked source pairs, each a body for /api/v1/source-links",
+      "items": {
+       "$ref": "#/components/schemas/SourcePair"
+      },
+      "title": "Source Links",
+      "type": "array"
+     }
+    },
+    "required": [
+     "a",
+     "b",
+     "behind",
+     "basis",
+     "host",
+     "since",
+     "langs",
+     "source_links",
+     "pair",
+     "ignored"
+    ],
+    "title": "DriftRow",
+    "type": "object"
+   },
+   "Elsewhere": {
+    "properties": {
+     "hidden": {
+      "description": "Automatic links an editor hid",
+      "items": {
+       "$ref": "#/components/schemas/LinkPair"
+      },
+      "title": "Hidden",
+      "type": "array"
+     },
+     "links": {
+      "additionalProperties": {
+       "items": {
+        "$ref": "#/components/schemas/ElsewhereFolder"
+       },
+       "type": "array"
+      },
+      "description": "Linked folders, by other repository",
+      "title": "Links",
+      "type": "object"
+     }
+    },
+    "required": [
+     "links",
+     "hidden"
+    ],
+    "title": "Elsewhere",
+    "type": "object"
+   },
+   "ElsewhereFolder": {
+    "properties": {
+     "basis": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Why: left (it still has a host the other side left) or older (it adopted its host first)",
+      "title": "Basis"
+     },
+     "behind": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "The repo that probably has the old domain (null: unknown)",
+      "title": "Behind"
+     },
+     "by_login": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "By Login"
+     },
+     "hosts": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Hosts",
+      "type": "array"
+     },
+     "icon_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Icon Url"
+     },
+     "manual": {
+      "title": "Manual",
+      "type": "boolean"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "open_issues": {
+      "title": "Open Issues",
+      "type": "integer"
+     },
+     "pairs": {
+      "description": "One per linked source",
+      "items": {
+       "$ref": "#/components/schemas/LinkPair"
+      },
+      "title": "Pairs",
+      "type": "array"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     },
+     "removed": {
+      "title": "Removed",
+      "type": "boolean"
+     },
+     "state": {
+      "description": "The worst of its pairs: same (a host in common), drift (none in common) or gone (a side was removed)",
+      "title": "State",
+      "type": "string"
+     },
+     "status": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/LinkStatus"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "required": [
+     "path",
+     "name",
+     "state",
+     "behind",
+     "basis",
+     "manual",
+     "by_login",
+     "hosts",
+     "icon_url",
+     "removed",
+     "open_issues",
+     "status",
+     "pairs"
+    ],
+    "title": "ElsewhereFolder",
+    "type": "object"
+   },
+   "Error": {
+    "properties": {
+     "detail": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "items": {
+         "additionalProperties": true,
+         "type": "object"
+        },
+        "type": "array"
+       }
+      ],
+      "description": "What went wrong, in words; for an invalid parameter or body, a list of {loc, msg, type} entries",
+      "title": "Detail"
+     }
+    },
+    "required": [
+     "detail"
+    ],
+    "title": "Error",
+    "type": "object"
+   },
+   "ExtensionItem": {
+    "properties": {
+     "content_warning": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "SAFE, MIXED or NSFW",
+      "title": "Content Warning"
+     },
+     "downloads_7d": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Downloads 7D"
+     },
+     "downloads_all": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Downloads All"
+     },
+     "hosts": {
+      "description": "Current base domains",
+      "items": {
+       "type": "string"
+      },
+      "title": "Hosts",
+      "type": "array"
+     },
+     "icon_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Icon Url"
+     },
+     "lang": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lang"
+     },
+     "last_changed": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Date of the folder's last commit",
+      "title": "Last Changed"
+     },
+     "lib_version": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lib Version"
+     },
+     "module": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Module"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "open_issues": {
+      "title": "Open Issues",
+      "type": "integer"
+     },
+     "open_prs": {
+      "title": "Open Prs",
+      "type": "integer"
+     },
+     "ops": {
+      "description": "Per step results of the run that decided the status",
+      "items": {
+       "$ref": "#/components/schemas/OpResult"
+      },
+      "title": "Ops",
+      "type": "array"
+     },
+     "package_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Package Name"
+     },
+     "path": {
+      "description": "The folder, in the repository's layout",
+      "title": "Path",
+      "type": "string"
+     },
+     "pr_count": {
+      "title": "Pr Count",
+      "type": "integer"
+     },
+     "rechecked": {
+      "description": "The status comes from a recheck through proxies",
+      "title": "Rechecked",
+      "type": "boolean"
+     },
+     "removed": {
+      "title": "Removed",
+      "type": "boolean"
+     },
+     "status": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Monitor verdict: pass, partial, fail, maybe, untestable or unsupported (null: not monitored)",
+      "title": "Status"
+     },
+     "status_date": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Day of the latest monitor run",
+      "title": "Status Date"
+     },
+     "status_days": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Status Days"
+     },
+     "status_since": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Day the status started",
+      "title": "Status Since"
+     },
+     "status_since_open": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "The status dates from the first monitor run, so it may be older",
+      "title": "Status Since Open"
+     },
+     "tags": {
+      "items": {
+       "$ref": "#/components/schemas/Tag"
+      },
+      "title": "Tags",
+      "type": "array"
+     },
+     "theme": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Theme"
+     },
+     "version_code": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Version Code"
+     }
+    },
+    "required": [
+     "path",
+     "lang",
+     "module",
+     "name",
+     "package_name",
+     "theme",
+     "content_warning",
+     "lib_version",
+     "version_code",
+     "icon_url",
+     "removed",
+     "status",
+     "status_date",
+     "status_since",
+     "status_days",
+     "status_since_open",
+     "ops",
+     "rechecked",
+     "downloads_7d",
+     "downloads_all",
+     "last_changed",
+     "open_issues",
+     "pr_count",
+     "open_prs",
+     "hosts",
+     "tags"
+    ],
+    "title": "ExtensionItem",
+    "type": "object"
+   },
+   "ExtensionPage": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/ExtensionItem"
+      },
+      "title": "Items",
+      "type": "array"
+     },
+     "limit": {
+      "title": "Limit",
+      "type": "integer"
+     },
+     "offset": {
+      "title": "Offset",
+      "type": "integer"
+     },
+     "total": {
+      "title": "Total",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "total",
+     "limit",
+     "offset",
+     "items"
+    ],
+    "title": "ExtensionPage",
+    "type": "object"
+   },
+   "FacetValue": {
+    "properties": {
+     "n": {
+      "description": "Current extensions with this value",
+      "title": "N",
+      "type": "integer"
+     },
+     "value": {
+      "title": "Value",
+      "type": "string"
+     }
+    },
+    "required": [
+     "value",
+     "n"
+    ],
+    "title": "FacetValue",
+    "type": "object"
+   },
+   "Facets": {
+    "properties": {
+     "lang": {
+      "items": {
+       "$ref": "#/components/schemas/FacetValue"
+      },
+      "title": "Lang",
+      "type": "array"
+     },
+     "status": {
+      "items": {
+       "$ref": "#/components/schemas/FacetValue"
+      },
+      "title": "Status",
+      "type": "array"
+     },
+     "tags": {
+      "$ref": "#/components/schemas/TagFacets"
+     },
+     "theme": {
+      "items": {
+       "$ref": "#/components/schemas/FacetValue"
+      },
+      "title": "Theme",
+      "type": "array"
+     }
+    },
+    "required": [
+     "lang",
+     "theme",
+     "status",
+     "tags"
+    ],
+    "title": "Facets",
+    "type": "object"
+   },
+   "Folder": {
+    "description": "An extension (kind src) or theme folder. Fields marked \"src\" or \"theme\" are present for that kind only.",
+    "properties": {
+     "apk_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "src",
+      "title": "Apk Url"
+     },
+     "content_warning": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "SAFE, MIXED or NSFW",
+      "title": "Content Warning"
+     },
+     "domains": {
+      "items": {
+       "$ref": "#/components/schemas/FolderDomain"
+      },
+      "title": "Domains",
+      "type": "array"
+     },
+     "downloads": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Downloads"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "src; null: not tracked"
+     },
+     "elsewhere": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Elsewhere"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "src; links to other repositories"
+     },
+     "extensions": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/ThemeExtension"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "theme: the extensions built on it",
+      "title": "Extensions"
+     },
+     "first_date": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "First Date"
+     },
+     "first_sha": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "First Sha"
+     },
+     "history": {
+      "items": {
+       "$ref": "#/components/schemas/Commit"
+      },
+      "title": "History",
+      "type": "array"
+     },
+     "icon_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Icon Url"
+     },
+     "issues": {
+      "items": {
+       "$ref": "#/components/schemas/FolderIssue"
+      },
+      "title": "Issues",
+      "type": "array"
+     },
+     "kind": {
+      "description": "src (an extension) or theme",
+      "title": "Kind",
+      "type": "string"
+     },
+     "lang": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lang"
+     },
+     "last_date": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Date"
+     },
+     "last_sha": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Sha"
+     },
+     "lib_version": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lib Version"
+     },
+     "module": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Module"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "origin": {
+      "title": "Origin",
+      "type": "string"
+     },
+     "package_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Package Name"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     },
+     "prs": {
+      "items": {
+       "$ref": "#/components/schemas/FolderPr"
+      },
+      "title": "Prs",
+      "type": "array"
+     },
+     "removed_sha": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "null: not removed",
+      "title": "Removed Sha"
+     },
+     "source_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source Url"
+     },
+     "sources": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/Source"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "src",
+      "title": "Sources"
+     },
+     "status": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Status"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "src; null: not monitored"
+     },
+     "status_history": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/StatusPoint"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "src; the last 60 runs, oldest first",
+      "title": "Status History"
+     },
+     "tags": {
+      "description": "Public and inherited tags, plus your private ones with a token",
+      "items": {
+       "$ref": "#/components/schemas/Tag"
+      },
+      "title": "Tags",
+      "type": "array"
+     },
+     "theme": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Theme"
+     },
+     "theme_folder": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ThemeFolder"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "src on a theme: the theme's own history, issues and domains"
+     },
+     "theme_path": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Theme Path"
+     },
+     "version_code": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Version Code"
+     }
+    },
+    "required": [
+     "origin",
+     "path",
+     "kind",
+     "lang",
+     "module",
+     "name",
+     "package_name",
+     "theme",
+     "theme_path",
+     "content_warning",
+     "lib_version",
+     "version_code",
+     "icon_url",
+     "source_url",
+     "first_sha",
+     "last_sha",
+     "removed_sha",
+     "first_date",
+     "last_date",
+     "domains",
+     "prs",
+     "issues",
+     "history",
+     "tags"
+    ],
+    "title": "Folder",
+    "type": "object"
+   },
+   "FolderDomain": {
+    "properties": {
+     "from_date": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "From Date"
+     },
+     "from_sha": {
+      "title": "From Sha",
+      "type": "string"
+     },
+     "host": {
+      "title": "Host",
+      "type": "string"
+     },
+     "role": {
+      "description": "base, mirror or deeplink",
+      "title": "Role",
+      "type": "string"
+     },
+     "to_date": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "To Date"
+     },
+     "to_sha": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "null: still declared",
+      "title": "To Sha"
+     }
+    },
+    "required": [
+     "host",
+     "role",
+     "from_sha",
+     "from_date",
+     "to_sha",
+     "to_date"
+    ],
+    "title": "FolderDomain",
+    "type": "object"
+   },
+   "FolderIssue": {
+    "properties": {
+     "author": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Author"
+     },
+     "closed_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Closed At"
+     },
+     "confidence": {
+      "title": "Confidence",
+      "type": "number"
+     },
+     "created_at": {
+      "title": "Created At",
+      "type": "string"
+     },
+     "manual": {
+      "description": "Linked by hand",
+      "title": "Manual",
+      "type": "boolean"
+     },
+     "methods": {
+      "description": "How it was linked: title-name, form-name, domain, closing-pr, manual",
+      "items": {
+       "type": "string"
+      },
+      "title": "Methods",
+      "type": "array"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "state": {
+      "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "title": "State",
+      "type": "string"
+     },
+     "title": {
+      "title": "Title",
+      "type": "string"
+     }
+    },
+    "required": [
+     "number",
+     "title",
+     "state",
+     "created_at",
+     "closed_at",
+     "author",
+     "methods",
+     "confidence",
+     "manual"
+    ],
+    "title": "FolderIssue",
+    "type": "object"
+   },
+   "FolderName": {
+    "properties": {
+     "kind": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Kind"
+     },
+     "lang": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lang"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     },
+     "theme": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Theme"
+     },
+     "theme_path": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Theme Path"
+     }
+    },
+    "required": [
+     "path",
+     "kind",
+     "name",
+     "lang",
+     "theme",
+     "theme_path"
+    ],
+    "title": "FolderName",
+    "type": "object"
+   },
+   "FolderPr": {
+    "properties": {
+     "author": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Author"
+     },
+     "closed_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Closed At"
+     },
+     "created_at": {
+      "title": "Created At",
+      "type": "string"
+     },
+     "folder_count": {
+      "title": "Folder Count",
+      "type": "integer"
+     },
+     "merged_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Merged At"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "single_target": {
+      "description": "The PR changes this folder only",
+      "title": "Single Target",
+      "type": "boolean"
+     },
+     "state": {
+      "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "title": "State",
+      "type": "string"
+     },
+     "title": {
+      "title": "Title",
+      "type": "string"
+     }
+    },
+    "required": [
+     "number",
+     "title",
+     "state",
+     "author",
+     "created_at",
+     "merged_at",
+     "closed_at",
+     "single_target",
+     "folder_count"
+    ],
+    "title": "FolderPr",
+    "type": "object"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "title": "Detail",
+      "type": "array"
+     }
+    },
+    "title": "HTTPValidationError",
+    "type": "object"
+   },
+   "Issue": {
+    "properties": {
+     "author": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Author"
+     },
+     "body": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Body"
+     },
+     "closed_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Closed At"
+     },
+     "created_at": {
+      "title": "Created At",
+      "type": "string"
+     },
+     "labels": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Labels",
+      "type": "array"
+     },
+     "links": {
+      "description": "Folders it is about",
+      "items": {
+       "$ref": "#/components/schemas/IssueLink"
+      },
+      "title": "Links",
+      "type": "array"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "origin": {
+      "title": "Origin",
+      "type": "string"
+     },
+     "prs": {
+      "description": "PRs that close it",
+      "items": {
+       "$ref": "#/components/schemas/IssuePr"
+      },
+      "title": "Prs",
+      "type": "array"
+     },
+     "removed_links": {
+      "description": "Automatic links an editor hid",
+      "items": {
+       "$ref": "#/components/schemas/RemovedLink"
+      },
+      "title": "Removed Links",
+      "type": "array"
+     },
+     "state": {
+      "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "title": "State",
+      "type": "string"
+     },
+     "title": {
+      "title": "Title",
+      "type": "string"
+     }
+    },
+    "required": [
+     "origin",
+     "number",
+     "title",
+     "state",
+     "author",
+     "created_at",
+     "closed_at",
+     "body",
+     "labels",
+     "links",
+     "removed_links",
+     "prs"
+    ],
+    "title": "Issue",
+    "type": "object"
+   },
+   "IssueLink": {
+    "properties": {
+     "by_login": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Who linked it by hand",
+      "title": "By Login"
+     },
+     "confidence": {
+      "title": "Confidence",
+      "type": "number"
+     },
+     "kind": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Kind"
+     },
+     "lang": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lang"
+     },
+     "manual": {
+      "title": "Manual",
+      "type": "boolean"
+     },
+     "methods": {
+      "description": "title-name, form-name, domain, closing-pr, manual",
+      "items": {
+       "type": "string"
+      },
+      "title": "Methods",
+      "type": "array"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     },
+     "theme": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Theme"
+     },
+     "theme_path": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Theme Path"
+     }
+    },
+    "required": [
+     "path",
+     "kind",
+     "name",
+     "lang",
+     "theme",
+     "theme_path",
+     "methods",
+     "confidence",
+     "manual",
+     "by_login"
+    ],
+    "title": "IssueLink",
+    "type": "object"
+   },
+   "IssuePr": {
+    "properties": {
+     "merged_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Merged At"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "state": {
+      "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "title": "State",
+      "type": "string"
+     },
+     "title": {
+      "title": "Title",
+      "type": "string"
+     }
+    },
+    "required": [
+     "number",
+     "title",
+     "state",
+     "merged_at"
+    ],
+    "title": "IssuePr",
+    "type": "object"
+   },
+   "LinkPair": {
+    "properties": {
+     "basis": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Why: left (it still has a host the other side left) or older (it adopted its host first)",
+      "title": "Basis"
+     },
+     "behind": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "The repo that probably has the old domain (null: unknown)",
+      "title": "Behind"
+     },
+     "by_login": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "By Login"
+     },
+     "host": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "The host that linked them",
+      "title": "Host"
+     },
+     "manual": {
+      "title": "Manual",
+      "type": "boolean"
+     },
+     "me": {
+      "$ref": "#/components/schemas/Side"
+     },
+     "other": {
+      "$ref": "#/components/schemas/Side"
+     },
+     "since": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Since"
+     },
+     "source_link": {
+      "$ref": "#/components/schemas/SourcePair",
+      "description": "The body for /api/v1/source-links"
+     },
+     "state": {
+      "description": "same (a host in common), drift (none in common) or gone (a side was removed)",
+      "title": "State",
+      "type": "string"
+     }
+    },
+    "required": [
+     "me",
+     "other",
+     "host",
+     "since",
+     "manual",
+     "by_login",
+     "state",
+     "behind",
+     "basis",
+     "source_link"
+    ],
+    "title": "LinkPair",
+    "type": "object"
+   },
+   "LinkStatus": {
+    "properties": {
+     "since": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Since"
+     },
+     "status": {
+      "description": "Monitor verdict: pass, partial, fail, maybe, untestable or unsupported (null: not monitored)",
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "status",
+     "since"
+    ],
+    "title": "LinkStatus",
+    "type": "object"
+   },
+   "Missing": {
+    "properties": {
+     "origins": {
+      "additionalProperties": {
+       "$ref": "#/components/schemas/MissingOrigin"
+      },
+      "description": "Sites the target lacks, by repository that has them",
+      "title": "Origins",
+      "type": "object"
+     },
+     "target": {
+      "title": "Target",
+      "type": "string"
+     },
+     "total": {
+      "title": "Total",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "target",
+     "origins",
+     "total"
+    ],
+    "title": "Missing",
+    "type": "object"
+   },
+   "MissingItem": {
+    "properties": {
+     "content_warning": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Content Warning"
+     },
+     "downloads_7d": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Downloads 7D"
+     },
+     "hosts": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Hosts",
+      "type": "array"
+     },
+     "icon_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Icon Url"
+     },
+     "lang": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lang"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     },
+     "removed_in_target": {
+      "description": "Linked folders of the target that were removed",
+      "items": {
+       "$ref": "#/components/schemas/NamedFolder"
+      },
+      "title": "Removed In Target",
+      "type": "array"
+     },
+     "requests": {
+      "description": "The target's site-request issues naming one of its domains",
+      "items": {
+       "$ref": "#/components/schemas/SiteRequest"
+      },
+      "title": "Requests",
+      "type": "array"
+     },
+     "same_name": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/NamedFolder"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "An unlinked target folder with the same name: maybe the same site"
+     },
+     "status": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Monitor verdict: pass, partial, fail, maybe, untestable or unsupported (null: not monitored)",
+      "title": "Status"
+     },
+     "status_since": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Status Since"
+     }
+    },
+    "required": [
+     "path",
+     "name",
+     "lang",
+     "icon_url",
+     "content_warning",
+     "status",
+     "status_since",
+     "downloads_7d",
+     "hosts",
+     "removed_in_target",
+     "same_name",
+     "requests"
+    ],
+    "title": "MissingItem",
+    "type": "object"
+   },
+   "MissingOrigin": {
+    "properties": {
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/MissingItem"
+      },
+      "title": "Items",
+      "type": "array"
+     },
+     "tracked": {
+      "$ref": "#/components/schemas/Tracked"
+     }
+    },
+    "required": [
+     "tracked",
+     "items"
+    ],
+    "title": "MissingOrigin",
+    "type": "object"
+   },
+   "NamedFolder": {
+    "properties": {
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     }
+    },
+    "required": [
+     "path",
+     "name"
+    ],
+    "title": "NamedFolder",
+    "type": "object"
+   },
+   "OpResult": {
+    "properties": {
+     "error": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Error"
+     },
+     "label": {
+      "description": "The step in words",
+      "title": "Label",
+      "type": "string"
+     },
+     "op": {
+      "description": "Monitor step: browse, latest, search, details, chapters, read, pages",
+      "title": "Op",
+      "type": "string"
+     },
+     "status": {
+      "description": "pass, fail, maybe, skip, na, ...",
+      "title": "Status",
+      "type": "string"
+     },
+     "status_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "The result in words",
+      "title": "Status Label"
+     }
+    },
+    "required": [
+     "op",
+     "label",
+     "status",
+     "status_label",
+     "error"
+    ],
+    "title": "OpResult",
+    "type": "object"
+   },
+   "Origin": {
+    "properties": {
+     "anchor_sha": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Commit the extractor last read",
+      "title": "Anchor Sha"
+     },
+     "default_branch": {
+      "title": "Default Branch",
+      "type": "string"
+     },
+     "extensions": {
+      "description": "Current extensions",
+      "title": "Extensions",
+      "type": "integer"
+     },
+     "id": {
+      "description": "A repository, owner/repo (GET /api/v1/origins)",
+      "title": "Id",
+      "type": "string"
+     },
+     "kind": {
+      "description": "Its layout: keiyoushi-gradle or haruneko-ts",
+      "title": "Kind",
+      "type": "string"
+     },
+     "repo_url": {
+      "title": "Repo Url",
+      "type": "string"
+     }
+    },
+    "required": [
+     "id",
+     "kind",
+     "repo_url",
+     "default_branch",
+     "anchor_sha",
+     "extensions"
+    ],
+    "title": "Origin",
+    "type": "object"
+   },
+   "PrCommit": {
+    "properties": {
+     "body": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Body"
+     },
+     "commit_date": {
+      "title": "Commit Date",
+      "type": "string"
+     },
+     "sha": {
+      "title": "Sha",
+      "type": "string"
+     },
+     "subject": {
+      "title": "Subject",
+      "type": "string"
+     }
+    },
+    "required": [
+     "sha",
+     "commit_date",
+     "subject",
+     "body"
+    ],
+    "title": "PrCommit",
+    "type": "object"
+   },
+   "PrivateTag": {
+    "properties": {
+     "name": {
+      "description": "Use it in `my_tag=` and in my-tags/{tag}/{path}",
+      "title": "Name",
+      "type": "string"
+     }
+    },
+    "required": [
+     "name"
+    ],
+    "title": "PrivateTag",
+    "type": "object"
+   },
+   "PublicTag": {
+    "properties": {
+     "labels": {
+      "description": "Issue labels that put this tag on the folders of an open issue",
+      "items": {
+       "type": "string"
+      },
+      "title": "Labels",
+      "type": "array"
+     },
+     "name": {
+      "description": "Use it in `tag=` and in tags/{tag}/{path}",
+      "title": "Name",
+      "type": "string"
+     }
+    },
+    "required": [
+     "name",
+     "labels"
+    ],
+    "title": "PublicTag",
+    "type": "object"
+   },
+   "PullRequest": {
+    "properties": {
+     "author": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Author"
+     },
+     "body": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Body"
+     },
+     "closed_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Closed At"
+     },
+     "commits": {
+      "description": "Its commits on the default branch",
+      "items": {
+       "$ref": "#/components/schemas/PrCommit"
+      },
+      "title": "Commits",
+      "type": "array"
+     },
+     "created_at": {
+      "title": "Created At",
+      "type": "string"
+     },
+     "folders": {
+      "items": {
+       "$ref": "#/components/schemas/FolderName"
+      },
+      "title": "Folders",
+      "type": "array"
+     },
+     "issues": {
+      "description": "Issues it closes",
+      "items": {
+       "$ref": "#/components/schemas/Ref"
+      },
+      "title": "Issues",
+      "type": "array"
+     },
+     "merged_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Merged At"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "origin": {
+      "title": "Origin",
+      "type": "string"
+     },
+     "single_target": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "The one folder it changes, if it changes exactly one",
+      "title": "Single Target"
+     },
+     "state": {
+      "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "title": "State",
+      "type": "string"
+     },
+     "title": {
+      "title": "Title",
+      "type": "string"
+     }
+    },
+    "required": [
+     "origin",
+     "number",
+     "title",
+     "state",
+     "author",
+     "created_at",
+     "merged_at",
+     "closed_at",
+     "body",
+     "single_target",
+     "folders",
+     "issues",
+     "commits"
+    ],
+    "title": "PullRequest",
+    "type": "object"
+   },
+   "Recheck": {
+    "properties": {
+     "decided": {
+      "description": "The recheck set the status; else the sweep's verdict stands",
+      "title": "Decided",
+      "type": "boolean"
+     },
+     "notes": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+     },
+     "ops": {
+      "description": "Steps of the deciding try",
+      "items": {
+       "$ref": "#/components/schemas/OpResult"
+      },
+      "title": "Ops",
+      "type": "array"
+     },
+     "tries": {
+      "items": {
+       "$ref": "#/components/schemas/RecheckTry"
+      },
+      "title": "Tries",
+      "type": "array"
+     },
+     "verdict": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "In words",
+      "title": "Verdict"
+     }
+    },
+    "required": [
+     "decided",
+     "verdict",
+     "tries",
+     "ops",
+     "notes"
+    ],
+    "title": "Recheck",
+    "type": "object"
+   },
+   "RecheckTry": {
+    "properties": {
+     "from": {
+      "description": "Proxy country",
+      "title": "From",
+      "type": "string"
+     },
+     "ops": {
+      "items": {
+       "$ref": "#/components/schemas/OpResult"
+      },
+      "title": "Ops",
+      "type": "array"
+     },
+     "status": {
+      "description": "pass, fail, maybe or error",
+      "title": "Status",
+      "type": "string"
+     },
+     "text": {
+      "description": "The outcome in words",
+      "title": "Text",
+      "type": "string"
+     }
+    },
+    "required": [
+     "from",
+     "status",
+     "text",
+     "ops"
+    ],
+    "title": "RecheckTry",
+    "type": "object"
+   },
+   "Ref": {
+    "properties": {
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "state": {
+      "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "title": "State",
+      "type": "string"
+     },
+     "title": {
+      "title": "Title",
+      "type": "string"
+     }
+    },
+    "required": [
+     "number",
+     "title",
+     "state"
+    ],
+    "title": "Ref",
+    "type": "object"
+   },
+   "RemovedLink": {
+    "properties": {
+     "at": {
+      "title": "At",
+      "type": "string"
+     },
+     "by_login": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "By Login"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     }
+    },
+    "required": [
+     "path",
+     "at",
+     "by_login"
+    ],
+    "title": "RemovedLink",
+    "type": "object"
+   },
+   "Search": {
+    "properties": {
+     "domains": {
+      "description": "The first 100",
+      "items": {
+       "$ref": "#/components/schemas/DomainItem"
+      },
+      "title": "Domains",
+      "type": "array"
+     },
+     "domains_total": {
+      "title": "Domains Total",
+      "type": "integer"
+     },
+     "extensions": {
+      "description": "The first 100, removed ones included",
+      "items": {
+       "$ref": "#/components/schemas/ExtensionItem"
+      },
+      "title": "Extensions",
+      "type": "array"
+     },
+     "extensions_total": {
+      "title": "Extensions Total",
+      "type": "integer"
+     },
+     "issue": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Ref"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "For #123 or 123"
+     },
+     "pr": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Ref"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "query": {
+      "title": "Query",
+      "type": "string"
+     }
+    },
+    "required": [
+     "query",
+     "issue",
+     "pr",
+     "domains",
+     "domains_total",
+     "extensions",
+     "extensions_total"
+    ],
+    "title": "Search",
+    "type": "object"
+   },
+   "Side": {
+    "properties": {
+     "hosts": {
+      "description": "Current hosts",
+      "items": {
+       "type": "string"
+      },
+      "title": "Hosts",
+      "type": "array"
+     },
+     "lang": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lang"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "origin": {
+      "title": "Origin",
+      "type": "string"
+     },
+     "path": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Path"
+     },
+     "stable_id": {
+      "title": "Stable Id",
+      "type": "string"
+     }
+    },
+    "required": [
+     "origin",
+     "stable_id",
+     "path",
+     "name",
+     "lang",
+     "hosts"
+    ],
+    "title": "Side",
+    "type": "object"
+   },
+   "SiteRequest": {
+    "properties": {
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "removed": {
+      "description": "Labelled \"Previously deleted\": the repo dropped the site on purpose",
+      "title": "Removed",
+      "type": "boolean"
+     },
+     "state": {
+      "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "title": "State",
+      "type": "string"
+     },
+     "title": {
+      "title": "Title",
+      "type": "string"
+     }
+    },
+    "required": [
+     "number",
+     "title",
+     "state",
+     "removed"
+    ],
+    "title": "SiteRequest",
+    "type": "object"
+   },
+   "Source": {
+    "properties": {
+     "base_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Base Url"
+     },
+     "lang": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lang"
+     },
+     "mirror_urls": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Mirror Urls",
+      "type": "array"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "source_id": {
+      "title": "Source Id",
+      "type": "string"
+     },
+     "stable_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "The id source links use",
+      "title": "Stable Id"
+     },
+     "url_type": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "static, custom or mirrors",
+      "title": "Url Type"
+     }
+    },
+    "required": [
+     "source_id",
+     "stable_id",
+     "name",
+     "lang",
+     "base_url",
+     "url_type",
+     "mirror_urls"
+    ],
+    "title": "Source",
+    "type": "object"
+   },
+   "SourceLinkResult": {
+    "properties": {
+     "a": {
+      "$ref": "#/components/schemas/SourceRef"
+     },
+     "b": {
+      "$ref": "#/components/schemas/SourceRef"
+     },
+     "override": {
+      "anyOf": [
+       {
+        "enum": [
+         "add",
+         "remove"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "The manual decision now in place (null: automatic)",
+      "title": "Override"
+     }
+    },
+    "required": [
+     "a",
+     "b",
+     "override"
+    ],
+    "title": "SourceLinkResult",
+    "type": "object"
+   },
+   "SourcePair": {
+    "properties": {
+     "a": {
+      "$ref": "#/components/schemas/SourceRef"
+     },
+     "b": {
+      "$ref": "#/components/schemas/SourceRef"
+     }
+    },
+    "required": [
+     "a",
+     "b"
+    ],
+    "title": "SourcePair",
+    "type": "object"
+   },
+   "SourceRef": {
+    "properties": {
+     "origin": {
+      "description": "A repository, owner/repo (GET /api/v1/origins)",
+      "title": "Origin",
+      "type": "string"
+     },
+     "stable_id": {
+      "description": "A source's stable_id (folder `sources`)",
+      "title": "Stable Id",
+      "type": "string"
+     }
+    },
+    "required": [
+     "origin",
+     "stable_id"
+    ],
+    "title": "SourceRef",
+    "type": "object"
+   },
+   "Status": {
+    "properties": {
+     "date": {
+      "title": "Date",
+      "type": "string"
+     },
+     "ops": {
+      "items": {
+       "$ref": "#/components/schemas/OpResult"
+      },
+      "title": "Ops",
+      "type": "array"
+     },
+     "recheck": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Recheck"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "since": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Since"
+     },
+     "since_open": {
+      "description": "The status dates from the first monitor run, so it may be older",
+      "title": "Since Open",
+      "type": "boolean"
+     },
+     "status": {
+      "description": "Monitor verdict: pass, partial, fail, maybe, untestable or unsupported (null: not monitored)",
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "status",
+     "date",
+     "since",
+     "since_open",
+     "ops",
+     "recheck"
+    ],
+    "title": "Status",
+    "type": "object"
+   },
+   "StatusPoint": {
+    "properties": {
+     "date": {
+      "title": "Date",
+      "type": "string"
+     },
+     "status": {
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "date",
+     "status"
+    ],
+    "title": "StatusPoint",
+    "type": "object"
+   },
+   "Tag": {
+    "properties": {
+     "at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "At"
+     },
+     "by_login": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "By Login"
+     },
+     "color": {
+      "description": "A colour name, \"\" for none",
+      "title": "Color",
+      "type": "string"
+     },
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "issues": {
+      "description": "Open issues whose labels put this public tag on the folder",
+      "items": {
+       "$ref": "#/components/schemas/TagIssue"
+      },
+      "title": "Issues",
+      "type": "array"
+     },
+     "label": {
+      "description": "The tag's name",
+      "title": "Label",
+      "type": "string"
+     },
+     "manual": {
+      "description": "Put on by hand (by_login, at); else only inherited from issues",
+      "title": "Manual",
+      "type": "boolean"
+     },
+     "scope": {
+      "description": "private: the token's account's own tag",
+      "enum": [
+       "public",
+       "private"
+      ],
+      "title": "Scope",
+      "type": "string"
+     }
+    },
+    "required": [
+     "id",
+     "label",
+     "color",
+     "scope",
+     "manual",
+     "by_login",
+     "at",
+     "issues"
+    ],
+    "title": "Tag",
+    "type": "object"
+   },
+   "TagFacet": {
+    "properties": {
+     "color": {
+      "title": "Color",
+      "type": "string"
+     },
+     "label": {
+      "description": "The tag's name, for `tag=` or `my_tag=`",
+      "title": "Label",
+      "type": "string"
+     },
+     "n": {
+      "title": "N",
+      "type": "integer"
+     },
+     "value": {
+      "description": "The tag's id",
+      "title": "Value",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "value",
+     "label",
+     "color",
+     "n"
+    ],
+    "title": "TagFacet",
+    "type": "object"
+   },
+   "TagFacets": {
+    "properties": {
+     "private": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/TagFacet"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Your private tags: only with a token",
+      "title": "Private"
+     },
+     "public": {
+      "items": {
+       "$ref": "#/components/schemas/TagFacet"
+      },
+      "title": "Public",
+      "type": "array"
+     }
+    },
+    "required": [
+     "public"
+    ],
+    "title": "TagFacets",
+    "type": "object"
+   },
+   "TagIssue": {
+    "properties": {
+     "author": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Author"
+     },
+     "created_at": {
+      "title": "Created At",
+      "type": "string"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "title": {
+      "title": "Title",
+      "type": "string"
+     }
+    },
+    "required": [
+     "number",
+     "title",
+     "author",
+     "created_at"
+    ],
+    "title": "TagIssue",
+    "type": "object"
+   },
+   "ThemeExtension": {
+    "properties": {
+     "lang": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lang"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     },
+     "removed": {
+      "title": "Removed",
+      "type": "boolean"
+     },
+     "status": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Monitor verdict: pass, partial, fail, maybe, untestable or unsupported (null: not monitored)",
+      "title": "Status"
+     }
+    },
+    "required": [
+     "path",
+     "name",
+     "lang",
+     "removed",
+     "status"
+    ],
+    "title": "ThemeExtension",
+    "type": "object"
+   },
+   "ThemeFolder": {
+    "properties": {
+     "domains": {
+      "description": "Current domains only",
+      "items": {
+       "$ref": "#/components/schemas/FolderDomain"
+      },
+      "title": "Domains",
+      "type": "array"
+     },
+     "history": {
+      "items": {
+       "$ref": "#/components/schemas/Commit"
+      },
+      "title": "History",
+      "type": "array"
+     },
+     "issues": {
+      "items": {
+       "$ref": "#/components/schemas/FolderIssue"
+      },
+      "title": "Issues",
+      "type": "array"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     }
+    },
+    "required": [
+     "path",
+     "history",
+     "issues",
+     "domains"
+    ],
+    "title": "ThemeFolder",
+    "type": "object"
+   },
+   "Tracked": {
+    "properties": {
+     "downloads": {
+      "description": "Download counts exist for it",
+      "title": "Downloads",
+      "type": "boolean"
+     },
+     "status": {
+      "description": "The monitor covers this repository",
+      "title": "Status",
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "status",
+     "downloads"
+    ],
+    "title": "Tracked",
+    "type": "object"
+   },
+   "ValidationError": {
+    "properties": {
+     "ctx": {
+      "title": "Context",
+      "type": "object"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "title": "Location",
+      "type": "array"
+     },
+     "msg": {
+      "title": "Message",
+      "type": "string"
+     },
+     "type": {
+      "title": "Error Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError",
+    "type": "object"
+   }
+  },
+  "securitySchemes": {
+   "token": {
+    "description": "A personal API token, `lk_\u2026`, created on the site's /account page after logging in with GitHub. Writes need it (most need an editor's); on reads it is optional and adds that account's private tags.",
+    "scheme": "bearer",
+    "type": "http"
+   }
+  }
+ },
+ "paths": {
+  "/api/v1/drift": {
+   "get": {
+    "description": "Sources linked across repositories that no longer share a current domain, one row per pair of folders, with the\nrepository that probably has the old domain. Rows an editor ignored are left out unless `ignored`.",
+    "operationId": "api_drift_api_v1_drift_get",
+    "parameters": [
+     {
+      "description": "Only rows where this repo (owner/repo) is behind, or 'unknown'",
+      "in": "query",
+      "name": "behind",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Only rows where this repo (owner/repo) is behind, or 'unknown'",
+       "title": "Behind"
+      }
+     },
+     {
+      "description": "Only the rows an editor ignored (their hosts unchanged since)",
+      "in": "query",
+      "name": "ignored",
+      "required": false,
+      "schema": {
+       "default": false,
+       "description": "Only the rows an editor ignored (their hosts unchanged since)",
+       "title": "Ignored",
+       "type": "boolean"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Drift"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "A parameter or the body is invalid"
+     }
+    },
+    "summary": "Api Drift",
+    "tags": [
+     "cross-repo"
+    ]
+   }
+  },
+  "/api/v1/drift/ignored": {
+   "delete": {
+    "description": "Bring an ignored drift row back into the list. Editor token; recorded.",
+    "operationId": "api_drift_unignore_api_v1_drift_ignored_delete",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DriftIgnore"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DriftIgnoreResult"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "403": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "The token's account may not do this"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "A parameter or the body is invalid"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Drift Unignore",
+    "tags": [
+     "corrections"
+    ]
+   },
+   "put": {
+    "description": "Set a drift row aside with a reason, at both sides' current hosts: it comes back once either side's hosts\nchange. Editor token; recorded and undoable.",
+    "operationId": "api_drift_ignore_api_v1_drift_ignored_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DriftIgnore"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DriftIgnoreResult"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "403": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "The token's account may not do this"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "A parameter or the body is invalid"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Drift Ignore",
+    "tags": [
+     "corrections"
+    ]
+   }
+  },
+  "/api/v1/missing": {
+   "get": {
+    "description": "Current extensions of the other repositories with no link to a current extension of `in`, with the site-request\nissues of `in` that name one of their domains.",
+    "operationId": "api_missing_api_v1_missing_get",
+    "parameters": [
+     {
+      "description": "The repo (owner/repo) the sites are missing from",
+      "in": "query",
+      "name": "in",
+      "required": true,
+      "schema": {
+       "description": "The repo (owner/repo) the sites are missing from",
+       "title": "In",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Part of a name, path or host",
+      "in": "query",
+      "name": "q",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Part of a name, path or host",
+       "title": "Q"
+      }
+     },
+     {
+      "description": "One language",
+      "in": "query",
+      "name": "lang",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "One language",
+       "title": "Lang"
+      }
+     },
+     {
+      "description": "Only sites with an open, not previously deleted, site request in `in`",
+      "in": "query",
+      "name": "requested",
+      "required": false,
+      "schema": {
+       "default": false,
+       "description": "Only sites with an open, not previously deleted, site request in `in`",
+       "title": "Requested",
+       "type": "boolean"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Missing"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "A parameter or the body is invalid"
+     }
+    },
+    "summary": "Api Missing",
+    "tags": [
+     "cross-repo"
+    ]
+   }
+  },
+  "/api/v1/origins": {
+   "get": {
+    "description": "The repositories served, with their number of current extensions. Every other route takes one as {owner}/{repo}.",
+    "operationId": "api_origins_api_v1_origins_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Origin"
+         },
+         "title": "Response Api Origins Api V1 Origins Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Api Origins",
+    "tags": [
+     "repositories"
+    ]
+   }
+  },
+  "/api/v1/source-links": {
+   "delete": {
+    "description": "Hide a wrong automatic link, or drop a manual one. Two sources of different repositories, by stable_id (folder `sources`, or `source_link` in a folder's `elsewhere` and drift's `source_links`). Editor token; recorded and undoable.",
+    "operationId": "api_source_link_remove_api_v1_source_links_delete",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SourcePair"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SourceLinkResult"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "403": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "The token's account may not do this"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "A parameter or the body is invalid"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Source Link Remove",
+    "tags": [
+     "corrections"
+    ]
+   },
+   "put": {
+    "description": "Link two sources by hand. Two sources of different repositories, by stable_id (folder `sources`, or `source_link` in a folder's `elsewhere` and drift's `source_links`). Editor token; recorded and undoable.",
+    "operationId": "api_source_link_add_api_v1_source_links_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SourcePair"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SourceLinkResult"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "403": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "The token's account may not do this"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "A parameter or the body is invalid"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Source Link Add",
+    "tags": [
+     "corrections"
+    ]
+   }
+  },
+  "/api/v1/source-links/override": {
+   "delete": {
+    "description": "Undo a manual link or hide, going back to the automatic links. Two sources of different repositories, by stable_id (folder `sources`, or `source_link` in a folder's `elsewhere` and drift's `source_links`). Editor token; recorded and undoable.",
+    "operationId": "api_source_link_reset_api_v1_source_links_override_delete",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SourcePair"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SourceLinkResult"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "403": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "The token's account may not do this"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "A parameter or the body is invalid"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Source Link Reset",
+    "tags": [
+     "corrections"
+    ]
+   }
+  },
+  "/api/v1/tags": {
+   "get": {
+    "description": "Public tags, with the issue labels that put them on an open issue's folders.",
+    "operationId": "api_tags_api_v1_tags_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/PublicTag"
+         },
+         "title": "Response Api Tags Api V1 Tags Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Api Tags",
+    "tags": [
+     "tags"
+    ]
+   }
+  },
+  "/api/v1/tags/mine": {
+   "get": {
+    "description": "Your private tags, seen by you only. A new account starts with a copy of the site's default ones.",
+    "operationId": "api_my_tags_api_v1_tags_mine_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/PrivateTag"
+         },
+         "title": "Response Api My Tags Api V1 Tags Mine Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api My Tags",
+    "tags": [
+     "tags"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/domains": {
+   "get": {
+    "description": "Every host the repository's extensions declared, now or in the past, by host name.",
+    "operationId": "api_domains_api_v1__owner___repo__domains_get",
+    "parameters": [
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Part of a host",
+      "in": "query",
+      "name": "q",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Part of a host",
+       "title": "Q"
+      }
+     },
+     {
+      "in": "query",
+      "name": "limit",
+      "required": false,
+      "schema": {
+       "default": 200,
+       "maximum": 1000,
+       "minimum": 1,
+       "title": "Limit",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "query",
+      "name": "offset",
+      "required": false,
+      "schema": {
+       "default": 0,
+       "minimum": 0,
+       "title": "Offset",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DomainPage"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "A parameter or the body is invalid"
+     }
+    },
+    "summary": "Api Domains",
+    "tags": [
+     "domains"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/domains/{host}": {
+   "get": {
+    "description": "The extensions that declared a host or one of its subdomains, now or in the past.",
+    "operationId": "api_domain_api_v1__owner___repo__domains__host__get",
+    "parameters": [
+     {
+      "description": "A host; its subdomains are included",
+      "in": "path",
+      "name": "host",
+      "required": true,
+      "schema": {
+       "description": "A host; its subdomains are included",
+       "title": "Host",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Domain"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Api Domain",
+    "tags": [
+     "domains"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/extensions": {
+   "get": {
+    "description": "The gallery: extensions with their monitor status, downloads, open issues and PRs, hosts and tags.\nWith a token, each extension's tags include that account's private tags.",
+    "operationId": "api_extensions_api_v1__owner___repo__extensions_get",
+    "parameters": [
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Name (also without spaces or punctuation), module, path, source name or id, or current host",
+      "in": "query",
+      "name": "q",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Name (also without spaces or punctuation), module, path, source name or id, or current host",
+       "title": "Q"
+      }
+     },
+     {
+      "description": "Languages (facets `lang`). Repeat it to pick several; prefix a value with \"-\" to exclude it, e.g. lang=en&lang=-all",
+      "in": "query",
+      "name": "lang",
+      "required": false,
+      "schema": {
+       "default": [],
+       "description": "Languages (facets `lang`). Repeat it to pick several; prefix a value with \"-\" to exclude it, e.g. lang=en&lang=-all",
+       "items": {
+        "type": "string"
+       },
+       "title": "Lang",
+       "type": "array"
+      }
+     },
+     {
+      "description": "Themes (facets `theme`). Repeat it to pick several; prefix a value with \"-\" to exclude it",
+      "in": "query",
+      "name": "theme",
+      "required": false,
+      "schema": {
+       "default": [],
+       "description": "Themes (facets `theme`). Repeat it to pick several; prefix a value with \"-\" to exclude it",
+       "items": {
+        "type": "string"
+       },
+       "title": "Theme",
+       "type": "array"
+      }
+     },
+     {
+      "description": "Monitor verdicts: pass, partial, fail, maybe, untestable, unsupported. Repeat it to pick several; prefix a value with \"-\" to exclude it",
+      "in": "query",
+      "name": "status",
+      "required": false,
+      "schema": {
+       "default": [],
+       "description": "Monitor verdicts: pass, partial, fail, maybe, untestable, unsupported. Repeat it to pick several; prefix a value with \"-\" to exclude it",
+       "items": {
+        "type": "string"
+       },
+       "title": "Status",
+       "type": "array"
+      }
+     },
+     {
+      "description": "Content warning",
+      "in": "query",
+      "name": "content",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "enum": [
+          "SAFE",
+          "MIXED",
+          "NSFW"
+         ],
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Content warning",
+       "title": "Content"
+      }
+     },
+     {
+      "description": "Include removed extensions",
+      "in": "query",
+      "name": "removed",
+      "required": false,
+      "schema": {
+       "default": false,
+       "description": "Include removed extensions",
+       "title": "Removed",
+       "type": "boolean"
+      }
+     },
+     {
+      "description": "downloads (last 7 days), name, status (most broken first), issues (most open first), updated (last commit), broken (broken longest first)",
+      "in": "query",
+      "name": "sort",
+      "required": false,
+      "schema": {
+       "default": "downloads",
+       "description": "downloads (last 7 days), name, status (most broken first), issues (most open first), updated (last commit), broken (broken longest first)",
+       "enum": [
+        "downloads",
+        "name",
+        "status",
+        "issues",
+        "updated",
+        "broken"
+       ],
+       "title": "Sort",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Only extensions not working for at least this many days",
+      "in": "query",
+      "name": "broken_days",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 0,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Only extensions not working for at least this many days",
+       "title": "Broken Days"
+      }
+     },
+     {
+      "description": "issue: broken, with an open issue and no open PR; noissue: broken, no open issue or PR",
+      "in": "query",
+      "name": "fix",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "enum": [
+          "issue",
+          "noissue"
+         ],
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "issue: broken, with an open issue and no open PR; noissue: broken, no open issue or PR",
+       "title": "Fix"
+      }
+     },
+     {
+      "description": "Public tag names (GET /api/v1/tags); all included tags are needed. Repeat it to pick several; prefix a value with \"-\" to exclude it",
+      "in": "query",
+      "name": "tag",
+      "required": false,
+      "schema": {
+       "default": [],
+       "description": "Public tag names (GET /api/v1/tags); all included tags are needed. Repeat it to pick several; prefix a value with \"-\" to exclude it",
+       "items": {
+        "type": "string"
+       },
+       "title": "Tag",
+       "type": "array"
+      }
+     },
+     {
+      "description": "Your private tag names (GET /api/v1/tags/mine), like `tag`; needs your token",
+      "in": "query",
+      "name": "my_tag",
+      "required": false,
+      "schema": {
+       "default": [],
+       "description": "Your private tag names (GET /api/v1/tags/mine), like `tag`; needs your token",
+       "items": {
+        "type": "string"
+       },
+       "title": "My Tag",
+       "type": "array"
+      }
+     },
+     {
+      "in": "query",
+      "name": "limit",
+      "required": false,
+      "schema": {
+       "default": 60,
+       "maximum": 500,
+       "minimum": 1,
+       "title": "Limit",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "query",
+      "name": "offset",
+      "required": false,
+      "schema": {
+       "default": 0,
+       "minimum": 0,
+       "title": "Offset",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ExtensionPage"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "A parameter or the body is invalid"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Extensions",
+    "tags": [
+     "extensions"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/extensions/{lang}/{module}": {
+   "get": {
+    "description": "An extension of a repository laid out as src/{lang}/{module} (keiyoushi); the same as folders/src/{lang}/{module}.",
+    "operationId": "api_extension_api_v1__owner___repo__extensions__lang___module__get",
+    "parameters": [
+     {
+      "description": "Its language folder, e.g. en or all",
+      "in": "path",
+      "name": "lang",
+      "required": true,
+      "schema": {
+       "description": "Its language folder, e.g. en or all",
+       "title": "Lang",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Its module folder, e.g. mangadex",
+      "in": "path",
+      "name": "module",
+      "required": true,
+      "schema": {
+       "description": "Its module folder, e.g. mangadex",
+       "title": "Module",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Folder"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Extension",
+    "tags": [
+     "extensions"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/facets": {
+   "get": {
+    "description": "The values the gallery filters take, with how many current extensions have each. tags.private: with a token only.",
+    "operationId": "api_facets_api_v1__owner___repo__facets_get",
+    "parameters": [
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Facets"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Facets",
+    "tags": [
+     "extensions"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/folders/{path}": {
+   "get": {
+    "description": "Any extension or theme folder: its sources, domains with their date ranges, status, downloads, issues, PRs,\nhistory (PR merge date and title, commit date and body) and links to other repositories. An extension on a theme\nalso gets the theme's own issues and history; a theme gets the extensions that use it.\nWith a token, its tags include that account's private tags.",
+    "operationId": "api_folder_api_v1__owner___repo__folders__path__get",
+    "parameters": [
+     {
+      "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+      "in": "path",
+      "name": "path",
+      "required": true,
+      "schema": {
+       "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "title": "Path",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Folder"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Folder",
+    "tags": [
+     "extensions"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/issues/{number}": {
+   "get": {
+    "description": "An issue with the folders it is linked to, how each link was found, and the PRs that close it.",
+    "operationId": "api_issue_api_v1__owner___repo__issues__number__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "number",
+      "required": true,
+      "schema": {
+       "title": "Number",
+       "type": "integer"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Issue"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Api Issue",
+    "tags": [
+     "issues and PRs"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/issues/{number}/links/{path}": {
+   "delete": {
+    "description": "Hide a wrong automatic link, or drop a manual one. Editor token; recorded under its account and undoable. Returns the issue.",
+    "operationId": "api_link_remove_api_v1__owner___repo__issues__number__links__path__delete",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "number",
+      "required": true,
+      "schema": {
+       "title": "Number",
+       "type": "integer"
+      }
+     },
+     {
+      "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+      "in": "path",
+      "name": "path",
+      "required": true,
+      "schema": {
+       "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "title": "Path",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Issue"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "403": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "The token's account may not do this"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Link Remove",
+    "tags": [
+     "corrections"
+    ]
+   },
+   "put": {
+    "description": "Link an issue to a folder by hand. Editor token; recorded under its account and undoable. Returns the issue.",
+    "operationId": "api_link_add_api_v1__owner___repo__issues__number__links__path__put",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "number",
+      "required": true,
+      "schema": {
+       "title": "Number",
+       "type": "integer"
+      }
+     },
+     {
+      "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+      "in": "path",
+      "name": "path",
+      "required": true,
+      "schema": {
+       "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "title": "Path",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Issue"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "403": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "The token's account may not do this"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Link Add",
+    "tags": [
+     "corrections"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/issues/{number}/overrides/{path}": {
+   "delete": {
+    "description": "Drop the manual decision and go back to the automatic links. Editor token; recorded under its account and undoable. Returns the issue.",
+    "operationId": "api_override_reset_api_v1__owner___repo__issues__number__overrides__path__delete",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "number",
+      "required": true,
+      "schema": {
+       "title": "Number",
+       "type": "integer"
+      }
+     },
+     {
+      "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+      "in": "path",
+      "name": "path",
+      "required": true,
+      "schema": {
+       "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "title": "Path",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Issue"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "403": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "The token's account may not do this"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Override Reset",
+    "tags": [
+     "corrections"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/my-tags/{tag}/{path}": {
+   "delete": {
+    "description": "Take one of your private tags off a folder; returns the folder's tags.",
+    "operationId": "api_my_tag_remove_api_v1__owner___repo__my_tags__tag___path__delete",
+    "parameters": [
+     {
+      "description": "The tag's name, any case",
+      "in": "path",
+      "name": "tag",
+      "required": true,
+      "schema": {
+       "description": "The tag's name, any case",
+       "title": "Tag",
+       "type": "string"
+      }
+     },
+     {
+      "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+      "in": "path",
+      "name": "path",
+      "required": true,
+      "schema": {
+       "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "title": "Path",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Tag"
+         },
+         "title": "Response Api My Tag Remove Api V1  Owner   Repo  My Tags  Tag   Path  Delete",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api My Tag Remove",
+    "tags": [
+     "tags"
+    ]
+   },
+   "put": {
+    "description": "Put one of your private tags on a folder (any account's token); returns the folder's tags.",
+    "operationId": "api_my_tag_add_api_v1__owner___repo__my_tags__tag___path__put",
+    "parameters": [
+     {
+      "description": "The tag's name, any case",
+      "in": "path",
+      "name": "tag",
+      "required": true,
+      "schema": {
+       "description": "The tag's name, any case",
+       "title": "Tag",
+       "type": "string"
+      }
+     },
+     {
+      "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+      "in": "path",
+      "name": "path",
+      "required": true,
+      "schema": {
+       "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "title": "Path",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Tag"
+         },
+         "title": "Response Api My Tag Add Api V1  Owner   Repo  My Tags  Tag   Path  Put",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api My Tag Add",
+    "tags": [
+     "tags"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/prs/{number}": {
+   "get": {
+    "description": "A PR with the folders it touches, the issues it closes and its commits on the default branch.",
+    "operationId": "api_pr_api_v1__owner___repo__prs__number__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "number",
+      "required": true,
+      "schema": {
+       "title": "Number",
+       "type": "integer"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PullRequest"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Api Pr",
+    "tags": [
+     "issues and PRs"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/search": {
+   "get": {
+    "description": "The site's search box: an issue or PR by number, and the domains and extensions that match.",
+    "operationId": "api_search_api_v1__owner___repo__search_get",
+    "parameters": [
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     },
+     {
+      "description": "#123 or 123 (an issue or PR), a host, a name or a source id",
+      "in": "query",
+      "name": "q",
+      "required": true,
+      "schema": {
+       "description": "#123 or 123 (an issue or PR), a host, a name or a source id",
+       "title": "Q",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Search"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "A parameter or the body is invalid"
+     }
+    },
+    "summary": "Api Search",
+    "tags": [
+     "extensions"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/tags/{tag}/{path}": {
+   "delete": {
+    "description": "Take a public tag off a folder (editor token); tags inherited from issue labels stay. Returns the folder's tags.",
+    "operationId": "api_tag_remove_api_v1__owner___repo__tags__tag___path__delete",
+    "parameters": [
+     {
+      "description": "The tag's name, any case",
+      "in": "path",
+      "name": "tag",
+      "required": true,
+      "schema": {
+       "description": "The tag's name, any case",
+       "title": "Tag",
+       "type": "string"
+      }
+     },
+     {
+      "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+      "in": "path",
+      "name": "path",
+      "required": true,
+      "schema": {
+       "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "title": "Path",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Tag"
+         },
+         "title": "Response Api Tag Remove Api V1  Owner   Repo  Tags  Tag   Path  Delete",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "403": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "The token's account may not do this"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Tag Remove",
+    "tags": [
+     "tags"
+    ]
+   },
+   "put": {
+    "description": "Put a public tag on a folder (editor token); returns the folder's tags.",
+    "operationId": "api_tag_add_api_v1__owner___repo__tags__tag___path__put",
+    "parameters": [
+     {
+      "description": "The tag's name, any case",
+      "in": "path",
+      "name": "tag",
+      "required": true,
+      "schema": {
+       "description": "The tag's name, any case",
+       "title": "Tag",
+       "type": "string"
+      }
+     },
+     {
+      "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+      "in": "path",
+      "name": "path",
+      "required": true,
+      "schema": {
+       "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "title": "Path",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Tag"
+         },
+         "title": "Response Api Tag Add Api V1  Owner   Repo  Tags  Tag   Path  Put",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "403": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "The token's account may not do this"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Tag Add",
+    "tags": [
+     "tags"
+    ]
+   }
+  },
+  "/api/v1/{owner}/{repo}/themes/{name}": {
+   "get": {
+    "description": "A theme (multisrc) folder by name, whatever the layout, with the extensions built on it.",
+    "operationId": "api_theme_api_v1__owner___repo__themes__name__get",
+    "parameters": [
+     {
+      "description": "The theme's name, e.g. madara",
+      "in": "path",
+      "name": "name",
+      "required": true,
+      "schema": {
+       "description": "The theme's name, e.g. madara",
+       "title": "Name",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository owner, e.g. keiyoushi",
+      "in": "path",
+      "name": "owner",
+      "required": true,
+      "schema": {
+       "description": "Repository owner, e.g. keiyoushi",
+       "title": "Owner",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Repository name, e.g. extensions-source",
+      "in": "path",
+      "name": "repo",
+      "required": true,
+      "schema": {
+       "description": "Repository name, e.g. extensions-source",
+       "title": "Repo",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Folder"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "401": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "No token, or an invalid or revoked one"
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Error"
+        }
+       }
+      },
+      "description": "Not found (the message says what)"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "security": [
+     {
+      "token": []
+     }
+    ],
+    "summary": "Api Theme",
+    "tags": [
+     "extensions"
+    ]
+   }
+  }
+ },
+ "version": "1.0.0"
+}

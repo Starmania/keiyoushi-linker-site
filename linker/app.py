@@ -16,7 +16,7 @@ from linker.auth import api_account, api_editor, api_viewer, audit, current_user
 from linker.db import conn as db
 
 HERE = Path(__file__).parent
-app = FastAPI(title="Keiyoushi linker", docs_url="/api/docs", openapi_url="/api/openapi.json")
+app = FastAPI(title="Keiyoushi linker", version="1.0.0", docs_url="/api/docs", openapi_url="/api/openapi.json")
 app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
 templates = Jinja2Templates(directory=HERE / "templates")
 templates.env.globals["tag_colors"] = tags.COLORS

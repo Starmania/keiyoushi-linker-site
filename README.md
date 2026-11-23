@@ -50,3 +50,11 @@ parameter, response field and error. Most routes are scoped by repository: `/api
   the folder routes add that account's private tags.
 - **Writes** need a token: an editor's for link corrections, public tags and drift, any account's for its own private
   tags (`my-tags`). Each correction is recorded under that account and can be undone.
+
+### Stability
+
+v1 is stable since site 1.0.0: changes to it are backward compatible. Routes, parameters and response fields can be
+added; none is removed, renamed, retyped or made nullable, and no new parameter is required. A client should ignore
+fields it doesn't know. `tests/openapi-v1.json` is the published schema, and `tests/test_api_contract.py` fails on a
+change that breaks it; after a compatible change, accept it with `uv run python -m tests.test_api_contract`. A breaking
+change needs a `/api/v2` next to v1.
