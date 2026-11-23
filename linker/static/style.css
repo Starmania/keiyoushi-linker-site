@@ -353,8 +353,14 @@ a.stat:hover { border-color: var(--accent); text-decoration: none; }
 .drift-actions { display: grid; gap: .35rem; justify-items: start; }
 .drift-actions .ignore { display: flex; gap: .3rem; flex-wrap: wrap; }
 .drift-actions select { font-size: .78rem; padding: .1rem .3rem; max-width: 13rem; }
-.link-by-hand { margin-top: .25rem; }
-.link-by-hand form { margin: .4rem 0 .2rem; }
+/* Missing: "Link…" on a row opens one dialog to link it by hand. */
+.link-open { margin-left: auto; }
+.link-dialog { width: min(32rem, calc(100% - 32px)); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); padding: 1.1rem 1.2rem; }
+.link-dialog::backdrop { background: rgb(0 0 0 / .35); }
+.link-dialog h2 { margin: 0 0 .35rem; }
+.link-dialog p { margin: 0 0 .75rem; }
+.link-dialog input[name=other_path] { width: 100%; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .9rem; }
 /* A button's result, after the page came back to where it was (keep-place.js). */
 .notice.toast { position: fixed; z-index: 20; bottom: 1rem; left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px);
   box-shadow: 0 6px 24px rgb(0 0 0 / .18); transition: opacity .4s; }

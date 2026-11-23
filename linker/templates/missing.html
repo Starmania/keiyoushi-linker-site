@@ -35,19 +35,14 @@ the extension when they name one of its domains, past or current.</p>
         {% if o.tracked.status and i.status %}{{ status_pill(i.status, i.status_since) }}{% endif %}
         {% if i.content_warning and i.content_warning != 'SAFE' %}<span class="tag warn">{{ i.content_warning }}</span>{% endif %}
         {% if o.tracked.downloads and i.downloads_7d %}<span class="muted small" title="Downloads, last 7 days">{{ i.downloads_7d|num }} / 7 d</span>{% endif %}
+        {% if can_edit and not i.same_name and not i.removed_in_target %}<button type="button" class="mini link-open" hidden data-origin="{{ origin }}" data-path="{{ i.path }}"
+          data-name="{{ i.name }}" title="Same site in {{ m.target }} under another name? Link it by hand">Link…</button>{% endif %}
       </div>
       <div class="muted small"><span class="mono">{{ i.path }}</span>{% if i.hosts %} · {{ i.hosts|join(', ') }}{% endif %}</div>
       {% if i.removed_in_target %}<div class="small">Removed from {{ m.target }}: {% for r in i.removed_in_target %}<a href="/{{ m.target }}/{{ r.path }}">{{ r.name }}</a>{{ ', ' if not loop.last }}{% endfor %}</div>{% endif %}
       {% if i.same_name %}<div class="small same-name">Same name in {{ m.target }}: <a href="/{{ m.target }}/{{ i.same_name.path }}">{{ i.same_name.name }}</a> <span class="muted mono">{{ i.same_name.path }}</span>
         {%- if can_edit %} {{ edit_button('/edit/source-links/connect', 'Link', {'origin': origin, 'path': i.path, 'other_origin': m.target, 'other_path': i.same_name.path}) }}{% endif %}</div>
-      {% elif can_edit and not i.removed_in_target %}
-      <details class="link-by-hand small"><summary>Same site in {{ m.target }} under another name?</summary>
-        <form class="filters connect" method="post" action="/edit/source-links/connect">{{ form_fields() }}
-          <input type="hidden" name="origin" value="{{ origin }}"><input type="hidden" name="path" value="{{ i.path }}"><input type="hidden" name="other_origin" value="{{ m.target }}">
-          <input name="other_path" required placeholder="Extension name or folder in {{ m.target }}" aria-label="Folder in {{ m.target }}" data-suggest="{{ m.target }}">
-          <button type="submit">Link</button>
-        </form>
-      </details>{% endif %}
+{% endif %}
       {% for r in i.requests %}<div class="small request">{{ state_pill(r.state) }} <a href="/{{ m.target }}/issues/{{ r.number }}">#{{ r.number }}</a>{{ gh(m.target, 'issues', r.number) }} {{ r.title }}
         {%- if r.removed %} <span class="tag warn" title="Labelled “Previously deleted”: removed on purpose, it may not be taken back">previously deleted</span>{% endif %}</div>{% endfor %}
     </div>
@@ -60,4 +55,31 @@ the extension when they name one of its domains, past or current.</p>
 {% endif %}
 {% else %}<p class="muted">Nothing missing.</p>{% endif %}
 {% endfor %}
+{% if can_edit %}
+{# One dialog for every row's "Link…": the row fills in which extension to link. #}
+<dialog class="link-dialog" id="link-dialog" aria-labelledby="link-dialog-title">
+  <form method="post" action="/edit/source-links/connect">{{ form_fields() }}
+    <h2 id="link-dialog-title">Link <span data-name></span> to {{ m.target }}</h2>
+    <p class="muted small">The same site in {{ m.target }} under another name. Type its name or folder.</p>
+    <input type="hidden" name="origin"><input type="hidden" name="path"><input type="hidden" name="other_origin" value="{{ m.target }}">
+    <input name="other_path" required placeholder="Extension name or folder in {{ m.target }}" aria-label="Folder in {{ m.target }}" data-suggest="{{ m.target }}">
+    <div class="dialog-actions"><button type="button" class="mini" data-close>Cancel</button><button type="submit">Link</button></div>
+  </form>
+</dialog>
+<script>
+  const dlg = document.getElementById("link-dialog");
+  for (const b of document.querySelectorAll(".link-open")) {
+    b.hidden = false;  // needs this script: without it the folder page's "Link to" form does the same
+    b.addEventListener("click", () => {
+      dlg.querySelector("[name=origin]").value = b.dataset.origin;
+      dlg.querySelector("[name=path]").value = b.dataset.path;
+      dlg.querySelector("[data-name]").textContent = b.dataset.name;
+      dlg.querySelector("[name=other_path]").value = "";
+      dlg.showModal();
+    });
+  }
+  dlg.querySelector("[data-close]").addEventListener("click", () => dlg.close());
+  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });  // a click on the backdrop
+</script>
+{% endif %}
 {% endblock %}
