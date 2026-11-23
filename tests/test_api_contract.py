@@ -123,8 +123,11 @@ class Checker:
                     if n_r is None:
                         self.problems.append(f"{where} {code}: response removed")
                     elif o_out:
-                        n_out = n_r.get("content", {}).get("application/json", {}).get("schema", {})
-                        self.compare(o_out, n_out, f"{where} {code}", out=True)
+                        n_out = n_r.get("content", {}).get("application/json", {}).get("schema")
+                        if n_out is None:
+                            self.problems.append(f"{where} {code}: response schema removed")
+                        else:
+                            self.compare(o_out, n_out, f"{where} {code}", out=True)
         return self.problems
 
 

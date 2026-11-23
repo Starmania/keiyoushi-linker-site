@@ -12,6 +12,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "NaruHikaGame"
+      ],
       "title": "Author"
      },
      "body": {
@@ -23,9 +26,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "Add a callback `SMangaUpdate` that `KeiSource` flattens, and move sources onto it"
+      ],
       "title": "Body"
      },
      "commit_date": {
+      "examples": [
+       "2026-11-22T18:37:48+05:00"
+      ],
       "title": "Commit Date",
       "type": "string"
      },
@@ -38,6 +47,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2026-11-20T17:08:34Z"
+      ],
       "title": "Pr Created At"
      },
      "pr_merged_at": {
@@ -48,6 +60,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "2026-11-22T13:37:49Z"
       ],
       "title": "Pr Merged At"
      },
@@ -60,6 +75,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       21272
+      ],
       "title": "Pr Number"
      },
      "pr_title": {
@@ -71,13 +89,22 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "Core: add callback SMangaUpdate and migrate sources"
+      ],
       "title": "Pr Title"
      },
      "sha": {
+      "examples": [
+       "92906c0382547f30a03b3176f2f2429be6b54dce"
+      ],
       "title": "Sha",
       "type": "string"
      },
      "subject": {
+      "examples": [
+       "Core: add callback SMangaUpdate and migrate sources (#21272)"
+      ],
       "title": "Subject",
       "type": "string"
      }
@@ -99,6 +126,9 @@
    "Domain": {
     "properties": {
      "host": {
+      "examples": [
+       "mangadex.org"
+      ],
       "title": "Host",
       "type": "string"
      },
@@ -121,19 +151,33 @@
    "DomainItem": {
     "properties": {
      "all_extensions": {
+      "examples": [
+       2
+      ],
       "title": "All Extensions",
       "type": "integer"
      },
      "current_extensions": {
+      "examples": [
+       1
+      ],
       "title": "Current Extensions",
       "type": "integer"
      },
      "host": {
+      "examples": [
+       "mangadex.org"
+      ],
       "title": "Host",
       "type": "string"
      },
      "roles": {
       "description": "base, mirror, deeplink",
+      "examples": [
+       [
+        "base"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -160,14 +204,23 @@
       "type": "array"
      },
      "limit": {
+      "examples": [
+       200
+      ],
       "title": "Limit",
       "type": "integer"
      },
      "offset": {
+      "examples": [
+       0
+      ],
       "title": "Offset",
       "type": "integer"
      },
      "total": {
+      "examples": [
+       3212
+      ],
       "title": "Total",
       "type": "integer"
      }
@@ -192,13 +245,22 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2026-10-16T21:28:13+05:00"
+      ],
       "title": "From Date"
      },
      "from_sha": {
+      "examples": [
+       "92906c0382547f30a03b3176f2f2429be6b54dce"
+      ],
       "title": "From Sha",
       "type": "string"
      },
      "host": {
+      "examples": [
+       "mangadex.org"
+      ],
       "title": "Host",
       "type": "string"
      },
@@ -211,6 +273,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "src"
+      ],
       "title": "Kind"
      },
      "lang": {
@@ -221,6 +286,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "all"
       ],
       "title": "Lang"
      },
@@ -233,18 +301,30 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "MangaDex"
+      ],
       "title": "Name"
      },
      "path": {
+      "examples": [
+       "src/all/mangadex"
+      ],
       "title": "Path",
       "type": "string"
      },
      "removed": {
+      "examples": [
+       false
+      ],
       "title": "Removed",
       "type": "boolean"
      },
      "role": {
       "description": "base, mirror or deeplink",
+      "examples": [
+       "base"
+      ],
       "title": "Role",
       "type": "string"
      },
@@ -256,6 +336,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       null
       ],
       "title": "To Date"
      },
@@ -269,6 +352,9 @@
        }
       ],
       "description": "null: still declared",
+      "examples": [
+       null
+      ],
       "title": "To Sha"
      }
     },
@@ -299,6 +385,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       2128230
+      ],
       "title": "All Time"
      },
      "d30": {
@@ -309,6 +398,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       847206
       ],
       "title": "D30"
      },
@@ -321,9 +413,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       167595
+      ],
       "title": "D7"
      },
      "date": {
+      "examples": [
+       "2026-11-22"
+      ],
       "title": "Date",
       "type": "string"
      },
@@ -336,6 +434,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       2563
+      ],
       "title": "H1"
      },
      "h24": {
@@ -346,6 +447,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       62257
       ],
       "title": "H24"
      }
@@ -375,6 +479,9 @@
      },
      "total": {
       "description": "Rows not ignored",
+      "examples": [
+       11
+      ],
       "title": "Total",
       "type": "integer"
      }
@@ -394,10 +501,19 @@
        "type": "integer"
       },
       "description": "Rows not ignored, by the repo behind (\"unknown\" when not known)",
+      "examples": [
+       {
+        "keiyoushi/extensions-source": 7,
+        "manga-download/haruneko": 4
+       }
+      ],
       "title": "Behind",
       "type": "object"
      },
      "ignored": {
+      "examples": [
+       0
+      ],
       "title": "Ignored",
       "type": "integer"
      }
@@ -413,6 +529,14 @@
     "properties": {
      "pair": {
       "description": "The row's `pair` from GET /api/v1/drift: [origin_a, path_a, origin_b, path_b]",
+      "examples": [
+       [
+        "keiyoushi/extensions-source",
+        "src/vi/dualeotruyen",
+        "manga-download/haruneko",
+        "web/src/engine/websites/DuaLeoTruyen"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -448,6 +572,14 @@
    "DriftIgnoreResult": {
     "properties": {
      "pair": {
+      "examples": [
+       [
+        "keiyoushi/extensions-source",
+        "src/vi/dualeotruyen",
+        "manga-download/haruneko",
+        "web/src/engine/websites/DuaLeoTruyen"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -469,6 +601,9 @@
        }
       ],
       "description": "null: back in the list",
+      "examples": [
+       "redirect"
+      ],
       "title": "Reason"
      }
     },
@@ -482,6 +617,9 @@
    "DriftIgnored": {
     "properties": {
      "at": {
+      "examples": [
+       "2026-11-22T23:48:32+00:00"
+      ],
       "title": "At",
       "type": "string"
      },
@@ -494,15 +632,24 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "Starmania"
+      ],
       "title": "By Login"
      },
      "label": {
       "description": "The reason in words",
+      "examples": [
+       "Low priority: the old domain redirects"
+      ],
       "title": "Label",
       "type": "string"
      },
      "reason": {
       "description": "right_side, redirect or other",
+      "examples": [
+       "redirect"
+      ],
       "title": "Reason",
       "type": "string"
      }
@@ -534,6 +681,9 @@
        }
       ],
       "description": "Why: left (it still has a host the other side left) or older (it adopted its host first)",
+      "examples": [
+       "left"
+      ],
       "title": "Basis"
      },
      "behind": {
@@ -546,6 +696,9 @@
        }
       ],
       "description": "The repo that probably has the old domain (null: unknown)",
+      "examples": [
+       "keiyoushi/extensions-source"
+      ],
       "title": "Behind"
      },
      "host": {
@@ -558,6 +711,9 @@
        }
       ],
       "description": "The host that once linked them",
+      "examples": [
+       "dualeotruyenvie.com"
+      ],
       "title": "Host"
      },
      "ignored": {
@@ -571,6 +727,11 @@
       ]
      },
      "langs": {
+      "examples": [
+       [
+        "vi"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -579,6 +740,14 @@
      },
      "pair": {
       "description": "[origin_a, path_a, origin_b, path_b]: the body's pair for /api/v1/drift/ignored",
+      "examples": [
+       [
+        "keiyoushi/extensions-source",
+        "src/vi/dualeotruyen",
+        "manga-download/haruneko",
+        "web/src/engine/websites/DuaLeoTruyen"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -593,6 +762,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "2026-10-16T21:28:13+05:00"
       ],
       "title": "Since"
      },
@@ -661,6 +833,9 @@
        }
       ],
       "description": "Why: left (it still has a host the other side left) or older (it adopted its host first)",
+      "examples": [
+       null
+      ],
       "title": "Basis"
      },
      "behind": {
@@ -673,6 +848,9 @@
        }
       ],
       "description": "The repo that probably has the old domain (null: unknown)",
+      "examples": [
+       null
+      ],
       "title": "Behind"
      },
      "by_login": {
@@ -684,9 +862,17 @@
         "type": "null"
        }
       ],
+      "examples": [
+       null
+      ],
       "title": "By Login"
      },
      "hosts": {
+      "examples": [
+       [
+        "mangadex.org"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -702,9 +888,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "https://cdn.jsdelivr.net/gh/manga-download/haruneko@master/web/src/engine/websites/MangaDex.webp"
+      ],
       "title": "Icon Url"
      },
      "manual": {
+      "examples": [
+       false
+      ],
       "title": "Manual",
       "type": "boolean"
      },
@@ -717,9 +909,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "MangaDex"
+      ],
       "title": "Name"
      },
      "open_issues": {
+      "examples": [
+       0
+      ],
       "title": "Open Issues",
       "type": "integer"
      },
@@ -732,15 +930,24 @@
       "type": "array"
      },
      "path": {
+      "examples": [
+       "web/src/engine/websites/MangaDex"
+      ],
       "title": "Path",
       "type": "string"
      },
      "removed": {
+      "examples": [
+       false
+      ],
       "title": "Removed",
       "type": "boolean"
      },
      "state": {
       "description": "The worst of its pairs: same (a host in common), drift (none in common) or gone (a side was removed)",
+      "examples": [
+       "same"
+      ],
       "title": "State",
       "type": "string"
      },
@@ -789,6 +996,9 @@
        }
       ],
       "description": "What went wrong, in words; for an invalid parameter or body, a list of {loc, msg, type} entries",
+      "examples": [
+       "issue not found"
+      ],
       "title": "Detail"
      }
     },
@@ -810,6 +1020,9 @@
        }
       ],
       "description": "SAFE, MIXED or NSFW",
+      "examples": [
+       "SAFE"
+      ],
       "title": "Content Warning"
      },
      "downloads_7d": {
@@ -820,6 +1033,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       167595
       ],
       "title": "Downloads 7D"
      },
@@ -832,10 +1048,18 @@
         "type": "null"
        }
       ],
+      "examples": [
+       2128230
+      ],
       "title": "Downloads All"
      },
      "hosts": {
       "description": "Current base domains",
+      "examples": [
+       [
+        "mangadex.org"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -851,6 +1075,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "https://cdn.jsdelivr.net/gh/keiyoushi/extensions-source@main/src/all/mangadex/res/mipmap-xhdpi/ic_launcher.png"
+      ],
       "title": "Icon Url"
      },
      "lang": {
@@ -861,6 +1088,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "all"
       ],
       "title": "Lang"
      },
@@ -874,6 +1104,9 @@
        }
       ],
       "description": "Date of the folder's last commit",
+      "examples": [
+       "2026-11-20T00:36:58+01:00"
+      ],
       "title": "Last Changed"
      },
      "lib_version": {
@@ -884,6 +1117,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "1.6"
       ],
       "title": "Lib Version"
      },
@@ -896,6 +1132,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "mangadex"
+      ],
       "title": "Module"
      },
      "name": {
@@ -907,13 +1146,22 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "MangaDex"
+      ],
       "title": "Name"
      },
      "open_issues": {
+      "examples": [
+       1
+      ],
       "title": "Open Issues",
       "type": "integer"
      },
      "open_prs": {
+      "examples": [
+       0
+      ],
       "title": "Open Prs",
       "type": "integer"
      },
@@ -934,23 +1182,38 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "eu.kanade.tachiyomi.extension.all.mangadex"
+      ],
       "title": "Package Name"
      },
      "path": {
       "description": "The folder, in the repository's layout",
+      "examples": [
+       "src/all/mangadex"
+      ],
       "title": "Path",
       "type": "string"
      },
      "pr_count": {
+      "examples": [
+       4
+      ],
       "title": "Pr Count",
       "type": "integer"
      },
      "rechecked": {
       "description": "The status comes from a recheck through proxies",
+      "examples": [
+       false
+      ],
       "title": "Rechecked",
       "type": "boolean"
      },
      "removed": {
+      "examples": [
+       false
+      ],
       "title": "Removed",
       "type": "boolean"
      },
@@ -964,6 +1227,9 @@
        }
       ],
       "description": "Monitor verdict: pass, partial, fail, maybe, untestable or unsupported (null: not monitored)",
+      "examples": [
+       "pass"
+      ],
       "title": "Status"
      },
      "status_date": {
@@ -976,6 +1242,9 @@
        }
       ],
       "description": "Day of the latest monitor run",
+      "examples": [
+       "2026-11-22"
+      ],
       "title": "Status Date"
      },
      "status_days": {
@@ -986,6 +1255,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       42
       ],
       "title": "Status Days"
      },
@@ -999,6 +1271,9 @@
        }
       ],
       "description": "Day the status started",
+      "examples": [
+       "2026-10-12"
+      ],
       "title": "Status Since"
      },
      "status_since_open": {
@@ -1011,6 +1286,9 @@
        }
       ],
       "description": "The status dates from the first monitor run, so it may be older",
+      "examples": [
+       false
+      ],
       "title": "Status Since Open"
      },
      "tags": {
@@ -1029,6 +1307,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       null
+      ],
       "title": "Theme"
      },
      "version_code": {
@@ -1039,6 +1320,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       5
       ],
       "title": "Version Code"
      }
@@ -1084,14 +1368,23 @@
       "type": "array"
      },
      "limit": {
+      "examples": [
+       60
+      ],
       "title": "Limit",
       "type": "integer"
      },
      "offset": {
+      "examples": [
+       0
+      ],
       "title": "Offset",
       "type": "integer"
      },
      "total": {
+      "examples": [
+       1727
+      ],
       "title": "Total",
       "type": "integer"
      }
@@ -1109,10 +1402,16 @@
     "properties": {
      "n": {
       "description": "Current extensions with this value",
+      "examples": [
+       484
+      ],
       "title": "N",
       "type": "integer"
      },
      "value": {
+      "examples": [
+       "en"
+      ],
       "title": "Value",
       "type": "string"
      }
@@ -1173,6 +1472,9 @@
        }
       ],
       "description": "src",
+      "examples": [
+       "https://github.com/keiyoushi/extensions/releases/download/b4f9106-0/tachiyomi-all.mangadex-v1.6.5.apk"
+      ],
       "title": "Apk Url"
      },
      "content_warning": {
@@ -1185,6 +1487,9 @@
        }
       ],
       "description": "SAFE, MIXED or NSFW",
+      "examples": [
+       "SAFE"
+      ],
       "title": "Content Warning"
      },
      "domains": {
@@ -1240,6 +1545,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2024-01-06T17:53:13+00:00"
+      ],
       "title": "First Date"
      },
      "first_sha": {
@@ -1250,6 +1558,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "7363e4298c2a6cc4e32e6ef6af2d48611d5b619e"
       ],
       "title": "First Sha"
      },
@@ -1269,6 +1580,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "https://cdn.jsdelivr.net/gh/keiyoushi/extensions-source@main/src/all/mangadex/res/mipmap-xhdpi/ic_launcher.png"
+      ],
       "title": "Icon Url"
      },
      "issues": {
@@ -1280,6 +1594,9 @@
      },
      "kind": {
       "description": "src (an extension) or theme",
+      "examples": [
+       "src"
+      ],
       "title": "Kind",
       "type": "string"
      },
@@ -1292,6 +1609,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "all"
+      ],
       "title": "Lang"
      },
      "last_date": {
@@ -1302,6 +1622,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "2026-11-22T18:37:48+05:00"
       ],
       "title": "Last Date"
      },
@@ -1314,6 +1637,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "92906c0382547f30a03b3176f2f2429be6b54dce"
+      ],
       "title": "Last Sha"
      },
      "lib_version": {
@@ -1324,6 +1650,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "1.6"
       ],
       "title": "Lib Version"
      },
@@ -1336,6 +1665,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "mangadex"
+      ],
       "title": "Module"
      },
      "name": {
@@ -1347,9 +1679,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "MangaDex"
+      ],
       "title": "Name"
      },
      "origin": {
+      "examples": [
+       "keiyoushi/extensions-source"
+      ],
       "title": "Origin",
       "type": "string"
      },
@@ -1362,9 +1700,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "eu.kanade.tachiyomi.extension.all.mangadex"
+      ],
       "title": "Package Name"
      },
      "path": {
+      "examples": [
+       "src/all/mangadex"
+      ],
       "title": "Path",
       "type": "string"
      },
@@ -1385,6 +1729,9 @@
        }
       ],
       "description": "null: not removed",
+      "examples": [
+       null
+      ],
       "title": "Removed Sha"
      },
      "source_url": {
@@ -1395,6 +1742,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "https://github.com/keiyoushi/extensions-source/tree/main/src/all/mangadex"
       ],
       "title": "Source Url"
      },
@@ -1456,6 +1806,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       null
+      ],
       "title": "Theme"
      },
      "theme_folder": {
@@ -1478,6 +1831,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       null
+      ],
       "title": "Theme Path"
      },
      "version_code": {
@@ -1488,6 +1844,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       5
       ],
       "title": "Version Code"
      }
@@ -1532,18 +1891,30 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2026-10-16T21:28:13+05:00"
+      ],
       "title": "From Date"
      },
      "from_sha": {
+      "examples": [
+       "92906c0382547f30a03b3176f2f2429be6b54dce"
+      ],
       "title": "From Sha",
       "type": "string"
      },
      "host": {
+      "examples": [
+       "mangadex.org"
+      ],
       "title": "Host",
       "type": "string"
      },
      "role": {
       "description": "base, mirror or deeplink",
+      "examples": [
+       "base"
+      ],
       "title": "Role",
       "type": "string"
      },
@@ -1555,6 +1926,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       null
       ],
       "title": "To Date"
      },
@@ -1568,6 +1942,9 @@
        }
       ],
       "description": "null: still declared",
+      "examples": [
+       null
+      ],
       "title": "To Sha"
      }
     },
@@ -1593,6 +1970,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "NaruHikaGame"
+      ],
       "title": "Author"
      },
      "closed_at": {
@@ -1604,23 +1984,40 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2026-11-20T05:15:02Z"
+      ],
       "title": "Closed At"
      },
      "confidence": {
+      "examples": [
+       0.85
+      ],
       "title": "Confidence",
       "type": "number"
      },
      "created_at": {
+      "examples": [
+       "2026-11-19T19:42:12Z"
+      ],
       "title": "Created At",
       "type": "string"
      },
      "manual": {
       "description": "Linked by hand",
+      "examples": [
+       false
+      ],
       "title": "Manual",
       "type": "boolean"
      },
      "methods": {
       "description": "How it was linked: title-name, form-name, domain, closing-pr, manual",
+      "examples": [
+       [
+        "form-name"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -1628,15 +2025,24 @@
       "type": "array"
      },
      "number": {
+      "examples": [
+       21246
+      ],
       "title": "Number",
       "type": "integer"
      },
      "state": {
       "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "examples": [
+       "CLOSED"
+      ],
       "title": "State",
       "type": "string"
      },
      "title": {
+      "examples": [
+       "Kaguya 403 Forbbiden issue"
+      ],
       "title": "Title",
       "type": "string"
      }
@@ -1666,6 +2072,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "src"
+      ],
       "title": "Kind"
      },
      "lang": {
@@ -1676,6 +2085,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "en"
       ],
       "title": "Lang"
      },
@@ -1688,9 +2100,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "Hiperdex"
+      ],
       "title": "Name"
      },
      "path": {
+      "examples": [
+       "src/en/hiperdex"
+      ],
       "title": "Path",
       "type": "string"
      },
@@ -1703,6 +2121,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "hiper"
+      ],
       "title": "Theme"
      },
      "theme_path": {
@@ -1713,6 +2134,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "lib-multisrc/hiper"
       ],
       "title": "Theme Path"
      }
@@ -1739,6 +2163,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "hazptr"
+      ],
       "title": "Author"
      },
      "closed_at": {
@@ -1750,13 +2177,22 @@
         "type": "null"
        }
       ],
+      "examples": [
+       null
+      ],
       "title": "Closed At"
      },
      "created_at": {
+      "examples": [
+       "2026-11-21T16:15:36Z"
+      ],
       "title": "Created At",
       "type": "string"
      },
      "folder_count": {
+      "examples": [
+       9
+      ],
       "title": "Folder Count",
       "type": "integer"
      },
@@ -1769,23 +2205,38 @@
         "type": "null"
        }
       ],
+      "examples": [
+       null
+      ],
       "title": "Merged At"
      },
      "number": {
+      "examples": [
+       21303
+      ],
       "title": "Number",
       "type": "integer"
      },
      "single_target": {
       "description": "The PR changes this folder only",
+      "examples": [
+       false
+      ],
       "title": "Single Target",
       "type": "boolean"
      },
      "state": {
       "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "examples": [
+       "OPEN"
+      ],
       "title": "State",
       "type": "string"
      },
      "title": {
+      "examples": [
+       "Core: add describe to store structured series details in memo"
+      ],
       "title": "Title",
       "type": "string"
      }
@@ -1828,6 +2279,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "NaruHikaGame"
+      ],
       "title": "Author"
      },
      "body": {
@@ -1838,6 +2292,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "Kaguya gives 403 Forbidden when browsing"
       ],
       "title": "Body"
      },
@@ -1850,13 +2307,24 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2026-11-20T05:15:02Z"
+      ],
       "title": "Closed At"
      },
      "created_at": {
+      "examples": [
+       "2026-11-19T19:42:12Z"
+      ],
       "title": "Created At",
       "type": "string"
      },
      "labels": {
+      "examples": [
+       [
+        "Bug"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -1872,10 +2340,16 @@
       "type": "array"
      },
      "number": {
+      "examples": [
+       21246
+      ],
       "title": "Number",
       "type": "integer"
      },
      "origin": {
+      "examples": [
+       "keiyoushi/extensions-source"
+      ],
       "title": "Origin",
       "type": "string"
      },
@@ -1897,10 +2371,16 @@
      },
      "state": {
       "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "examples": [
+       "CLOSED"
+      ],
       "title": "State",
       "type": "string"
      },
      "title": {
+      "examples": [
+       "Kaguya 403 Forbbiden issue"
+      ],
       "title": "Title",
       "type": "string"
      }
@@ -1934,9 +2414,15 @@
        }
       ],
       "description": "Who linked it by hand",
+      "examples": [
+       null
+      ],
       "title": "By Login"
      },
      "confidence": {
+      "examples": [
+       0.8
+      ],
       "title": "Confidence",
       "type": "number"
      },
@@ -1949,6 +2435,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "src"
+      ],
       "title": "Kind"
      },
      "lang": {
@@ -1960,14 +2449,25 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "id"
+      ],
       "title": "Lang"
      },
      "manual": {
+      "examples": [
+       false
+      ],
       "title": "Manual",
       "type": "boolean"
      },
      "methods": {
       "description": "title-name, form-name, domain, closing-pr, manual",
+      "examples": [
+       [
+        "closing-pr"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -1983,9 +2483,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "Kaguya"
+      ],
       "title": "Name"
      },
      "path": {
+      "examples": [
+       "src/id/kaguya"
+      ],
       "title": "Path",
       "type": "string"
      },
@@ -1998,6 +2504,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       null
+      ],
       "title": "Theme"
      },
      "theme_path": {
@@ -2008,6 +2517,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       null
       ],
       "title": "Theme Path"
      }
@@ -2038,18 +2550,30 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2026-11-20T05:15:01Z"
+      ],
       "title": "Merged At"
      },
      "number": {
+      "examples": [
+       21247
+      ],
       "title": "Number",
       "type": "integer"
      },
      "state": {
       "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "examples": [
+       "MERGED"
+      ],
       "title": "State",
       "type": "string"
      },
      "title": {
+      "examples": [
+       "Kaguya: fix 403"
+      ],
       "title": "Title",
       "type": "string"
      }
@@ -2075,6 +2599,9 @@
        }
       ],
       "description": "Why: left (it still has a host the other side left) or older (it adopted its host first)",
+      "examples": [
+       null
+      ],
       "title": "Basis"
      },
      "behind": {
@@ -2087,6 +2614,9 @@
        }
       ],
       "description": "The repo that probably has the old domain (null: unknown)",
+      "examples": [
+       null
+      ],
       "title": "Behind"
      },
      "by_login": {
@@ -2097,6 +2627,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       null
       ],
       "title": "By Login"
      },
@@ -2110,9 +2643,15 @@
        }
       ],
       "description": "The host that linked them",
+      "examples": [
+       "mangadex.org"
+      ],
       "title": "Host"
      },
      "manual": {
+      "examples": [
+       false
+      ],
       "title": "Manual",
       "type": "boolean"
      },
@@ -2131,6 +2670,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2026-11-08T13:27:22+05:00"
+      ],
       "title": "Since"
      },
      "source_link": {
@@ -2139,6 +2681,9 @@
      },
      "state": {
       "description": "same (a host in common), drift (none in common) or gone (a side was removed)",
+      "examples": [
+       "same"
+      ],
       "title": "State",
       "type": "string"
      }
@@ -2169,10 +2714,16 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2026-10-12"
+      ],
       "title": "Since"
      },
      "status": {
       "description": "Monitor verdict: pass, partial, fail, maybe, untestable or unsupported (null: not monitored)",
+      "examples": [
+       "pass"
+      ],
       "title": "Status",
       "type": "string"
      }
@@ -2195,10 +2746,16 @@
       "type": "object"
      },
      "target": {
+      "examples": [
+       "keiyoushi/extensions-source"
+      ],
       "title": "Target",
       "type": "string"
      },
      "total": {
+      "examples": [
+       107
+      ],
       "title": "Total",
       "type": "integer"
      }
@@ -2222,6 +2779,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       null
+      ],
       "title": "Content Warning"
      },
      "downloads_7d": {
@@ -2233,9 +2793,17 @@
         "type": "null"
        }
       ],
+      "examples": [
+       null
+      ],
       "title": "Downloads 7D"
      },
      "hosts": {
+      "examples": [
+       [
+        "dxdfansub.com"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -2251,6 +2819,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "https://cdn.jsdelivr.net/gh/manga-download/haruneko@master/web/src/engine/websites/DxdFansub.webp"
+      ],
       "title": "Icon Url"
      },
      "lang": {
@@ -2261,6 +2832,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "tr"
       ],
       "title": "Lang"
      },
@@ -2273,9 +2847,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "DxD Fansub"
+      ],
       "title": "Name"
      },
      "path": {
+      "examples": [
+       "web/src/engine/websites/DxdFansub"
+      ],
       "title": "Path",
       "type": "string"
      },
@@ -2304,7 +2884,10 @@
         "type": "null"
        }
       ],
-      "description": "An unlinked target folder with the same name: maybe the same site"
+      "description": "An unlinked target folder with the same name: maybe the same site",
+      "examples": [
+       null
+      ]
      },
      "status": {
       "anyOf": [
@@ -2316,6 +2899,9 @@
        }
       ],
       "description": "Monitor verdict: pass, partial, fail, maybe, untestable or unsupported (null: not monitored)",
+      "examples": [
+       null
+      ],
       "title": "Status"
      },
      "status_since": {
@@ -2326,6 +2912,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       null
       ],
       "title": "Status Since"
      }
@@ -2378,9 +2967,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "DxD Fansub"
+      ],
       "title": "Name"
      },
      "path": {
+      "examples": [
+       "src/tr/dxdfansub"
+      ],
       "title": "Path",
       "type": "string"
      }
@@ -2403,20 +2998,32 @@
         "type": "null"
        }
       ],
+      "examples": [
+       null
+      ],
       "title": "Error"
      },
      "label": {
       "description": "The step in words",
+      "examples": [
+       "Browse"
+      ],
       "title": "Label",
       "type": "string"
      },
      "op": {
       "description": "Monitor step: browse, latest, search, details, chapters, read, pages",
+      "examples": [
+       "browse"
+      ],
       "title": "Op",
       "type": "string"
      },
      "status": {
       "description": "pass, fail, maybe, skip, na, ...",
+      "examples": [
+       "pass"
+      ],
       "title": "Status",
       "type": "string"
      },
@@ -2430,6 +3037,9 @@
        }
       ],
       "description": "The result in words",
+      "examples": [
+       "Works"
+      ],
       "title": "Status Label"
      }
     },
@@ -2455,28 +3065,46 @@
        }
       ],
       "description": "Commit the extractor last read",
+      "examples": [
+       "92906c0382547f30a03b3176f2f2429be6b54dce"
+      ],
       "title": "Anchor Sha"
      },
      "default_branch": {
+      "examples": [
+       "main"
+      ],
       "title": "Default Branch",
       "type": "string"
      },
      "extensions": {
       "description": "Current extensions",
+      "examples": [
+       1727
+      ],
       "title": "Extensions",
       "type": "integer"
      },
      "id": {
       "description": "A repository, owner/repo (GET /api/v1/origins)",
+      "examples": [
+       "keiyoushi/extensions-source"
+      ],
       "title": "Id",
       "type": "string"
      },
      "kind": {
       "description": "Its layout: keiyoushi-gradle or haruneko-ts",
+      "examples": [
+       "keiyoushi-gradle"
+      ],
       "title": "Kind",
       "type": "string"
      },
      "repo_url": {
+      "examples": [
+       "https://github.com/keiyoushi/extensions-source"
+      ],
       "title": "Repo Url",
       "type": "string"
      }
@@ -2503,17 +3131,29 @@
         "type": "null"
        }
       ],
+      "examples": [
+       null
+      ],
       "title": "Body"
      },
      "commit_date": {
+      "examples": [
+       "2026-02-15T08:16:27+00:00"
+      ],
       "title": "Commit Date",
       "type": "string"
      },
      "sha": {
+      "examples": [
+       "92906c0382547f30a03b3176f2f2429be6b54dce"
+      ],
       "title": "Sha",
       "type": "string"
      },
      "subject": {
+      "examples": [
+       "Update Hiperdex DateFormat (#13359)"
+      ],
       "title": "Subject",
       "type": "string"
      }
@@ -2531,6 +3171,9 @@
     "properties": {
      "name": {
       "description": "Use it in `my_tag=` and in my-tags/{tag}/{path}",
+      "examples": [
+       "TODO"
+      ],
       "title": "Name",
       "type": "string"
      }
@@ -2545,6 +3188,12 @@
     "properties": {
      "labels": {
       "description": "Issue labels that put this tag on the folders of an open issue",
+      "examples": [
+       [
+        "Cloudflare protected",
+        "Cloudflare"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -2553,6 +3202,9 @@
      },
      "name": {
       "description": "Use it in `tag=` and in tags/{tag}/{path}",
+      "examples": [
+       "CF"
+      ],
       "title": "Name",
       "type": "string"
      }
@@ -2575,6 +3227,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "KurtzPT"
+      ],
       "title": "Author"
      },
      "body": {
@@ -2585,6 +3240,9 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       "Fixes the chapter dates"
       ],
       "title": "Body"
      },
@@ -2597,6 +3255,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2026-02-15T08:16:27Z"
+      ],
       "title": "Closed At"
      },
      "commits": {
@@ -2608,6 +3269,9 @@
       "type": "array"
      },
      "created_at": {
+      "examples": [
+       "2026-02-14T01:37:44Z"
+      ],
       "title": "Created At",
       "type": "string"
      },
@@ -2635,13 +3299,22 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2026-02-15T08:16:27Z"
+      ],
       "title": "Merged At"
      },
      "number": {
+      "examples": [
+       13359
+      ],
       "title": "Number",
       "type": "integer"
      },
      "origin": {
+      "examples": [
+       "keiyoushi/extensions-source"
+      ],
       "title": "Origin",
       "type": "string"
      },
@@ -2655,14 +3328,23 @@
        }
       ],
       "description": "The one folder it changes, if it changes exactly one",
+      "examples": [
+       "src/en/hiperdex"
+      ],
       "title": "Single Target"
      },
      "state": {
       "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "examples": [
+       "MERGED"
+      ],
       "title": "State",
       "type": "string"
      },
      "title": {
+      "examples": [
+       "Update Hiperdex DateFormat"
+      ],
       "title": "Title",
       "type": "string"
      }
@@ -2689,10 +3371,18 @@
     "properties": {
      "decided": {
       "description": "The recheck set the status; else the sweep's verdict stands",
+      "examples": [
+       true
+      ],
       "title": "Decided",
       "type": "boolean"
      },
      "notes": {
+      "examples": [
+       [
+        "Cloudflare shows its checkbox: in the app, tick it in WebView"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -2724,6 +3414,9 @@
        }
       ],
       "description": "In words",
+      "examples": [
+       "Still turned away through our proxies at Load pages"
+      ],
       "title": "Verdict"
      }
     },
@@ -2741,6 +3434,9 @@
     "properties": {
      "from": {
       "description": "Proxy country",
+      "examples": [
+       "FR"
+      ],
       "title": "From",
       "type": "string"
      },
@@ -2753,11 +3449,17 @@
      },
      "status": {
       "description": "pass, fail, maybe or error",
+      "examples": [
+       "maybe"
+      ],
       "title": "Status",
       "type": "string"
      },
      "text": {
       "description": "The outcome in words",
+      "examples": [
+       "turned away too (at Load pages)"
+      ],
       "title": "Text",
       "type": "string"
      }
@@ -2774,15 +3476,24 @@
    "Ref": {
     "properties": {
      "number": {
+      "examples": [
+       21246
+      ],
       "title": "Number",
       "type": "integer"
      },
      "state": {
       "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "examples": [
+       "CLOSED"
+      ],
       "title": "State",
       "type": "string"
      },
      "title": {
+      "examples": [
+       "Kaguya 403 Forbbiden issue"
+      ],
       "title": "Title",
       "type": "string"
      }
@@ -2798,6 +3509,9 @@
    "RemovedLink": {
     "properties": {
      "at": {
+      "examples": [
+       "2026-11-22T23:48:32+00:00"
+      ],
       "title": "At",
       "type": "string"
      },
@@ -2810,9 +3524,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "Starmania"
+      ],
       "title": "By Login"
      },
      "path": {
+      "examples": [
+       "src/id/kaguyaa"
+      ],
       "title": "Path",
       "type": "string"
      }
@@ -2836,6 +3556,9 @@
       "type": "array"
      },
      "domains_total": {
+      "examples": [
+       3
+      ],
       "title": "Domains Total",
       "type": "integer"
      },
@@ -2848,6 +3571,9 @@
       "type": "array"
      },
      "extensions_total": {
+      "examples": [
+       2
+      ],
       "title": "Extensions Total",
       "type": "integer"
      },
@@ -2860,7 +3586,10 @@
         "type": "null"
        }
       ],
-      "description": "For #123 or 123"
+      "description": "For #123 or 123",
+      "examples": [
+       null
+      ]
      },
      "pr": {
       "anyOf": [
@@ -2870,9 +3599,15 @@
        {
         "type": "null"
        }
+      ],
+      "examples": [
+       null
       ]
      },
      "query": {
+      "examples": [
+       "mangadex"
+      ],
       "title": "Query",
       "type": "string"
      }
@@ -2893,6 +3628,11 @@
     "properties": {
      "hosts": {
       "description": "Current hosts",
+      "examples": [
+       [
+        "mangadex.org"
+       ]
+      ],
       "items": {
        "type": "string"
       },
@@ -2908,6 +3648,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "all"
+      ],
       "title": "Lang"
      },
      "name": {
@@ -2919,9 +3662,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "MangaDex"
+      ],
       "title": "Name"
      },
      "origin": {
+      "examples": [
+       "manga-download/haruneko"
+      ],
       "title": "Origin",
       "type": "string"
      },
@@ -2934,9 +3683,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "web/src/engine/websites/MangaDex"
+      ],
       "title": "Path"
      },
      "stable_id": {
+      "examples": [
+       "mangadex"
+      ],
       "title": "Stable Id",
       "type": "string"
      }
@@ -2955,20 +3710,32 @@
    "SiteRequest": {
     "properties": {
      "number": {
+      "examples": [
+       21004
+      ],
       "title": "Number",
       "type": "integer"
      },
      "removed": {
       "description": "Labelled \"Previously deleted\": the repo dropped the site on purpose",
+      "examples": [
+       false
+      ],
       "title": "Removed",
       "type": "boolean"
      },
      "state": {
       "description": "GitHub state: OPEN, CLOSED (issues) or OPEN, CLOSED, MERGED (PRs)",
+      "examples": [
+       "CLOSED"
+      ],
       "title": "State",
       "type": "string"
      },
      "title": {
+      "examples": [
+       "New source"
+      ],
       "title": "Title",
       "type": "string"
      }
@@ -2993,6 +3760,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "https://mangadex.org"
+      ],
       "title": "Base Url"
      },
      "lang": {
@@ -3004,9 +3774,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "all"
+      ],
       "title": "Lang"
      },
      "mirror_urls": {
+      "examples": [
+       []
+      ],
       "items": {
        "type": "string"
       },
@@ -3022,9 +3798,15 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "MangaDex"
+      ],
       "title": "Name"
      },
      "source_id": {
+      "examples": [
+       "4638673959522768501"
+      ],
       "title": "Source Id",
       "type": "string"
      },
@@ -3038,6 +3820,9 @@
        }
       ],
       "description": "The id source links use",
+      "examples": [
+       "4638673959522768501"
+      ],
       "title": "Stable Id"
      },
      "url_type": {
@@ -3050,6 +3835,9 @@
        }
       ],
       "description": "static, custom or mirrors",
+      "examples": [
+       "static"
+      ],
       "title": "Url Type"
      }
     },
@@ -3087,6 +3875,9 @@
        }
       ],
       "description": "The manual decision now in place (null: automatic)",
+      "examples": [
+       "add"
+      ],
       "title": "Override"
      }
     },
@@ -3118,11 +3909,17 @@
     "properties": {
      "origin": {
       "description": "A repository, owner/repo (GET /api/v1/origins)",
+      "examples": [
+       "keiyoushi/extensions-source"
+      ],
       "title": "Origin",
       "type": "string"
      },
      "stable_id": {
       "description": "A source's stable_id (folder `sources`)",
+      "examples": [
+       "6404943692147160087"
+      ],
       "title": "Stable Id",
       "type": "string"
      }
@@ -3137,6 +3934,9 @@
    "Status": {
     "properties": {
      "date": {
+      "examples": [
+       "2026-11-22"
+      ],
       "title": "Date",
       "type": "string"
      },
@@ -3166,15 +3966,24 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2026-10-12"
+      ],
       "title": "Since"
      },
      "since_open": {
       "description": "The status dates from the first monitor run, so it may be older",
+      "examples": [
+       false
+      ],
       "title": "Since Open",
       "type": "boolean"
      },
      "status": {
       "description": "Monitor verdict: pass, partial, fail, maybe, untestable or unsupported (null: not monitored)",
+      "examples": [
+       "pass"
+      ],
       "title": "Status",
       "type": "string"
      }
@@ -3193,10 +4002,16 @@
    "StatusPoint": {
     "properties": {
      "date": {
+      "examples": [
+       "2026-11-22"
+      ],
       "title": "Date",
       "type": "string"
      },
      "status": {
+      "examples": [
+       "pass"
+      ],
       "title": "Status",
       "type": "string"
      }
@@ -3219,6 +4034,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "2026-11-22T23:48:32+00:00"
+      ],
       "title": "At"
      },
      "by_login": {
@@ -3230,14 +4048,23 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "Starmania"
+      ],
       "title": "By Login"
      },
      "color": {
       "description": "A colour name, \"\" for none",
+      "examples": [
+       "red"
+      ],
       "title": "Color",
       "type": "string"
      },
      "id": {
+      "examples": [
+       1
+      ],
       "title": "Id",
       "type": "integer"
      },
@@ -3251,11 +4078,17 @@
      },
      "label": {
       "description": "The tag's name",
+      "examples": [
+       "Is hostile"
+      ],
       "title": "Label",
       "type": "string"
      },
      "manual": {
       "description": "Put on by hand (by_login, at); else only inherited from issues",
+      "examples": [
+       true
+      ],
       "title": "Manual",
       "type": "boolean"
      },
@@ -3264,6 +4097,9 @@
       "enum": [
        "public",
        "private"
+      ],
+      "examples": [
+       "public"
       ],
       "title": "Scope",
       "type": "string"
@@ -3285,20 +4121,32 @@
    "TagFacet": {
     "properties": {
      "color": {
+      "examples": [
+       "red"
+      ],
       "title": "Color",
       "type": "string"
      },
      "label": {
       "description": "The tag's name, for `tag=` or `my_tag=`",
+      "examples": [
+       "Is hostile"
+      ],
       "title": "Label",
       "type": "string"
      },
      "n": {
+      "examples": [
+       3
+      ],
       "title": "N",
       "type": "integer"
      },
      "value": {
       "description": "The tag's id",
+      "examples": [
+       1
+      ],
       "title": "Value",
       "type": "integer"
      }
@@ -3354,17 +4202,29 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "alice"
+      ],
       "title": "Author"
      },
      "created_at": {
+      "examples": [
+       "2026-11-02T10:00:00Z"
+      ],
       "title": "Created At",
       "type": "string"
      },
      "number": {
+      "examples": [
+       21004
+      ],
       "title": "Number",
       "type": "integer"
      },
      "title": {
+      "examples": [
+       "MangaDex behind Cloudflare"
+      ],
       "title": "Title",
       "type": "string"
      }
@@ -3389,6 +4249,9 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "en"
+      ],
       "title": "Lang"
      },
      "name": {
@@ -3400,13 +4263,22 @@
         "type": "null"
        }
       ],
+      "examples": [
+       "Manhwatop"
+      ],
       "title": "Name"
      },
      "path": {
+      "examples": [
+       "src/en/manhwatop"
+      ],
       "title": "Path",
       "type": "string"
      },
      "removed": {
+      "examples": [
+       false
+      ],
       "title": "Removed",
       "type": "boolean"
      },
@@ -3420,6 +4292,9 @@
        }
       ],
       "description": "Monitor verdict: pass, partial, fail, maybe, untestable or unsupported (null: not monitored)",
+      "examples": [
+       "pass"
+      ],
       "title": "Status"
      }
     },
@@ -3458,6 +4333,9 @@
       "type": "array"
      },
      "path": {
+      "examples": [
+       "lib-multisrc/madara"
+      ],
       "title": "Path",
       "type": "string"
      }
@@ -3475,11 +4353,17 @@
     "properties": {
      "downloads": {
       "description": "Download counts exist for it",
+      "examples": [
+       true
+      ],
       "title": "Downloads",
       "type": "boolean"
      },
      "status": {
       "description": "The monitor covers this repository",
+      "examples": [
+       true
+      ],
       "title": "Status",
       "type": "boolean"
      }
@@ -3591,6 +4475,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3633,6 +4530,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3643,6 +4543,9 @@
      "403": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "this account can't edit links; an admin has to grant it"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3653,6 +4556,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "ignored drift row not found"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3663,6 +4569,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3708,6 +4627,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3718,6 +4640,9 @@
      "403": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "this account can't edit links; an admin has to grant it"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3728,6 +4653,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "drift row not found"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3738,6 +4666,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3836,6 +4777,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "origin keiyoushi/extension-source not found"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3846,6 +4790,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3914,6 +4871,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3924,6 +4884,9 @@
      "403": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "this account can't edit links; an admin has to grant it"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3934,6 +4897,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3979,6 +4955,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3989,6 +4968,9 @@
      "403": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "this account can't edit links; an admin has to grant it"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -3999,6 +4981,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "source manga-download/haruneko mangadx not found"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4009,6 +4994,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4056,6 +5054,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4066,6 +5067,9 @@
      "403": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "this account can't edit links; an admin has to grant it"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4076,6 +5080,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4143,6 +5160,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4168,23 +5188,29 @@
     "operationId": "api_domains_api_v1__owner___repo__domains_get",
     "parameters": [
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -4245,6 +5271,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "unknown origin keiyoushi/extension-source"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4255,6 +5284,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4281,28 +5323,37 @@
       "required": true,
       "schema": {
        "description": "A host; its subdomains are included",
+       "examples": [
+        "mangadex.org"
+       ],
        "title": "Host",
        "type": "string"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -4322,6 +5373,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "unknown origin keiyoushi/extension-source"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4332,6 +5386,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -4352,23 +5419,29 @@
     "operationId": "api_extensions_api_v1__owner___repo__extensions_get",
     "parameters": [
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -4600,6 +5673,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4610,6 +5686,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "no public tag named 'Is hostle'"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4620,6 +5699,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4645,45 +5737,57 @@
     "operationId": "api_extension_api_v1__owner___repo__extensions__lang___module__get",
     "parameters": [
      {
-      "description": "Its language folder, e.g. en or all",
+      "description": "Its language folder",
       "in": "path",
       "name": "lang",
       "required": true,
       "schema": {
-       "description": "Its language folder, e.g. en or all",
+       "description": "Its language folder",
+       "examples": [
+        "all"
+       ],
        "title": "Lang",
        "type": "string"
       }
      },
      {
-      "description": "Its module folder, e.g. mangadex",
+      "description": "Its module folder",
       "in": "path",
       "name": "module",
       "required": true,
       "schema": {
-       "description": "Its module folder, e.g. mangadex",
+       "description": "Its module folder",
+       "examples": [
+        "mangadex"
+       ],
        "title": "Module",
        "type": "string"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -4703,6 +5807,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4713,6 +5820,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "extension not found"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4723,6 +5833,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -4748,23 +5871,29 @@
     "operationId": "api_facets_api_v1__owner___repo__facets_get",
     "parameters": [
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -4784,6 +5913,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4794,6 +5926,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "unknown origin keiyoushi/extension-source"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4804,6 +5939,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -4835,28 +5983,37 @@
       "required": true,
       "schema": {
        "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "examples": [
+        "src/all/mangadex"
+       ],
        "title": "Path",
        "type": "string"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -4876,6 +6033,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4886,6 +6046,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "folder not found"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4896,6 +6059,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -4925,28 +6101,37 @@
       "name": "number",
       "required": true,
       "schema": {
+       "examples": [
+        21246
+       ],
        "title": "Number",
        "type": "integer"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -4966,6 +6151,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "issue not found"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -4976,6 +6164,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -5011,28 +6212,37 @@
       "required": true,
       "schema": {
        "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "examples": [
+        "src/all/mangadex"
+       ],
        "title": "Path",
        "type": "string"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -5052,6 +6262,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5062,6 +6275,9 @@
      "403": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "this account can't edit links; an admin has to grant it"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5072,6 +6288,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "unknown origin keiyoushi/extension-source"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5082,6 +6301,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -5120,28 +6352,37 @@
       "required": true,
       "schema": {
        "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "examples": [
+        "src/all/mangadex"
+       ],
        "title": "Path",
        "type": "string"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -5161,6 +6402,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5171,6 +6415,9 @@
      "403": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "this account can't edit links; an admin has to grant it"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5181,6 +6428,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "folder src/en/fo not found"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5191,6 +6441,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -5231,28 +6494,37 @@
       "required": true,
       "schema": {
        "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "examples": [
+        "src/all/mangadex"
+       ],
        "title": "Path",
        "type": "string"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -5272,6 +6544,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5282,6 +6557,9 @@
      "403": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "this account can't edit links; an admin has to grant it"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5292,6 +6570,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "unknown origin keiyoushi/extension-source"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5302,6 +6583,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -5333,6 +6627,9 @@
       "required": true,
       "schema": {
        "description": "The tag's name, any case",
+       "examples": [
+        "Is hostile"
+       ],
        "title": "Tag",
        "type": "string"
       }
@@ -5344,28 +6641,37 @@
       "required": true,
       "schema": {
        "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "examples": [
+        "src/all/mangadex"
+       ],
        "title": "Path",
        "type": "string"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -5389,6 +6695,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5399,6 +6708,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "no private tag of yours named 'TODO'"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5409,6 +6721,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -5438,6 +6763,9 @@
       "required": true,
       "schema": {
        "description": "The tag's name, any case",
+       "examples": [
+        "Is hostile"
+       ],
        "title": "Tag",
        "type": "string"
       }
@@ -5449,28 +6777,37 @@
       "required": true,
       "schema": {
        "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "examples": [
+        "src/all/mangadex"
+       ],
        "title": "Path",
        "type": "string"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -5494,6 +6831,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5504,6 +6844,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "no private tag of yours named 'TODO'"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5514,6 +6857,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -5543,28 +6899,37 @@
       "name": "number",
       "required": true,
       "schema": {
+       "examples": [
+        13359
+       ],
        "title": "Number",
        "type": "integer"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -5584,6 +6949,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "pull request not found"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5594,6 +6962,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -5614,23 +6995,29 @@
     "operationId": "api_search_api_v1__owner___repo__search_get",
     "parameters": [
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -5642,6 +7029,9 @@
       "required": true,
       "schema": {
        "description": "#123 or 123 (an issue or PR), a host, a name or a source id",
+       "examples": [
+        "mangadex"
+       ],
        "title": "Q",
        "type": "string"
       }
@@ -5661,6 +7051,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "unknown origin keiyoushi/extension-source"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5671,6 +7064,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5697,6 +7103,9 @@
       "required": true,
       "schema": {
        "description": "The tag's name, any case",
+       "examples": [
+        "Is hostile"
+       ],
        "title": "Tag",
        "type": "string"
       }
@@ -5708,28 +7117,37 @@
       "required": true,
       "schema": {
        "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "examples": [
+        "src/all/mangadex"
+       ],
        "title": "Path",
        "type": "string"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -5753,6 +7171,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5763,6 +7184,9 @@
      "403": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "this account can't edit links; an admin has to grant it"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5773,6 +7197,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "no public tag named 'Is hostle'"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5783,6 +7210,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -5812,6 +7252,9 @@
       "required": true,
       "schema": {
        "description": "The tag's name, any case",
+       "examples": [
+        "Is hostile"
+       ],
        "title": "Tag",
        "type": "string"
       }
@@ -5823,28 +7266,37 @@
       "required": true,
       "schema": {
        "description": "A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, web/src/engine/websites/Foo",
+       "examples": [
+        "src/all/mangadex"
+       ],
        "title": "Path",
        "type": "string"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -5868,6 +7320,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5878,6 +7333,9 @@
      "403": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "this account can't edit links; an admin has to grant it"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5888,6 +7346,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "no public tag named 'Is hostle'"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5898,6 +7359,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }
@@ -5923,34 +7397,43 @@
     "operationId": "api_theme_api_v1__owner___repo__themes__name__get",
     "parameters": [
      {
-      "description": "The theme's name, e.g. madara",
+      "description": "The theme's name",
       "in": "path",
       "name": "name",
       "required": true,
       "schema": {
-       "description": "The theme's name, e.g. madara",
+       "description": "The theme's name",
+       "examples": [
+        "madara"
+       ],
        "title": "Name",
        "type": "string"
       }
      },
      {
-      "description": "Repository owner, e.g. keiyoushi",
+      "description": "Repository owner",
       "in": "path",
       "name": "owner",
       "required": true,
       "schema": {
-       "description": "Repository owner, e.g. keiyoushi",
+       "description": "Repository owner",
+       "examples": [
+        "keiyoushi"
+       ],
        "title": "Owner",
        "type": "string"
       }
      },
      {
-      "description": "Repository name, e.g. extensions-source",
+      "description": "Repository name",
       "in": "path",
       "name": "repo",
       "required": true,
       "schema": {
-       "description": "Repository name, e.g. extensions-source",
+       "description": "Repository name",
+       "examples": [
+        "extensions-source"
+       ],
        "title": "Repo",
        "type": "string"
       }
@@ -5970,6 +7453,9 @@
      "401": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "a valid Bearer token is required (create one on /account)"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5980,6 +7466,9 @@
      "404": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": "theme not found"
+        },
         "schema": {
          "$ref": "#/components/schemas/Error"
         }
@@ -5990,6 +7479,19 @@
      "422": {
       "content": {
        "application/json": {
+        "example": {
+         "detail": [
+          {
+           "input": "size",
+           "loc": [
+            "query",
+            "sort"
+           ],
+           "msg": "Input should be 'downloads', 'name', 'status', 'issues', 'updated' or 'broken'",
+           "type": "literal_error"
+          }
+         ]
+        },
         "schema": {
          "$ref": "#/components/schemas/HTTPValidationError"
         }

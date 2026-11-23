@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi import Path as PathParam
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -41,8 +42,8 @@ templates.env.filters["num"] = lambda n: "–" if n is None else f"{n:,}".replac
 
 
 
-def origin_of(owner: Annotated[str, PathParam(description="Repository owner, e.g. keiyoushi")],
-              repo: Annotated[str, PathParam(description="Repository name, e.g. extensions-source")]) -> str:
+def origin_of(owner: Annotated[str, PathParam(description="Repository owner", examples=["keiyoushi"])],
+              repo: Annotated[str, PathParam(description="Repository name", examples=["extensions-source"])]) -> str:
     origin = f"{owner}/{repo}"
     if not db().execute("SELECT 1 FROM origin WHERE id = ?", (origin,)).fetchone():
         raise HTTPException(404, f"unknown origin {origin}")
@@ -66,15 +67,39 @@ ERRORS = {
 }
 
 
-def errors(*codes: int) -> dict:
-    return {code: {"model": M.Error, "description": ERRORS[code]} for code in codes}
+ERROR_EXAMPLES = {
+    401: "a valid Bearer token is required (create one on /account)", 403: "this account can't edit links; an admin has to grant it",
+    404: "unknown origin keiyoushi/extension-source",
+    422: [{"type": "literal_error", "loc": ["query", "sort"], "msg": "Input should be 'downloads', 'name', 'status', 'issues', "
+           "'updated' or 'broken'", "input": "size"}],
+}
 
 
-Owner = Annotated[str, PathParam(description="Repository owner, e.g. keiyoushi")]
-Repo = Annotated[str, PathParam(description="Repository name, e.g. extensions-source")]
+def errors(*codes: int, not_found: str | None = None) -> dict:
+    """Each code's error body, with a real example; not_found: the route's own 404 message."""
+    detail = lambda code: not_found if code == 404 and not_found else ERROR_EXAMPLES[code]
+    return {code: {"model": M.Error, "description": ERRORS[code],
+                   "content": {"application/json": {"example": {"detail": detail(code)}}}} for code in codes}
+
+
+def openapi() -> dict:
+    """FastAPI's schema, with a real example on the validation errors it declares by itself."""
+    if not app.openapi_schema:
+        spec = get_openapi(title=app.title, version=app.version, routes=app.routes)
+        for ops in spec["paths"].values():
+            for op in ops.values():
+                body = op.get("responses", {}).get("422", {}).get("content", {}).get("application/json")
+                if body is not None and "example" not in body:
+                    body["example"] = {"detail": ERROR_EXAMPLES[422]}
+        app.openapi_schema = spec
+    return app.openapi_schema
+
+
+Owner = Annotated[str, PathParam(description="Repository owner", examples=["keiyoushi"])]
+Repo = Annotated[str, PathParam(description="Repository name", examples=["extensions-source"])]
 FolderPath = Annotated[str, PathParam(description="A folder in the repository's layout, e.g. src/en/foo, lib-multisrc/madara, "
-                                                  "web/src/engine/websites/Foo")]
-TagName = Annotated[str, PathParam(description="The tag's name, any case")]
+                                                  "web/src/engine/websites/Foo", examples=["src/all/mangadex"])]
+TagName = Annotated[str, PathParam(description="The tag's name, any case", examples=["Is hostile"])]
 SORT = Literal["downloads", "name", "status", "issues", "updated", "broken"]
 TRI = 'Repeat it to pick several; prefix a value with "-" to exclude it'
 
@@ -92,7 +117,7 @@ def api_origins():
     return queries.origins(db())
 
 
-@api.get("/{owner}/{repo}/extensions", response_model=M.ExtensionPage, responses=errors(401, 404, 422), tags=["extensions"])
+@api.get("/{owner}/{repo}/extensions", response_model=M.ExtensionPage, responses=errors(401, 404, 422, not_found="no public tag named 'Is hostle'"), tags=["extensions"])
 def api_extensions(
     origin: str = Depends(origin_of),
     q: str | None = Query(None, description="Name (also without spaces or punctuation), module, path, source name or id, or current host"),
@@ -130,17 +155,17 @@ def api_facets(origin: str = Depends(origin_of), user: dict | None = Depends(api
 
 
 @api.get("/{owner}/{repo}/extensions/{lang}/{module}", response_model=M.Folder, response_model_exclude_unset=True,
-         responses=errors(401, 404), tags=["extensions"])
-def api_extension(lang: str = PathParam(description="Its language folder, e.g. en or all"),
-                  module: str = PathParam(description="Its module folder, e.g. mangadex"),
+         responses=errors(401, 404, not_found='extension not found'), tags=["extensions"])
+def api_extension(lang: str = PathParam(description="Its language folder", examples=["all"]),
+                  module: str = PathParam(description="Its module folder", examples=["mangadex"]),
                   origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
     """An extension of a repository laid out as src/{lang}/{module} (keiyoushi); the same as folders/src/{lang}/{module}."""
     return found(queries.folder(db(), origin, f"src/{lang}/{module}", account_id=user and user["id"]), "extension")
 
 
 @api.get("/{owner}/{repo}/themes/{name}", response_model=M.Folder, response_model_exclude_unset=True,
-         responses=errors(401, 404), tags=["extensions"])
-def api_theme(name: str = PathParam(description="The theme's name, e.g. madara"),
+         responses=errors(401, 404, not_found='theme not found'), tags=["extensions"])
+def api_theme(name: str = PathParam(description="The theme's name", examples=["madara"]),
               origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
     """A theme (multisrc) folder by name, whatever the layout, with the extensions built on it."""
     path = found(queries.theme_path(db(), origin, name), "theme")
@@ -148,7 +173,7 @@ def api_theme(name: str = PathParam(description="The theme's name, e.g. madara")
 
 
 @api.get("/{owner}/{repo}/folders/{path:path}", response_model=M.Folder, response_model_exclude_unset=True,
-         responses=errors(401, 404), tags=["extensions"])
+         responses=errors(401, 404, not_found='folder not found'), tags=["extensions"])
 def api_folder(path: FolderPath, origin: str = Depends(origin_of), user: dict | None = Depends(api_viewer)):
     """Any extension or theme folder: its sources, domains with their date ranges, status, downloads, issues, PRs,
     history (PR merge date and title, commit date and body) and links to other repositories. An extension on a theme
@@ -157,14 +182,14 @@ def api_folder(path: FolderPath, origin: str = Depends(origin_of), user: dict | 
     return found(queries.folder(db(), origin, path.strip("/"), account_id=user and user["id"]), "folder")
 
 
-@api.get("/{owner}/{repo}/issues/{number}", response_model=M.Issue, responses=errors(404), tags=["issues and PRs"])
-def api_issue(number: int, origin: str = Depends(origin_of)):
+@api.get("/{owner}/{repo}/issues/{number}", response_model=M.Issue, responses=errors(404, not_found='issue not found'), tags=["issues and PRs"])
+def api_issue(number: Annotated[int, PathParam(examples=[21246])], origin: str = Depends(origin_of)):
     """An issue with the folders it is linked to, how each link was found, and the PRs that close it."""
     return found(queries.issue(db(), origin, number), "issue")
 
 
-@api.get("/{owner}/{repo}/prs/{number}", response_model=M.PullRequest, responses=errors(404), tags=["issues and PRs"])
-def api_pr(number: int, origin: str = Depends(origin_of)):
+@api.get("/{owner}/{repo}/prs/{number}", response_model=M.PullRequest, responses=errors(404, not_found='pull request not found'), tags=["issues and PRs"])
+def api_pr(number: Annotated[int, PathParam(examples=[13359])], origin: str = Depends(origin_of)):
     """A PR with the folders it touches, the issues it closes and its commits on the default branch."""
     return found(queries.pull_request(db(), origin, number), "pull request")
 
@@ -177,13 +202,13 @@ def api_domains(origin: str = Depends(origin_of), q: str | None = Query(None, de
 
 
 @api.get("/{owner}/{repo}/domains/{host}", response_model=M.Domain, responses=errors(404), tags=["domains"])
-def api_domain(host: str = PathParam(description="A host; its subdomains are included"), origin: str = Depends(origin_of)):
+def api_domain(host: str = PathParam(description="A host; its subdomains are included", examples=["mangadex.org"]), origin: str = Depends(origin_of)):
     """The extensions that declared a host or one of its subdomains, now or in the past."""
     return queries.domain(db(), origin, host.lower())
 
 
 @api.get("/{owner}/{repo}/search", response_model=M.Search, responses=errors(404, 422), tags=["extensions"])
-def api_search(q: str = Query(description="#123 or 123 (an issue or PR), a host, a name or a source id"),
+def api_search(q: str = Query(description="#123 or 123 (an issue or PR), a host, a name or a source id", examples=["mangadex"]),
                origin: str = Depends(origin_of)):
     """The site's search box: an issue or PR by number, and the domains and extensions that match."""
     return queries.search(db(), origin, q)
@@ -197,7 +222,7 @@ def api_drift(behind: str | None = Query(None, description="Only rows where this
     return api_drift_of(queries.drift(db(), behind, ignored))
 
 
-@api.get("/missing", response_model=M.Missing, responses=errors(404, 422), tags=["cross-repo"])
+@api.get("/missing", response_model=M.Missing, responses=errors(404, 422, not_found='origin keiyoushi/extension-source not found'), tags=["cross-repo"])
 def api_missing(target: str = Query(..., alias="in", description="The repo (owner/repo) the sites are missing from"),
                 q: str | None = Query(None, description="Part of a name, path or host"),
                 lang: str | None = Query(None, description="One language"),
@@ -226,25 +251,25 @@ def set_named_tag(origin: str, path: str, tag: dict, on: bool, user: dict):
     return tags.of(db(), origin, [path], user["id"])[path]
 
 
-@api.put("/{owner}/{repo}/tags/{tag}/{path:path}", response_model=list[M.Tag], responses=errors(401, 403, 404), tags=["tags"])
+@api.put("/{owner}/{repo}/tags/{tag}/{path:path}", response_model=list[M.Tag], responses=errors(401, 403, 404, not_found="no public tag named 'Is hostle'"), tags=["tags"])
 def api_tag_add(tag: TagName, path: FolderPath, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
     """Put a public tag on a folder (editor token); returns the folder's tags."""
     return set_named_tag(origin, path.strip("/"), tags.public_named(tag), True, user)
 
 
-@api.delete("/{owner}/{repo}/tags/{tag}/{path:path}", response_model=list[M.Tag], responses=errors(401, 403, 404), tags=["tags"])
+@api.delete("/{owner}/{repo}/tags/{tag}/{path:path}", response_model=list[M.Tag], responses=errors(401, 403, 404, not_found="no public tag named 'Is hostle'"), tags=["tags"])
 def api_tag_remove(tag: TagName, path: FolderPath, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
     """Take a public tag off a folder (editor token); tags inherited from issue labels stay. Returns the folder's tags."""
     return set_named_tag(origin, path.strip("/"), tags.public_named(tag), False, user)
 
 
-@api.put("/{owner}/{repo}/my-tags/{tag}/{path:path}", response_model=list[M.Tag], responses=errors(401, 404), tags=["tags"])
+@api.put("/{owner}/{repo}/my-tags/{tag}/{path:path}", response_model=list[M.Tag], responses=errors(401, 404, not_found="no private tag of yours named 'TODO'"), tags=["tags"])
 def api_my_tag_add(tag: TagName, path: FolderPath, origin: str = Depends(origin_of), user: dict = Depends(api_account)):
     """Put one of your private tags on a folder (any account's token); returns the folder's tags."""
     return set_named_tag(origin, path.strip("/"), tags.private_named(user["id"], tag), True, user)
 
 
-@api.delete("/{owner}/{repo}/my-tags/{tag}/{path:path}", response_model=list[M.Tag], responses=errors(401, 404), tags=["tags"])
+@api.delete("/{owner}/{repo}/my-tags/{tag}/{path:path}", response_model=list[M.Tag], responses=errors(401, 404, not_found="no private tag of yours named 'TODO'"), tags=["tags"])
 def api_my_tag_remove(tag: TagName, path: FolderPath, origin: str = Depends(origin_of), user: dict = Depends(api_account)):
     """Take one of your private tags off a folder; returns the folder's tags."""
     return set_named_tag(origin, path.strip("/"), tags.private_named(user["id"], tag), False, user)
@@ -270,7 +295,7 @@ def set_override(origin: str, number: int, path: str, action: str | None, user: 
 LINK_DOC = "Editor token; recorded under its account and undoable. Returns the issue."
 
 
-@api.put("/{owner}/{repo}/issues/{number}/links/{path:path}", response_model=M.Issue, responses=errors(401, 403, 404),
+@api.put("/{owner}/{repo}/issues/{number}/links/{path:path}", response_model=M.Issue, responses=errors(401, 403, 404, not_found='folder src/en/fo not found'),
          tags=["corrections"])
 def api_link_add(number: int, path: FolderPath, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
     return set_override(origin, number, path, "add", user)
@@ -321,7 +346,7 @@ PAIR_DOC = ("Two sources of different repositories, by stable_id (folder `source
             "`elsewhere` and drift's `source_links`). Editor token; recorded and undoable.")
 
 
-@api.put("/source-links", response_model=M.SourceLinkResult, responses=errors(401, 403, 404, 422), tags=["corrections"])
+@api.put("/source-links", response_model=M.SourceLinkResult, responses=errors(401, 403, 404, 422, not_found='source manga-download/haruneko mangadx not found'), tags=["corrections"])
 def api_source_link_add(pair: SourcePair, user: dict = Depends(api_editor)):
     return set_source_override(pair, "add", user)
 
@@ -355,7 +380,7 @@ def ignore_drift(pair: list[str], reason: str | None, user: dict) -> bool:
     return True
 
 
-@api.put("/drift/ignored", response_model=M.DriftIgnoreResult, responses=errors(401, 403, 404, 422), tags=["corrections"])
+@api.put("/drift/ignored", response_model=M.DriftIgnoreResult, responses=errors(401, 403, 404, 422, not_found='drift row not found'), tags=["corrections"])
 def api_drift_ignore(body: M.DriftIgnore, user: dict = Depends(api_editor)):
     """Set a drift row aside with a reason, at both sides' current hosts: it comes back once either side's hosts
     change. Editor token; recorded and undoable."""
@@ -365,7 +390,7 @@ def api_drift_ignore(body: M.DriftIgnore, user: dict = Depends(api_editor)):
     return {"pair": body.pair, "reason": body.reason}
 
 
-@api.delete("/drift/ignored", response_model=M.DriftIgnoreResult, responses=errors(401, 403, 404, 422), tags=["corrections"])
+@api.delete("/drift/ignored", response_model=M.DriftIgnoreResult, responses=errors(401, 403, 404, 422, not_found='ignored drift row not found'), tags=["corrections"])
 def api_drift_unignore(body: M.DriftIgnore, user: dict = Depends(api_editor)):
     """Bring an ignored drift row back into the list. Editor token; recorded."""
     found(ignore_drift(body.pair, None, user) or None, "ignored drift row")
@@ -373,6 +398,7 @@ def api_drift_unignore(body: M.DriftIgnore, user: dict = Depends(api_editor)):
 
 
 app.include_router(api)
+app.openapi = openapi
 app.include_router(auth.router)
 
 
