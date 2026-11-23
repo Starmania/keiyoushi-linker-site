@@ -358,3 +358,17 @@ a.stat:hover { border-color: var(--accent); text-decoration: none; }
 .notice.toast { position: fixed; z-index: 20; bottom: 1rem; left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px);
   box-shadow: 0 6px 24px rgb(0 0 0 / .18); transition: opacity .4s; }
 .notice.toast.gone { opacity: 0; pointer-events: none; }
+/* Gallery: ready-made views, filters that apply on change (gallery.js), and the active ones as removable chips. */
+.views { display: flex; flex-wrap: wrap; gap: .35rem .75rem; align-items: center; margin-bottom: .75rem; }
+.view { padding: .1rem .6rem; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); }
+.view.on { border-color: var(--accent); font-weight: 600; }
+.view:hover { border-color: var(--accent); text-decoration: none; }
+.filter-box > summary { display: none; }
+.active-filters { display: flex; flex-wrap: wrap; gap: .35rem .6rem; align-items: center; margin: -.25rem 0 1rem; }
+.chip { display: inline-flex; gap: .3rem; padding: .05rem .55rem; border-radius: 999px; background: var(--accent); color: var(--surface); }
+.chip:hover { text-decoration: none; opacity: .85; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.js .filters .apply { display: none; }
+@media (max-width: 600px) {
+  .filter-box > summary { display: inline-block; margin-bottom: .75rem; padding: .3rem .8rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: .9rem; }
+}

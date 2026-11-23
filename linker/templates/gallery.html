@@ -3,7 +3,13 @@
 {% set status_names = {'pass': 'Working', 'partial': 'Partly working', 'fail': 'Not working', 'maybe': 'Might be broken', 'untestable': 'Can’t test', 'unsupported': 'Not supported'} %}
 {% block title %}Extensions · {{ origin }}{% endblock %}
 {% block content %}
-<form class="filters" method="get">
+<div class="views small">
+  <span class="muted">Views:</span>
+  {% for label, vqs in views %}<a class="view{{ ' on' if vqs == qs }}" href="?{{ vqs }}">{{ label }}</a>{% endfor %}
+</div>
+<details class="filter-box" open>
+<summary>Filters{% if active %} ({{ active|length }}){% endif %}</summary>
+<form class="filters" method="get" id="gallery-filters">
   <input name="q" type="search" value="{{ filters.q }}" placeholder="Filter by name, domain or source id" aria-label="Filter">
   {{ tri_filter('lang', 'Language', [(None, facets.lang|map('facet_label')|list)], filters.lang) }}
   {% if tracked.status %}
@@ -32,8 +38,15 @@
     {% endfor %}
   </select>
   <label class="check"><input type="checkbox" name="removed" value="true" {{ 'checked' if filters.removed }}> Include removed</label>
-  <button type="submit">Apply</button>
+  <button type="submit" class="apply">Apply</button>
 </form>
+</details>
+{% if active %}
+<div class="active-filters small">
+  {% for c in active %}<a class="chip" href="?{{ c.qs }}" title="Remove this filter">{{ c.label }} <span aria-hidden="true">×</span><span class="visually-hidden"> (remove)</span></a>{% endfor %}
+  <a href="?">Clear all</a>
+</div>
+{% endif %}
 
 <div class="gallery-meta">
   <p class="muted">{{ data.total|num }} extensions</p>
@@ -93,4 +106,5 @@
 
 {{ pager(page_no, pages, qs) }}
 <script src="/static/tri.js" defer></script>
+<script src="/static/gallery.js" defer></script>
 {% endblock %}

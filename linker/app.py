@@ -460,9 +460,47 @@ def gallery(
     tri = lambda values: {v.removeprefix("-"): -1 if v.startswith("-") else 1 for v in values if v.strip("-")}
     filters = {"q": q or "", "lang": tri(lang), "theme": tri(theme), "status": tri(status), "tag": tri(tag),
                "content": content or "", "broken": broken or "", "fix": fix or "", "removed": removed, "sort": sort}
-    qs = urlencode([(k, v) for k, v in request.query_params.multi_items() if k != "page"])
-    return page(request, "gallery.html", origin=origin, data=data, facets=queries.facets(db(), origin, account_id),
-                filters=filters, qs=qs, page_no=page_no, pages=max(1, -(-data["total"] // per_page)))
+    params = [(k, v) for k, v in request.query_params.multi_items() if k != "page" and v not in ("", "-")]
+    qs = urlencode(params)
+    facets = queries.facets(db(), origin, account_id)
+    return page(request, "gallery.html", origin=origin, data=data, facets=facets, filters=filters, qs=qs, page_no=page_no,
+                pages=max(1, -(-data["total"] // per_page)), active=active_filters(params, facets),
+                views=gallery_views(facets))
+
+
+GALLERY_LABELS = {
+    "status": {"pass": "Working", "partial": "Partly working", "fail": "Not working", "maybe": "Might be broken",
+               "untestable": "Can’t test", "unsupported": "Not supported"},
+    "broken": {"1": "Not working 1 day+", "3": "Not working 3 days+", "7": "Not working a week+", "14": "Not working 2 weeks+",
+               "30": "Not working a month+"},
+    "fix": {"issue": "Broken, open issue, no PR", "noissue": "Broken, no issue or PR yet"},
+    "removed": {"true": "Including removed"},
+}
+
+
+def active_filters(params: list[tuple[str, str]], facets: dict) -> list[dict]:
+    """One removable chip per active gallery filter value: its label and the gallery's query string without it."""
+    tag_names = {str(t["value"]): t["label"] for group in facets["tags"].values() for t in group}
+    chips = []
+    for i, (k, v) in enumerate(params):
+        if k == "sort":
+            continue
+        name = v.removeprefix("-")
+        label = {"q": f"“{v}”", "content": v.capitalize(), "tag": tag_names.get(name, name)}.get(k) or GALLERY_LABELS.get(k, {}).get(name, name)
+        if k in ("lang", "theme", "status", "tag"):
+            label = ("not " if v.startswith("-") else "") + label
+        chips.append({"label": label, "kind": k, "qs": urlencode(params[:i] + params[i + 1:])})
+    return chips
+
+
+def gallery_views(facets: dict) -> list[tuple[str, str]]:
+    """Ready-made triage filters: (label, query string)."""
+    views = [("Broken, no issue yet", "status=fail&fix=noissue"), ("Broken, issue but no PR", "status=fail&fix=issue"),
+             ("Broken a week or more", "broken=7&sort=broken")]
+    on_it = next((t for t in facets["tags"]["public"] if t["label"] == "On it"), None)
+    if on_it:
+        views.append(("On it", f"tag={on_it['value']}"))
+    return views
 
 
 @app.get("/{owner}/{repo}/issues/{number}", response_class=HTMLResponse)
