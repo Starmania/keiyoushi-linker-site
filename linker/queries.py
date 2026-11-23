@@ -4,6 +4,8 @@ import json
 import sqlite3
 from datetime import datetime
 
+from linker import tags as tagging
+
 # keiyoushi-monitor's checks, in the order it runs them, with its labels.
 OPS = {
     "browse": "Browse", "latest": "Latest updates", "search": "Search", "details": "Open a title",
@@ -106,6 +108,12 @@ FIX = {
 }
 
 
+def tri(values) -> tuple[list[str], list[str]]:
+    """A tri-state filter's values: "x" includes x, "-x" excludes it. One string or a list."""
+    values = [values] if isinstance(values, str) else [v for v in values or [] if v]
+    return [v for v in values if not v.startswith("-")], [v[1:] for v in values if v.startswith("-") and len(v) > 1]
+
+
 def rows(cur) -> list[dict]:
     return [dict(r) for r in cur]
 
@@ -126,7 +134,7 @@ def tracked(conn: sqlite3.Connection, origin: str) -> dict:
     }
 
 
-def facets(conn: sqlite3.Connection, origin: str) -> dict:
+def facets(conn: sqlite3.Connection, origin: str, account_id: int | None = None) -> dict:
     q = "SELECT {col} AS value, count(*) AS n FROM extension WHERE origin = ? AND kind = 'src' AND removed_sha IS NULL AND {col} IS NOT NULL GROUP BY {col} ORDER BY {order}"
     return {
         "lang": rows(conn.execute(q.format(col="lang", order="n DESC"), (origin,))),
@@ -136,29 +144,36 @@ def facets(conn: sqlite3.Connection, origin: str) -> dict:
             "WHERE e.origin = ? AND e.kind = 'src' AND e.removed_sha IS NULL GROUP BY st.status ORDER BY n DESC",
             (origin,),
         )),
+        "tags": tagging.facet(conn, origin, account_id),
     }
 
 
 def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, content=None, broken_days=None,
-               fix=None, removed=False, sort="downloads", limit=60, offset=0) -> dict:
+               fix=None, tag=None, account_id=None, removed=False, sort="downloads", limit=60, offset=0) -> dict:
     where = ["e.origin = ?", "e.kind = 'src'"]
     args: list = [origin]
     if not removed:
         where.append("e.removed_sha IS NULL")
-    if lang:
-        where.append("e.lang = ?")
-        args.append(lang)
-    if theme:
-        where.append("e.theme = ?")
-        args.append(theme)
-    if status:
-        where.append("st.status = ?")
-        args.append(status)
+    for column, values in (("e.lang", lang), ("e.theme", theme), ("st.status", status)):
+        include, exclude = tri(values)
+        if include:
+            where.append(f"{column} IN ({','.join('?' * len(include))})")
+            args += include
+        if exclude:
+            where.append(f"({column} IS NULL OR {column} NOT IN ({','.join('?' * len(exclude))}))")
+            args += exclude
     if content:
         where.append("e.content_warning = ?")
         args.append(content)
     if fix in FIX:
         where.append(FIX[fix])
+    include, exclude = tri(tag)
+    for tag_id, keep in [(t, True) for t in include] + [(t, False) for t in exclude]:
+        if not tag_id.isdigit():
+            continue
+        sql, tag_args = tagging.filter_sql(origin, int(tag_id), account_id)
+        where.append(sql if keep else f"NOT {sql}")
+        args += tag_args
     if broken_days:
         where.append("st.status = 'fail' AND st.since <= date('now', ?)")
         args.append(f"-{int(broken_days)} days")
@@ -207,7 +222,9 @@ def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, cont
         """,
         [first_run, *args, limit, offset],
     ))
+    tags_of = tagging.of(conn, origin, [it["path"] for it in items], account_id)
     for it in items:
+        it["tags"] = tags_of.get(it["path"], [])
         # The card's bar shows the proxy run that decided the status, when a recheck did.
         rc = recheck(it["status"], it.pop("rechecks"), None)
         it["ops"] = rc["ops"] if rc and rc["decided"] else op_results(it["ops"])
@@ -273,7 +290,8 @@ def _domains(conn, origin, path) -> list[dict]:
     ))
 
 
-def folder(conn, origin, path, history_limit=200) -> dict | None:
+def folder(conn, origin, path, history_limit=200, account_id=None) -> dict | None:
+    """account_id: whose private tags to include (None: public and inherited tags only)."""
     ext = conn.execute("SELECT * FROM extension WHERE origin = ? AND path = ?", (origin, path)).fetchone()
     if not ext:
         return None
@@ -286,6 +304,7 @@ def folder(conn, origin, path, history_limit=200) -> dict | None:
     out["prs"] = _prs(conn, origin, path)
     out["issues"] = _issues(conn, origin, path)
     out["history"] = _commits(conn, origin, path, history_limit)
+    out["tags"] = tagging.of(conn, origin, [path], account_id)[path]
 
     if ext["kind"] == "src":
         sources = rows(conn.execute(
@@ -698,6 +717,16 @@ def audit_log(conn, limit: int = 200) -> list[dict]:
             a, b = sides.get(tuple(t["a"])), sides.get(tuple(t["b"]))
             name = lambda s, ref: f"{s.name} ({ref[0].split('/')[0]})" if s else f"{ref[1]} ({ref[0].split('/')[0]})"
             r |= {"what": f"{name(a, t['a'])} ↔ {name(b, t['b'])}", "href": f"/{a.origin}/{a.path}" if a else None}
+        elif t["kind"] == "tag":
+            r |= {"what": f"{t['tag']} on {t['path']}", "href": f"/{t['origin']}/{t['path']}"}
+        elif t["kind"] == "tag_def":
+            whose = "public tag" if t["scope"] == "public" else "default private tag"
+            labels = f" (labels: {', '.join(t['labels']) or 'none'})" if "labels" in t else ""
+            what = {"add": f"{whose} “{t.get('name')}” added",
+                    "rename": f"{whose} “{t.get('from')}” renamed “{t.get('to')}”",
+                    "labels": f"{whose} “{t.get('name')}” labels changed",
+                    "delete": f"{whose} “{t.get('name')}” deleted, off {t.get('folders', 0)} folders"}[t["op"]]
+            r |= {"what": what + (labels if t["op"] != "delete" else ""), "href": "/admin#tags"}
         else:
             r |= {"what": f"@{t['account']}: {t['from']} → {t['to']}", "href": None}
         out.append(r)

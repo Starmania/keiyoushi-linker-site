@@ -63,12 +63,32 @@ CREATE TABLE IF NOT EXISTS api_token (
     last_used_at TEXT,
     revoked_at   TEXT
 );
+-- Tags (linker/tags.py): owner 0 = public, -1 = the private tags a new account starts with, else that account's.
+CREATE TABLE IF NOT EXISTS tag (
+    id     INTEGER PRIMARY KEY,
+    owner  INTEGER NOT NULL,
+    name   TEXT NOT NULL,
+    labels TEXT NOT NULL DEFAULT '[]'   -- JSON: issue labels that put a public tag on an open issue's folders
+);
+CREATE UNIQUE INDEX IF NOT EXISTS tag_name ON tag (owner, name COLLATE NOCASE);
+CREATE TABLE IF NOT EXISTS folder_tag (
+    origin     TEXT NOT NULL,
+    path       TEXT NOT NULL,
+    tag_id     INTEGER NOT NULL,
+    by_account INTEGER NOT NULL,
+    at         TEXT NOT NULL,
+    PRIMARY KEY (origin, path, tag_id)
+);
+CREATE TABLE IF NOT EXISTS site_setting (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS audit (
     id         INTEGER PRIMARY KEY,
     at         TEXT NOT NULL,
     account_id INTEGER NOT NULL,
     via        TEXT NOT NULL,     -- "web" | "token"
-    action     TEXT NOT NULL,     -- "add" | "remove" | "reset" | "role"
+    action     TEXT NOT NULL,     -- "add" | "remove" | "reset" | "role" | "tag" | "untag" | "tagdef"
     target     TEXT NOT NULL      -- JSON
 );
 """
@@ -123,6 +143,8 @@ def _open() -> sqlite3.Connection:
     conn.execute("ATTACH DATABASE ? AS kx", (f"file:{DB_PATH}?mode=ro",))
     conn.execute(EFFECTIVE_VIEW)
     conn.execute(SOURCE_LINK_VIEW)
+    from linker import tags  # imports this module
+    tags.seed(conn)
     return conn
 
 

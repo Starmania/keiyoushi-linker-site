@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import edit_button, form_fields with context %}
+{% from "_macros.html" import edit_button, form_fields, tag_defs_editor with context %}
 {% block title %}Account{% endblock %}
 {% block content %}
 <section class="head">
@@ -35,6 +35,13 @@
     <input name="name" required maxlength="60" placeholder="Name, e.g. laptop script" aria-label="Token name">
     <button type="submit">Create token</button>
   </form>
+</section>
+
+<section id="tags">
+  <h2>Your private tags</h2>
+  <p class="muted small">Put them on extension pages, under “Tags”; only you see them. Renaming a tag keeps it on its
+  folders; deleting it takes it off them.</p>
+  {{ tag_defs_editor('mine', my_tags) }}
 </section>
 
 <section id="device">

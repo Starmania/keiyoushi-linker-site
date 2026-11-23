@@ -1,18 +1,13 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_pill %}
+{% from "_macros.html" import status_pill, tag_chip, tri_filter %}
+{% set status_names = {'pass': 'Working', 'partial': 'Partly working', 'fail': 'Not working', 'maybe': 'Might be broken', 'untestable': 'Can’t test', 'unsupported': 'Not supported'} %}
 {% block title %}Extensions · {{ origin }}{% endblock %}
 {% block content %}
 <form class="filters" method="get">
   <input name="q" type="search" value="{{ filters.q }}" placeholder="Filter by name, domain or source id" aria-label="Filter">
-  <select name="lang" aria-label="Language">
-    <option value="">All languages</option>
-    {% for f in facets.lang %}<option value="{{ f.value }}" {{ 'selected' if f.value == filters.lang }}>{{ f.value }} ({{ f.n }})</option>{% endfor %}
-  </select>
+  {{ tri_filter('lang', 'Language', [(None, facets.lang|map('facet_label')|list)], filters.lang) }}
   {% if tracked.status %}
-  <select name="status" aria-label="Status">
-    <option value="">Any status</option>
-    {% for f in facets.status %}<option value="{{ f.value }}" {{ 'selected' if f.value == filters.status }}>{{ f.value }} ({{ f.n }})</option>{% endfor %}
-  </select>
+  {{ tri_filter('status', 'Status', [(None, facets.status|map('facet_label', status_names)|list)], filters.status) }}
   <select name="broken" aria-label="Not working since">
     <option value="">Not working since…</option>
     {% for days, label in [('1', '1 day or more'), ('3', '3 days or more'), ('7', 'a week or more'), ('14', '2 weeks or more'), ('30', 'a month or more')] %}
@@ -25,10 +20,8 @@
     {% endfor %}
   </select>
   {% endif %}
-  <select name="theme" aria-label="Theme">
-    <option value="">Any theme</option>
-    {% for f in facets.theme %}<option value="{{ f.value }}" {{ 'selected' if f.value == filters.theme }}>{{ f.value }} ({{ f.n }})</option>{% endfor %}
-  </select>
+  {{ tri_filter('tag', 'Tags', [('Everyone sees', facets.tags.public), ('Your tags', facets.tags.private)], filters.tag) }}
+  {{ tri_filter('theme', 'Theme', [(None, facets.theme|map('facet_label')|list)], filters.theme) }}
   <select name="content" aria-label="Content">
     <option value="">All content</option>
     {% for c in ['SAFE', 'MIXED', 'NSFW'] %}<option value="{{ c }}" {{ 'selected' if c == filters.content }}>{{ c|capitalize }}</option>{% endfor %}
@@ -62,6 +55,8 @@
       {% if e.theme %}<span class="tag">{{ e.theme }}</span>{% endif %}
       {% if e.content_warning and e.content_warning != 'SAFE' %}<span class="tag warn">{{ e.content_warning }}</span>{% endif %}
       {% if e.removed %}<span class="tag">removed</span>{% endif %}
+      {% for t in e.tags[:3] %}{{ tag_chip(t) }}{% endfor %}
+      {% if e.tags|length > 3 %}<span class="more" title="{{ e.tags[3:]|map(attribute='label')|join(', ') }}">+{{ e.tags|length - 3 }}</span>{% endif %}
     </div>
     <div class="card-foot small">
       <span class="card-host muted ellipsis" title="{{ e.hosts|join(', ') }}">{% if e.hosts %}{{ e.hosts[0] }}{% if e.hosts|length > 1 %} <span class="more">+{{ e.hosts|length - 1 }}</span>{% endif %}{% endif %}</span>
@@ -87,10 +82,10 @@
 
 {% if pages > 1 %}
 <nav class="pager">
-  {% set qs = filters|urlencode %}
   {% if page_no > 1 %}<a href="?{{ qs }}&page={{ page_no - 1 }}">← Previous</a>{% endif %}
   <span class="muted">Page {{ page_no }} of {{ pages }}</span>
   {% if page_no < pages %}<a href="?{{ qs }}&page={{ page_no + 1 }}">Next →</a>{% endif %}
 </nav>
 {% endif %}
+<script src="/static/tri.js" defer></script>
 {% endblock %}

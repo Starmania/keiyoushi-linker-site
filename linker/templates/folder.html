@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_pill, state_pill, folder_link, issue_rows, history_rows, link_state, edit_button, form_fields with context %}
+{% from "_macros.html" import status_pill, state_pill, folder_link, issue_rows, history_rows, link_state, edit_button, form_fields, tag_chip with context %}
 {% block title %}{{ f.name }} · {{ origin }}{% endblock %}
 {% block content %}
 <section class="head">
@@ -17,9 +17,29 @@
       {% if f.version_code is not none %}<span class="tag">{{ 'base ' if f.kind == 'theme' }}versionCode {{ f.version_code }}</span>{% endif %}
       {% if f.content_warning %}<span class="tag{{ ' warn' if f.content_warning != 'SAFE' }}">{{ f.content_warning }}</span>{% endif %}
       {% if f.removed_sha %}<span class="tag warn">removed {{ f.last_date|day }}</span>{% endif %}
+      {% for t in f.tags %}{{ tag_chip(t, origin) }}{% endfor %}
     </div>
   </div>
 </section>
+
+{% if user %}
+{% set by_id = {} %}{% for t in f.tags %}{% set _ = by_id.update({t.id: t}) %}{% endfor %}
+<details class="tag-edit">
+  <summary>Tags</summary>
+  {% for scope, heading in [('public', 'Everyone sees'), ('private', 'Only you')] if scope == 'private' or can_edit %}
+  <div class="tag-group">
+    <span class="muted small">{{ heading }}</span>
+    {% for d in tag_defs[scope] %}
+    {% set t = by_id.get(d.id) %}
+    {% if t and not t.manual %}<span class="tag t-inherited" title="{{ t.title }}&#10;Close or unlink the issue to remove it.">{{ d.name }}</span>
+    {% else %}{{ edit_button('/edit/tag', d.name, {'origin': origin, 'path': f.path, 'tag': d.id, 'on': 0 if t else 1}, 'on' if t else '', t.title if t else 'Add ' ~ d.name) }}{% endif %}
+    {% else %}<span class="muted small">none yet</span>
+    {% endfor %}
+    {% if scope == 'private' %}<a class="small" href="/account#tags">Edit your tags</a>{% elif user.is_admin %}<a class="small" href="/admin#tags">Edit public tags</a>{% endif %}
+  </div>
+  {% endfor %}
+</details>
+{% endif %}
 
 {% if f.kind == 'src' %}
 <section class="stats">

@@ -69,8 +69,60 @@
 {%- endmacro %}
 
 {# A one-button POST form. Non-string values (lists of pairs) are sent as JSON. #}
-{% macro edit_button(url, label, fields, cls='') -%}
+{% macro edit_button(url, label, fields, cls='', title='') -%}
 <form class="inline-edit" method="post" action="{{ url }}">{{ form_fields() }}
 {%- for k, v in fields.items() %}<input type="hidden" name="{{ k }}" value="{% if v is string or v is number %}{{ v }}{% else %}{{ v|tojson|forceescape }}{% endif %}">{% endfor -%}
-<button type="submit" class="mini{{ ' ' ~ cls if cls }}">{{ label }}</button></form>
+<button type="submit" class="mini{{ ' ' ~ cls if cls }}"{% if title %} title="{{ title }}"{% endif %}>{{ label }}</button></form>
+{%- endmacro %}
+
+{# Editable list of tag definitions (linker/tags.py) for scope "mine", "public" or "defaults"; import with context. #}
+{% macro tag_defs_editor(scope, defs, labels=False) -%}
+<div class="tagdefs">
+  {% for d in defs %}
+  <div class="tagdef">
+    <form class="save" method="post" action="/tags/save">{{ form_fields() }}<input type="hidden" name="scope" value="{{ scope }}"><input type="hidden" name="id" value="{{ d.id }}">
+      <input name="name" required maxlength="30" value="{{ d.name }}" aria-label="Tag name">
+      {% if labels %}<input name="labels" value="{{ d.labels|join(', ') }}" placeholder="Issue labels, comma-separated" aria-label="Issue labels of {{ d.name }}">{% endif %}
+      <button type="submit" class="mini">Save</button>
+    </form>
+    <form class="inline-edit" method="post" action="/tags/delete" onsubmit="return confirm('Delete “{{ d.name }}” and take it off every folder?')">{{ form_fields() }}
+      <input type="hidden" name="scope" value="{{ scope }}"><input type="hidden" name="id" value="{{ d.id }}">
+      <button type="submit" class="mini danger">Delete</button>
+    </form>
+  </div>
+  {% else %}<p class="muted">No tag.</p>
+  {% endfor %}
+  <form class="tagdef save" method="post" action="/tags/save">{{ form_fields() }}<input type="hidden" name="scope" value="{{ scope }}">
+    <input name="name" required maxlength="30" placeholder="New tag" aria-label="New tag name">
+    {% if labels %}<input name="labels" placeholder="Issue labels, comma-separated (optional)" aria-label="Issue labels of the new tag">{% endif %}
+    <button type="submit" class="mini">Add</button>
+  </form>
+</div>
+{%- endmacro %}
+
+{# A tri-state filter, like Mihon's: each value cycles ignored → included → excluded (static/tri.js).
+   groups: [(heading or None, [{value, label, n}])]; state: {value as string: 1 | -1}. #}
+{% macro tri_filter(name, title, groups, state) -%}
+{% set inc = state.values()|select('equalto', 1)|list|length %}{% set exc = state.values()|select('equalto', -1)|list|length %}
+<details class="tri">
+  <summary>{{ title }}<span class="tri-n">{% if inc %} <span class="inc">✓{{ inc }}</span>{% endif %}{% if exc %} <span class="exc">✗{{ exc }}</span>{% endif %}</span></summary>
+  <div class="tri-list">
+    {% for heading, options in groups if options %}
+    {% if heading %}<div class="tri-head muted small">{{ heading }}</div>{% endif %}
+    {% for o in options %}{% set st = state.get(o.value|string, 0) %}
+    <button type="button" class="tri-item" data-value="{{ o.value }}" data-state="{{ st }}" aria-label="{{ o.label }}: {{ {1: 'included', -1: 'excluded'}.get(st, 'ignored') }}">
+      <span class="tri-box" aria-hidden="true"></span><span class="grow">{{ o.label }}</span><span class="muted small">{{ o.n }}</span>
+      <input type="hidden" name="{{ name }}" value="{{ '-' if st == -1 }}{{ o.value }}"{{ ' disabled' if not st }}>
+    </button>
+    {% endfor %}
+    {% endfor %}
+  </div>
+</details>
+{%- endmacro %}
+
+{# A folder tag (linker/tags.py); hovering it shows who set it and when, or the issue it comes from.
+   origin: link "#n" to the issue it is inherited from (not inside another link, e.g. a gallery card). #}
+{% macro tag_chip(t, origin=None) -%}
+<span class="tag t-{{ 'private' if t.scope == 'private' else 'public' if t.manual else 'inherited' }}" title="{{ t.title }}">{{ t.label }}
+{%- if t.issues and not t.manual %} · {% if origin %}<a href="/{{ origin }}/issues/{{ t.issues[0].number }}">#{{ t.issues[0].number }}</a>{% else %}#{{ t.issues[0].number }}{% endif %}{% endif %}</span>
 {%- endmacro %}

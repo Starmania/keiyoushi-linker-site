@@ -115,6 +115,12 @@ button { background: var(--accent); color: #fff; border-color: transparent; curs
   border-radius: 999px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
 }
 .tag.warn { background: var(--warn-bg); color: var(--warn-text); border-color: transparent; }
+/* Folder tags: set by an editor, inherited from an open issue's label, or private to the viewer. */
+.tag.t-public { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.tag.t-inherited { color: var(--accent); border: 1px dashed color-mix(in srgb, var(--accent) 60%, transparent); }
+.tag.t-private { color: var(--text); background: color-mix(in srgb, var(--border) 60%, transparent); border-color: transparent; }
+.tag a { color: inherit; }
+.card-tags > .more { font-size: .75rem; color: var(--accent); }
 .pill { color: #fff; border-color: transparent; background: var(--neutral); }
 .st-pass { --c: var(--pass); }
 .st-partial { --c: var(--partial); }
@@ -223,8 +229,52 @@ button.mini:hover { border-color: var(--accent); }
 button.mini.danger { color: var(--fail); }
 button.mini.danger:hover { border-color: var(--fail); }
 .edit-slot { margin-left: auto; }
+.tag-edit { margin: -.5rem 0 1rem; }
+.tag-edit summary { cursor: pointer; color: var(--muted); font-size: .85rem; }
+.tag-group { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin-top: .5rem; }
+.tag-group > .muted { min-width: 7rem; }
+button.mini.on { background: var(--accent); color: #fff; border-color: transparent; }
 .connect { margin-top: .75rem; }
 .connect input[name="other_path"], .connect input[name="path"] { flex: 1 1 260px; }
 .removed-links { margin-top: .5rem; }
 .who { margin-left: auto; }
 .search + .who { margin-left: 0; }
+
+/* Tri-state filters (macro tri_filter): a summary styled like the selects, opening a list of values. */
+details.tri { position: relative; }
+details.tri > summary {
+  list-style: none; cursor: pointer; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: .4rem .6rem; white-space: nowrap;
+}
+details.tri > summary::-webkit-details-marker { display: none; }
+details.tri > summary::after { content: " ▾"; color: var(--muted); }
+details.tri[open] > summary { border-color: var(--accent); }
+.tri-n .inc { color: var(--pass); font-weight: 600; }
+.tri-n .exc { color: var(--fail); font-weight: 600; }
+.tri-list {
+  position: absolute; z-index: 10; top: calc(100% + 4px); left: 0; min-width: 15rem; max-width: min(22rem, calc(100vw - 32px));
+  max-height: 60vh; overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: .25rem; box-shadow: 0 6px 20px rgb(0 0 0 / .15);
+}
+.tri-head { padding: .4rem .5rem .15rem; }
+button.tri-item {
+  display: flex; width: 100%; gap: .5rem; align-items: center; text-align: left; background: none; color: var(--text);
+  border: 0; border-radius: 6px; padding: .3rem .5rem;
+}
+button.tri-item:hover { background: color-mix(in srgb, var(--border) 50%, transparent); }
+.tri-box { flex: none; width: 1rem; height: 1rem; border: 1.5px solid var(--muted); border-radius: 4px; display: grid; place-items: center; font-size: .75rem; line-height: 1; }
+.tri-item[data-state="1"] .tri-box { background: var(--pass); border-color: var(--pass); color: #fff; }
+.tri-item[data-state="1"] .tri-box::after { content: "✓"; }
+.tri-item[data-state="-1"] .tri-box { background: var(--fail); border-color: var(--fail); color: #fff; }
+.tri-item[data-state="-1"] .tri-box::after { content: "✕"; }
+.tri-item[data-state="-1"] .grow { text-decoration: line-through; color: var(--muted); }
+@media (max-width: 600px) {
+  .tri-list { position: fixed; left: 16px; right: 16px; top: auto; bottom: 16px; max-width: none; }
+}
+
+/* Tag lists on /account and /admin: one row per tag, its name (and labels) editable in place. */
+.tagdefs { display: grid; gap: .4rem; max-width: 52rem; }
+.tagdef { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.tagdef form.save { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; flex: 1; min-width: 0; }
+.tagdef input[name=name] { width: 12rem; }
+.tagdef input[name=labels] { flex: 1 1 14rem; min-width: 0; font-size: .85rem; }

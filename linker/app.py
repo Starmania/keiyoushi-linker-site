@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from linker import auth, device, queries
+from linker import auth, device, queries, tags
 from linker.auth import api_editor, audit, current_user, form_of, safe_next
 from linker.db import conn as db
 
@@ -19,6 +19,8 @@ app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
 templates = Jinja2Templates(directory=HERE / "templates")
 templates.env.filters["day"] = lambda iso: (iso or "")[:10]
 templates.env.filters["ago"] = lambda iso: f"{d} d" if (d := (datetime.now(UTC).date() - date.fromisoformat(iso[:10])).days) else "today"
+# A facet row {value, n} with a label for tri_filter; names: {value: label}, else the value itself.
+templates.env.filters["facet_label"] = lambda f, names=None: f | {"label": (names or {}).get(f["value"], f["value"])}
 templates.env.filters["num"] = lambda n: "–" if n is None else f"{n:,}".replace(",", " ")
 
 
@@ -63,14 +65,26 @@ def api_missing(target: str = Query(..., alias="in", description="The repo (owne
 @api.get("/{owner}/{repo}/extensions")
 def api_extensions(
     origin: str = Depends(origin_of),
-    q: str | None = None, lang: str | None = None, theme: str | None = None, status: str | None = None,
+    q: str | None = None,
+    lang: list[str] = Query([], description='Repeat it to pick several; prefix a value with "-" to exclude it, e.g. lang=en&lang=-all'),
+    theme: list[str] = Query([], description='Repeat it to pick several; prefix a value with "-" to exclude it'),
+    status: list[str] = Query([], description='Repeat it to pick several; prefix a value with "-" to exclude it: pass, partial, fail, maybe, untestable, unsupported'),
     content: str | None = None, removed: bool = False, sort: str = "downloads",
     broken_days: int | None = Query(None, ge=0, description="Only extensions not working for at least this many days"),
     fix: str | None = Query(None, description="issue: broken, with an open issue and no open PR; noissue: broken, no open issue or PR"),
+    tag: list[str] = Query([], description='Public tag names (GET /api/v1/tags). All included tags are needed; '
+                                           '"-" excludes'),
     limit: int = Query(60, le=500), offset: int = 0,
 ):
+    tag_ids = [("-" if t.startswith("-") else "") + str(tags.public_named(t.removeprefix("-"))["id"]) for t in tag]
     return queries.extensions(db(), origin, q=q, lang=lang, theme=theme, status=status, content=content,
-                              broken_days=broken_days, fix=fix, removed=removed, sort=sort, limit=limit, offset=offset)
+                              broken_days=broken_days, fix=fix, tag=tag_ids, removed=removed, sort=sort, limit=limit, offset=offset)
+
+
+@api.get("/tags")
+def api_tags():
+    """Public tags, with the issue labels that put them on an open issue's folders."""
+    return [{"name": d["name"], "labels": d["labels"]} for d in tags.defs(tags.PUBLIC)]
 
 
 @api.get("/{owner}/{repo}/facets")
@@ -118,6 +132,23 @@ def api_domain(host: str, origin: str = Depends(origin_of)):
 @api.get("/{owner}/{repo}/search")
 def api_search(q: str, origin: str = Depends(origin_of)):
     return queries.search(db(), origin, q)
+
+
+def set_public_tag(origin: str, path: str, name: str, on: bool, user: dict):
+    tags.set_tag(user, origin, path, tags.public_named(name), on)
+    return tags.of(db(), origin, [path], None)[path]
+
+
+@api.put("/{owner}/{repo}/tags/{tag}/{path:path}")
+def api_tag_add(tag: str, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
+    """Put a public tag on a folder; returns the folder's public and inherited tags."""
+    return set_public_tag(origin, path.strip("/"), tag, True, user)
+
+
+@api.delete("/{owner}/{repo}/tags/{tag}/{path:path}")
+def api_tag_remove(tag: str, path: str, origin: str = Depends(origin_of), user: dict = Depends(api_editor)):
+    """Take a public tag off a folder (tags inherited from issue labels stay)."""
+    return set_public_tag(origin, path.strip("/"), tag, False, user)
 
 
 def set_override(origin: str, number: int, path: str, action: str | None, user: dict):
@@ -238,7 +269,7 @@ def account_page(request: Request, new_token: str | None = None, device_draft: d
     return page(request, "account.html", origin=None, tokens=auth.tokens(user), new_token=new_token,
                 device_builtin=device.BUILTIN, device_prefs=prefs,
                 device_custom=device_draft.get("custom", "") if device_draft else device.custom_text(prefs),
-                device_draft=device_draft, device_error=device_error)
+                device_draft=device_draft, device_error=device_error, my_tags=tags.mine(user["id"]))
 
 
 @app.post("/account/device", response_class=HTMLResponse)
@@ -272,7 +303,8 @@ def admin_page(request: Request):
     user = current_user(request)
     if not user or not user["is_admin"]:
         raise HTTPException(403, "admins only")
-    return page(request, "admin.html", origin=None, accounts=queries.accounts(db()), log=queries.audit_log(db()), roles=auth.ROLES)
+    return page(request, "admin.html", origin=None, accounts=queries.accounts(db()), log=queries.audit_log(db()), roles=auth.ROLES,
+                public_tags=tags.defs(tags.PUBLIC), default_tags=tags.defs(tags.DEFAULTS))
 
 
 @app.post("/admin/role")
@@ -309,6 +341,34 @@ async def edit_source_links_connect(request: Request):
     for a, b in pairs:
         set_source_override(SourcePair(a=SourceRef(origin=a[0], stable_id=a[1]), b=SourceRef(origin=b[0], stable_id=b[1])), "add", user)
     return back_to(fields.get("back"), f"Linked to {other_path}")
+
+
+@app.post("/edit/tag")
+async def edit_tag(request: Request):
+    """Public tags need an editor (checked in tags.set_tag); private ones their owner."""
+    user, fields = await form_of(request, need="any")
+    tag, on = tags.get(fields.get("tag")), fields.get("on") == "1"
+    tags.set_tag(user, fields["origin"], fields.get("path", "").strip("/"), tag, on)
+    return back_to(fields.get("back"), f"Tagged {tag['name']}" if on else f"Removed {tag['name']}")
+
+
+@app.post("/tags/save")
+async def tag_save(request: Request):
+    """Add or rename a tag: scope "mine" (any account), "public" or "defaults" (admins)."""
+    user, fields = await form_of(request, need="any")
+    try:
+        tags.save_def(user, fields.get("scope", ""), fields.get("id") or None, fields.get("name", ""),
+                      tags.parse_labels(fields.get("labels", "")))
+    except ValueError as e:
+        return back_to(fields.get("back"), str(e))
+    return back_to(fields.get("back"), "Tag saved")
+
+
+@app.post("/tags/delete")
+async def tag_delete(request: Request):
+    user, fields = await form_of(request, need="any")
+    name = tags.delete_def(user, fields.get("scope", ""), fields.get("id"))
+    return back_to(fields.get("back"), f"Deleted “{name}”")
 
 
 @app.post("/edit/issue-link")
@@ -351,20 +411,25 @@ def missing_page(request: Request, target: str | None = Query(None, alias="in"),
 @app.get("/{owner}/{repo}", response_class=HTMLResponse)
 def gallery(
     request: Request, origin: str = Depends(origin_of),
-    q: str | None = None, lang: str | None = None, theme: str | None = None, status: str | None = None,
-    content: str | None = None, broken: str | None = None, fix: str | None = None, removed: bool = False,
-    sort: str | None = None, page_no: int = Query(1, alias="page", ge=1),
+    q: str | None = None, lang: list[str] = Query([]), theme: list[str] = Query([]), status: list[str] = Query([]),
+    content: str | None = None, broken: str | None = None, fix: str | None = None, tag: list[str] = Query([]),
+    removed: bool = False, sort: str | None = None, page_no: int = Query(1, alias="page", ge=1),
 ):
     per_page = 60
     sort = sort or ("downloads" if queries.tracked(db(), origin)["downloads"] else "name")
     broken_days = int(broken) if broken and broken.isdigit() else None
-    data = queries.extensions(db(), origin, q=q or None, lang=lang or None, theme=theme or None, status=status or None,
-                              content=content or None, broken_days=broken_days, fix=fix or None, removed=removed,
-                              sort=sort, limit=per_page, offset=(page_no - 1) * per_page)
-    filters = {"q": q or "", "lang": lang or "", "theme": theme or "", "status": status or "", "content": content or "",
-               "broken": broken or "", "fix": fix or "", "removed": removed, "sort": sort}
-    return page(request, "gallery.html", origin=origin, data=data, facets=queries.facets(db(), origin),
-                filters=filters, page_no=page_no, pages=max(1, -(-data["total"] // per_page)))
+    user = current_user(request)
+    account_id = user["id"] if user else None
+    data = queries.extensions(db(), origin, q=q or None, lang=lang, theme=theme, status=status,
+                              content=content or None, broken_days=broken_days, fix=fix or None, tag=tag,
+                              account_id=account_id, removed=removed, sort=sort, limit=per_page, offset=(page_no - 1) * per_page)
+    # Tri-state filters: {value: 1 included | -1 excluded}.
+    tri = lambda values: {v.removeprefix("-"): -1 if v.startswith("-") else 1 for v in values if v.strip("-")}
+    filters = {"q": q or "", "lang": tri(lang), "theme": tri(theme), "status": tri(status), "tag": tri(tag),
+               "content": content or "", "broken": broken or "", "fix": fix or "", "removed": removed, "sort": sort}
+    qs = urlencode([(k, v) for k, v in request.query_params.multi_items() if k != "page"])
+    return page(request, "gallery.html", origin=origin, data=data, facets=queries.facets(db(), origin, account_id),
+                filters=filters, qs=qs, page_no=page_no, pages=max(1, -(-data["total"] // per_page)))
 
 
 @app.get("/{owner}/{repo}/issues/{number}", response_class=HTMLResponse)
@@ -410,6 +475,8 @@ def search_page(request: Request, q: str = "", origin: str = Depends(origin_of))
 def folder_page(request: Request, path: str, origin: str = Depends(origin_of)):
     user = current_user(request)
     prefs = device.prefs(user["id"]) if user else None
-    return page(request, "folder.html", origin=origin, f=found(queries.folder(db(), origin, path.strip("/")), "page"),
+    f = found(queries.folder(db(), origin, path.strip("/"), account_id=user and user["id"]), "page")
+    tag_defs = {"public": tags.defs(tags.PUBLIC), "private": tags.mine(user["id"])} if user else None
+    return page(request, "folder.html", origin=origin, f=f, tag_defs=tag_defs,
                 other_origins=[o["id"] for o in queries.origins(db()) if o["id"] != origin],
                 device_app=prefs and prefs["app"], device_commands=prefs and device.commands(prefs))
