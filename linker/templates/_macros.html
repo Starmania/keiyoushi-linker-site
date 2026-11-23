@@ -169,3 +169,11 @@
 </nav>
 {% endif %}
 {%- endmacro %}
+
+
+{# An extension icon; when there is none or it fails to load, its name's first letter in its place. #}
+{% macro icon(url, name, cls='', size=48) -%}
+{% set letter = ((name or '?')|trim|first or '?')|upper %}
+{% if url %}<img class="icon {{ cls }}" src="{{ url }}" alt="" width="{{ size }}" height="{{ size }}" loading="lazy" data-letter="{{ letter }}" onerror="this.replaceWith(Object.assign(document.createElement('span'), {className: this.className + ' letter', textContent: this.dataset.letter}))">
+{%- else %}<span class="icon {{ cls }} letter" aria-hidden="true">{{ letter }}</span>{% endif %}
+{%- endmacro %}

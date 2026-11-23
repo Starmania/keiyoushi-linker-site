@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_pill, tag_chip, tri_filter, pager %}
+{% from "_macros.html" import status_pill, tag_chip, tri_filter, pager, icon %}
 {% set status_names = {'pass': 'Working', 'partial': 'Partly working', 'fail': 'Not working', 'maybe': 'Might be broken', 'untestable': 'Can’t test', 'unsupported': 'Not supported'} %}
 {% block title %}Extensions · {{ origin }}{% endblock %}
 {% block content %}
@@ -71,7 +71,7 @@
     {% elif e.status and e.status != 'unsupported' %}
     <div class="ops-band" aria-label="Monitor status: {{ e.status }}"><span class="op-seg op-{{ e.status }}"></span></div>
     {% endif %}
-    <img class="icon" src="{{ e.icon_url }}" alt="" loading="lazy" width="48" height="48" onerror="this.style.visibility='hidden'">
+    {{ icon(e.icon_url, e.name) }}
     <div class="card-title" title="{{ e.name }}">{{ e.name }}</div>
     <div class="card-path muted small mono">{{ e.path }}</div>
     <div class="tags card-tags">

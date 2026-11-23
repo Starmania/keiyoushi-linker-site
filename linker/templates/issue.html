@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from "_macros.html" import state_pill, folder_link, edit_button, form_fields, gh, gh_button with context %}
 {% block title %}#{{ i.number }} · {{ origin }}{% endblock %}
+{% block description %}#{{ i.number }} {{ i.title }}: the extension folders it concerns and the PRs closing it.{% endblock %}
 {% block content %}
 <section class="head">
   <div>

@@ -1,9 +1,10 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_pill, state_pill, folder_link, issue_rows, history_rows, link_state, edit_button, form_fields, tag_chip, gh, gh_button with context %}
+{% from "_macros.html" import status_pill, state_pill, folder_link, issue_rows, history_rows, link_state, edit_button, form_fields, tag_chip, gh, gh_button, icon with context %}
 {% block title %}{{ f.name }} · {{ origin }}{% endblock %}
+{% block description %}{{ f.name }} ({{ f.path }}) in {{ origin }}: status, issues, pull requests and domains.{% endblock %}
 {% block content %}
 <section class="head">
-  {% if f.icon_url %}<img class="icon big" src="{{ f.icon_url }}" alt="" width="64" height="64" onerror="this.style.visibility='hidden'">{% endif %}
+  {{ icon(f.icon_url, f.name, 'big', 64) }}
   <div>
     <h1>{{ f.name }}{% if f.kind == 'theme' %} <span class="tag">theme</span>{% endif %}</h1>
     <div class="mono muted">
@@ -146,7 +147,7 @@
   <ul class="rows xr">
     {% for o in folders %}
     <li>
-      {% if o.icon_url %}<img class="icon tiny" src="{{ o.icon_url }}" alt="" width="24" height="24" loading="lazy" onerror="this.style.visibility='hidden'">{% endif %}
+      {{ icon(o.icon_url, o.name, 'tiny', 24) }}
       <div class="grow">
         <div class="xr-head">
           <a href="/{{ other }}/{{ o.path }}">{{ o.name }}</a>

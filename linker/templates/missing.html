@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import status_pill, state_pill, edit_button, form_fields, gh with context %}
+{% from "_macros.html" import status_pill, state_pill, edit_button, form_fields, gh, icon with context %}
 {% block title %}Missing sites{% endblock %}
 {% block content %}
 <h1>Missing sites</h1>
@@ -27,7 +27,7 @@ the extension when they name one of its domains, past or current.</p>
 <ul class="rows xr foldable">
   {% for i in o['items'] %}
   <li{% if loop.index > 50 %} class="folded"{% endif %}>
-    <img class="icon tiny" src="{{ i.icon_url or '' }}" alt="" width="24" height="24" loading="lazy" onerror="this.style.visibility='hidden'">
+    {{ icon(i.icon_url, i.name, 'tiny', 24) }}
     <div class="grow">
       <div class="xr-head">
         <a href="/{{ origin }}/{{ i.path }}">{{ i.name }}</a>

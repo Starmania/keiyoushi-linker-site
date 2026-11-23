@@ -396,3 +396,8 @@ a.stat:hover { border-color: var(--accent); text-decoration: none; }
   .top nav { order: 4; flex-basis: 100%; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
   .top .search { order: 5; flex-basis: 100%; }
 }
+/* An icon that failed to load: the name's first letter. */
+.icon.letter { display: inline-grid; place-items: center; width: 48px; height: 48px; background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: var(--accent); font-weight: 650; font-size: 1.3rem; }
+.icon.tiny.letter { width: 24px; height: 24px; font-size: .75rem; border-radius: 6px; }
+.icon.big.letter { width: 64px; height: 64px; font-size: 1.8rem; }
