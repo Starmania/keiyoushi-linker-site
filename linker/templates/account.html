@@ -27,7 +27,7 @@
     {% for t in tokens %}
     <li><span class="grow"><strong>{{ t.name }}</strong> <span class="mono muted">{{ t.prefix }}…</span></span>
       <span class="muted small">created {{ t.created_at|day }} · {{ 'last used ' ~ (t.last_used_at|day) if t.last_used_at else 'never used' }}</span>
-      {{ edit_button('/account/tokens/revoke', 'Revoke', {'id': t.id}, 'danger') }}</li>
+      {{ edit_button('/account/tokens/revoke', 'Revoke', {'id': t.id}, 'danger', '', 'Revoke “' ~ t.name ~ '”? Scripts using it stop working at once.') }}</li>
     {% endfor %}
   </ul>
   {% else %}<p class="muted">No token.</p>{% endif %}
@@ -77,7 +77,7 @@
   <h2>Sessions</h2>
   <div class="filters">
     <form class="inline-edit" method="post" action="/auth/logout">{{ form_fields() }}<button type="submit" class="mini">Sign out</button></form>
-    <form class="inline-edit" method="post" action="/auth/logout">{{ form_fields() }}<input type="hidden" name="everywhere" value="1"><button type="submit" class="mini danger">Sign out everywhere</button></form>
+    <form class="inline-edit" method="post" action="/auth/logout" onsubmit="return confirm('Sign out of every browser and device, this one included?')">{{ form_fields() }}<input type="hidden" name="everywhere" value="1"><button type="submit" class="mini danger">Sign out everywhere</button></form>
   </div>
 </section>
 {% endblock %}

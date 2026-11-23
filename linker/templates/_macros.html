@@ -84,8 +84,8 @@
 {%- endmacro %}
 
 {# A one-button POST form. Non-string values (lists of pairs) are sent as JSON. #}
-{% macro edit_button(url, label, fields, cls='', title='') -%}
-<form class="inline-edit" method="post" action="{{ url }}">{{ form_fields() }}
+{% macro edit_button(url, label, fields, cls='', title='', confirm='') -%}
+<form class="inline-edit" method="post" action="{{ url }}"{% if confirm %} onsubmit="return confirm({{ confirm|tojson|forceescape }})"{% endif %}>{{ form_fields() }}
 {%- for k, v in fields.items() %}<input type="hidden" name="{{ k }}" value="{% if v is string or v is number %}{{ v }}{% else %}{{ v|tojson|forceescape }}{% endif %}">{% endfor -%}
 <button type="submit" class="mini{{ ' ' ~ cls if cls }}"{% if title %} title="{{ title }}"{% endif %}>{{ label }}</button></form>
 {%- endmacro %}
