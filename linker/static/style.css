@@ -354,3 +354,7 @@ a.stat:hover { border-color: var(--accent); text-decoration: none; }
 .drift-actions select { font-size: .78rem; padding: .1rem .3rem; max-width: 13rem; }
 .link-by-hand { margin-top: .25rem; }
 .link-by-hand form { margin: .4rem 0 .2rem; }
+/* A button's result, after the page came back to where it was (keep-place.js). */
+.notice.toast { position: fixed; z-index: 20; bottom: 1rem; left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px);
+  box-shadow: 0 6px 24px rgb(0 0 0 / .18); transition: opacity .4s; }
+.notice.toast.gone { opacity: 0; pointer-events: none; }
