@@ -243,13 +243,23 @@ app.include_router(auth.router)
 # ---------------------------------------------------------------- pages
 
 
+REPO_COOKIE = "linker_repo"
+
+
 def page(request: Request, template: str, **ctx):
     if ctx.get("origin"):
         ctx["tracked"] = queries.tracked(db(), ctx["origin"])
     ctx["user"] = user = current_user(request)
     ctx["can_edit"] = bool(user and user["can_edit"])
     ctx["back"] = request.url.path + (f"?{request.url.query}" if request.url.query else "")
-    return templates.TemplateResponse(request, template, ctx)
+    # The header keeps a repository (search, gallery, switcher) on every page: this page's, else the last one visited.
+    ctx["repos"] = repos = [o["id"] for o in queries.origins(db())]
+    remembered = request.cookies.get(REPO_COOKIE)
+    ctx["repo"] = ctx.get("origin") or (remembered if remembered in repos else repos[0] if repos else None)
+    resp = templates.TemplateResponse(request, template, ctx)
+    if ctx.get("origin") and ctx["origin"] != remembered:
+        resp.set_cookie(REPO_COOKIE, ctx["origin"], max_age=365 * 86400, samesite="lax")
+    return resp
 
 
 def back_to(target: str | None, notice: str | None = None) -> RedirectResponse:

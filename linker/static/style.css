@@ -68,8 +68,17 @@ main.wrap { padding-bottom: 4rem; }
 .top { background: var(--surface); border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
 .top-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; padding-top: .75rem; padding-bottom: .75rem; }
 .brand { font-weight: 650; color: var(--text); }
-.origin { color: var(--muted); font-size: .85rem; }
+
 .top nav { display: flex; gap: 1rem; }
+/* Repository switcher in the header: the current repo, a menu of the others. */
+.repo-menu { position: relative; font-size: .9rem; }
+.repo-menu summary { color: var(--muted); list-style: none; cursor: pointer; }
+.repo-menu summary::-webkit-details-marker { display: none; }
+.repo-menu summary::after { content: " ▾"; font-size: .75em; }
+.repo-list { position: absolute; z-index: 10; top: 1.8rem; left: 0; display: grid; min-width: 16rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 6px 20px rgb(0 0 0 / .12); padding: .3rem; }
+.repo-list a { padding: .35rem .6rem; border-radius: 6px; color: var(--text); }
+.repo-list a:hover { background: var(--bg); text-decoration: none; }
+.repo-list a[aria-current] { font-weight: 600; }
 .search { margin-left: auto; flex: 1 1 260px; max-width: 360px; }
 .search input { width: 100%; }
 

@@ -11,16 +11,21 @@
 <header class="top">
   <div class="wrap top-row">
     <a class="brand" href="/">Extension linker</a>
-    {% if origin %}<a class="origin" href="/{{ origin }}">{{ origin }}</a>{% endif %}
+    {% if repo %}
+    <details class="repo-menu">
+      <summary title="Switch repository">{{ repo }}</summary>
+      <div class="repo-list">{% for r in repos %}<a href="/{{ r }}"{% if r == repo %} aria-current="true"{% endif %}>{{ r }}</a>{% endfor %}</div>
+    </details>
+    {% endif %}
     <nav>
-      {% if origin %}<a href="/{{ origin }}">Gallery</a>
-      <a href="/{{ origin }}/domains">Domains</a>{% endif %}
+      {% if repo %}<a href="/{{ repo }}">Gallery</a>
+      <a href="/{{ repo }}/domains">Domains</a>{% endif %}
       <a href="/drift">Drift</a>
       <a href="/missing">Missing</a>
       <a href="/api/docs">API</a>
     </nav>
-    {% if origin %}
-    <form class="search" action="/{{ origin }}/search">
+    {% if repo %}
+    <form class="search" action="/{{ repo }}/search">
       <input name="q" type="search" placeholder="Name, #issue, #PR, domain, source id" aria-label="Search">
     </form>
     {% endif %}
