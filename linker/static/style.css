@@ -103,6 +103,17 @@ button { background: var(--accent); color: #fff; border-color: transparent; curs
 .card { position: relative; overflow: hidden; }
 .ops-band { position: absolute; top: 0; left: 0; right: 0; height: 4px; display: flex; gap: 2px; }
 .op-seg { flex: 1; background: var(--c); }
+/* A failed check is also taller, so it reads without telling red from green. */
+.ops-band { align-items: flex-start; }
+.op-seg.op-fail { height: 8px; border-radius: 0 0 3px 3px; }
+.gallery-meta { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; align-items: baseline; }
+.gallery-meta > p { margin: 0 0 1rem; }
+.band-legend { margin-bottom: 1rem; }
+.band-legend p { margin: .4rem 0; }
+.legend-keys { display: flex; flex-wrap: wrap; gap: .3rem 1rem; }
+.legend-keys > span { display: inline-flex; align-items: flex-start; gap: .35rem; }
+.op-key { display: inline-block; width: 22px; height: 4px; margin-top: .45em; background: var(--c); }
+.op-key.op-fail { height: 8px; border-radius: 0 0 3px 3px; }
 .op-pass { --c: var(--pass); }
 .op-partial { --c: var(--partial); }
 .op-fail { --c: var(--fail); }

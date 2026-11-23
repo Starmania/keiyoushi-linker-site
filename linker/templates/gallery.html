@@ -35,7 +35,18 @@
   <button type="submit">Apply</button>
 </form>
 
-<p class="muted">{{ data.total|num }} extensions</p>
+<div class="gallery-meta">
+  <p class="muted">{{ data.total|num }} extensions</p>
+  {% if tracked.status %}
+  <details class="band-legend">
+    <summary>Top band: one segment per monitor check</summary>
+    <div class="small">
+      <p>{% for label in monitor_ops.values() %}{{ loop.index }}. {{ label }}{{ ' · ' if not loop.last }}{% endfor %}</p>
+      <p class="legend-keys">{% for k in ('pass', 'fail', 'maybe', 'untestable', 'skip', 'na') %}<span><span class="op-key op-{{ k }}"></span>{{ op_status[k] }}</span>{% endfor %}</p>
+    </div>
+  </details>
+  {% endif %}
+</div>
 
 <div class="grid">
   {% for e in data['items'] %}

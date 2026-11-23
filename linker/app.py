@@ -19,6 +19,7 @@ app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
 templates = Jinja2Templates(directory=HERE / "templates")
 templates.env.globals["tag_colors"] = tags.COLORS
 templates.env.filters["issue_body"] = issue_body.render
+templates.env.globals |= {"monitor_ops": queries.OPS, "op_status": queries.OP_STATUS}
 templates.env.filters["day"] = lambda iso: (iso or "")[:10]
 templates.env.filters["ago"] = lambda iso: f"{d} d" if (d := (datetime.now(UTC).date() - date.fromisoformat(iso[:10])).days) else "today"
 # A facet row {value, n} with a label for tri_filter; names: {value: label}, else the value itself.
