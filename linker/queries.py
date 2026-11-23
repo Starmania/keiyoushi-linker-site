@@ -180,11 +180,14 @@ def extensions(conn, origin, *, q=None, lang=None, theme=None, status=None, cont
         args.append(f"-{int(broken_days)} days")
     if q:
         like = f"%{q}%"
+        # Also without spaces and punctuation, so "raw ku" finds Rawkuma and "manga dex" MangaDex.
+        squashed = f"%{_name_key(q)}%" if _name_key(q) else like
         where.append(
             "(e.name LIKE ? OR e.module LIKE ? OR e.path LIKE ? OR EXISTS (SELECT 1 FROM source s WHERE s.origin = e.origin AND s.path = e.path AND (s.name LIKE ? OR s.source_id = ?))"
+            " OR replace(replace(replace(replace(e.name, ' ', ''), '.', ''), '-', ''), '_', '') LIKE ? OR e.module LIKE ?"
             " OR EXISTS (SELECT 1 FROM domain_usage du WHERE du.origin = e.origin AND du.path = e.path AND du.to_sha IS NULL AND du.host LIKE ?))"
         )
-        args += [like, like, like, like, q, like]
+        args += [like, like, like, like, q, squashed, squashed, like]
     base = f"""
         FROM extension e
         LEFT JOIN ({LATEST_STATUS}) st ON st.origin = e.origin AND st.path = e.path

@@ -355,7 +355,7 @@ a.stat:hover { border-color: var(--accent); text-decoration: none; }
 .drift-actions select { font-size: .78rem; padding: .1rem .3rem; max-width: 13rem; }
 /* Missing: "Link…" on a row opens one dialog to link it by hand. */
 .link-open { margin-left: auto; }
-.link-dialog { width: min(32rem, calc(100% - 32px)); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); padding: 1.1rem 1.2rem; }
+.link-dialog { overflow: visible; width: min(32rem, calc(100% - 32px)); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); padding: 1.1rem 1.2rem; }
 .link-dialog::backdrop { background: rgb(0 0 0 / .35); }
 .link-dialog h2 { margin: 0 0 .35rem; }
 .link-dialog p { margin: 0 0 .75rem; }
@@ -407,3 +407,12 @@ a.stat:hover { border-color: var(--accent); text-decoration: none; }
   color: var(--accent); font-weight: 650; font-size: 1.3rem; }
 .icon.tiny.letter { width: 24px; height: 24px; font-size: .75rem; border-radius: 6px; }
 .icon.big.letter { width: 64px; height: 64px; font-size: 1.8rem; }
+/* Folder suggestions under a path input (suggest.js). */
+.suggest { position: relative; flex: 1 1 260px; min-width: 0; display: block; }
+.suggest > input { width: 100%; }
+.suggest-list { position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; right: 0; margin: 0; padding: .25rem; list-style: none;
+  max-height: 18rem; overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgb(0 0 0 / .16); }
+.suggest-list li { display: flex; gap: .75rem; justify-content: space-between; align-items: baseline; padding: .35rem .55rem; border-radius: 6px; cursor: pointer; font-size: .9rem; }
+.suggest-list li[aria-selected="true"], .suggest-list li:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.suggest-path { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.suggest-list li.suggest-none { color: var(--muted); cursor: default; background: none; }
